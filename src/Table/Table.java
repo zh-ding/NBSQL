@@ -7,11 +7,11 @@ import java.util.ArrayList;
 public class Table {
     private ArrayList<String> column_name;
     /*
-    0: int
-    1: long
-    2: float
-    3: double
-    4: String
+    -1: int
+    -2: long
+    -3: float
+    -4: double
+    n (n > 0): String, max_length = 0
      */
     private ArrayList<Integer> column_type;
     private int primary_key_index = 0;

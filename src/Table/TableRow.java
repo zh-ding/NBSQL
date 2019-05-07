@@ -3,11 +3,7 @@ package Table;
 import java.util.ArrayList;
 
 public class TableRow<TKey extends Comparable<TKey> > {
-    private int[] int_columns;
-    private float[] float_columns;
-    private double[] double_columns;
-    private long[] long_columns;
-    private String[] string_columns;
+    ArrayList data;
 
     TableRow(){
         ArrayList a = new ArrayList();
