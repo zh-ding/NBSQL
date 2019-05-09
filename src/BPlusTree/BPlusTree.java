@@ -13,12 +13,10 @@ public class BPlusTree {
     private static int BLOCK_SIZE, ORDER, KEY_SIZE, POINTER_SIZE, ROOT_ID, ROOT_IS_LEAF;
     private int TREE_LEVEL;
 
-    public BPlusTree(FileManager file){
+    public BPlusTree(FileManager file, int offset, boolean is_empty){
 
         //temp
         int blockSize = 1024;
-
-        this.fm = file;
 
         try {
             if(fm.getSize() == 0){
@@ -175,7 +173,7 @@ public class BPlusTree {
             e.printStackTrace();
         }
     }
-    /* Method for printing the information stored in the header */
+
     private void printHeader(){
         System.out.println("--- HEADER INFO ---");
         System.out.println("Block size: " + Bytes.bytesToInt(headerBytes,0));
