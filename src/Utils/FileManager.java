@@ -1,9 +1,8 @@
 package Utils;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.RandomAccessFile;
+import BPlusTree.BPlusTree;
+
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
@@ -15,37 +14,23 @@ public class FileManager {
     private File inputFile;
     private FileChannel fc;
     private ByteBuffer bb;
-    private final int blockSize;
+    private final int blockSize = 1024;
     private int size = 0;
-    private long numReadWrites = 0;
 
     /*
-    0: int
-    1: long
-    2: float
-    3: double
-    4: String
+    -1: int
+    -2: long
+    -3: float
+    -4: double
      */
     private static final int page_size = 1024 * 4;
     private static final int header_page_num = 4;
     private static final int page_header_len = 4;
 
-    public FileManager(String name, int blockSize) throws IOException{
-        this.blockSize = blockSize;
-        this.numReadWrites = 0;
+    public FileManager(String name) throws IOException{
         this.inputFile = new File(name);
         try {
             this.file = new RandomAccessFile(inputFile, "rw");
-            this.fc = file.getChannel();
-            this.bb = ByteBuffer.allocate(blockSize);
-            if (inputFile.exists()){
-                this.size  = (int) (this.inputFile.length() / blockSize);
-                if (this.inputFile.length() % blockSize != 0){
-                    this.file.setLength(size*blockSize);
-                }
-            }else{
-                this.size  = 0;
-            }
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -54,7 +39,7 @@ public class FileManager {
     private int calPos(int page, int offset){
         return page * page_size + offset;
     }
-    // 返回可以写入的位置
+
     private int findBlock(int len) throws IOException {
         int i;
         for(i = header_page_num; i*page_size<this.file.length(); i+=1){
@@ -73,16 +58,16 @@ public class FileManager {
         Iterator data = row.iterator();
         while(data.hasNext()){
             switch ((Integer)type.next()) {
-                case 0:
+                case -1:
                     this.file.writeInt((int)data.next());
                     break;
-                case 1:
+                case -2:
                     this.file.writeLong((long)data.next());
                     break;
-                case 2:
+                case -3:
                     this.file.writeFloat((float)data.next());
                     break;
-                case 3:
+                case -4:
                     this.file.writeDouble((double)data.next());
                     break;
                 case 4:
@@ -100,6 +85,41 @@ public class FileManager {
         return 0;
     }
 
+    public int writeTableHeader(int col_num, int index_num, ArrayList<String> column_name, ArrayList<Integer> column_type) throws IOException{
+        this.file.seek(0);
+        this.file.writeInt(col_num);
+        for(int i = 0; i < col_num; ++i){
+            this.file.writeUTF(column_name.get(i));
+            this.file.writeInt(column_type.get(i));
+        }
+        this.file.seek(2*page_size);
+        this.file.writeInt(index_num);
+        int pos = this.findBlock(10);
+        this.file.writeInt(pos);
+        return pos;
+    }
+
+    public ArrayList<Integer> readIndexForest() throws IOException {
+        ArrayList<Integer> num = new ArrayList<Integer>();
+        this.file.seek(2*page_size);
+        int index_num = this.file.readInt();
+        num.add(index_num);
+        for(int i = 0; i<index_num; i++){
+            num.add(this.file.readInt());
+        }
+        return num;
+    }
+
+    public int readTableHeader(ArrayList<String> column_name, ArrayList<Integer> column_type) throws IOException{
+        this.file.seek(0);
+        int col_num = this.file.readInt();
+        for(int i = 0; i < col_num; ++i){
+            column_name.add(this.file.readUTF());
+            column_type.add(this.file.readInt());
+        }
+
+        return col_num;
+    }
 
     public int deleteRow() throws IOException{
 
@@ -117,16 +137,16 @@ public class FileManager {
         this.file.seek(pos);
         while(type.hasNext()){
             switch ((Integer)type.next()) {
-                case 0:
+                case -1:
                     row.add((int)this.file.readInt());
                     break;
-                case 1:
+                case -2:
                     row.add((long)this.file.readLong());
                     break;
-                case 2:
+                case -3:
                     row.add((float)this.file.readFloat());
                     break;
-                case 3:
+                case -4:
                     row.add((double)this.file.readDouble());
                     break;
                 case 4:
@@ -157,7 +177,6 @@ public class FileManager {
         bb.put(bytes);
         bb.rewind();
         fc.write(bb, size*blockSize);
-        this.numReadWrites++;
     }
 
     public byte[] read(int blockPosition) throws IOException{
@@ -167,7 +186,6 @@ public class FileManager {
 
         bb = ByteBuffer.allocate(blockSize);
         fc.read(bb, blockPosition*blockSize);
-        this.numReadWrites++;
         return bb.array();
     }
 
@@ -179,11 +197,10 @@ public class FileManager {
         return size;
     }
     public long getNumberOfReadWrites(){
-        return this.numReadWrites;
+        return 0;
     }
 
     public void resetReadWriteCounter(){
-        this.numReadWrites = 0;
     }
 
     public boolean deleteFile(){
