@@ -85,7 +85,9 @@ public class FileManager {
         return 0;
     }
 
-    public int writeTableHeader(int col_num, int index_num, ArrayList<String> column_name, ArrayList<Integer> column_type) throws IOException{
+    public int writeTableHeader(int col_num, int index_num, int size, ArrayList<String> column_name,
+                                ArrayList<Integer> column_type, ArrayList<Integer> key_index)
+            throws IOException{
         this.file.seek(0);
         this.file.writeInt(col_num);
         for(int i = 0; i < col_num; ++i){
@@ -96,6 +98,10 @@ public class FileManager {
         this.file.writeInt(index_num);
         int pos = this.findBlock(10);
         this.file.writeInt(pos);
+        this.file.writeInt(size);
+        for(int i = 0; i<size; i++){
+            this.file.writeInt(key_index.get(i));
+        }
         return pos;
     }
 
@@ -106,6 +112,11 @@ public class FileManager {
         num.add(index_num);
         for(int i = 0; i<index_num; i++){
             num.add(this.file.readInt());
+            int tmp = this.file.readInt();
+            num.add(tmp);
+            for(int j = 0; j<tmp; j++){
+                num.add(this.file.readInt());
+            }
         }
         return num;
     }

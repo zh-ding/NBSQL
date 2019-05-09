@@ -15,6 +15,7 @@ public class Table {
     -4: double
     n (n > 0): String, max_length = 0
      */
+    private ArrayList<ArrayList<Integer>> index_key;
     private ArrayList<BPlusTree> index_forest;
     private ArrayList<Integer> column_type;
     private int primary_key_index = 0;
@@ -23,7 +24,7 @@ public class Table {
     private FileManager file;
 
 
-    Table(String[] names, int[] types, String primary_key, String table_name)
+    Table(String[] names, int[] types, String[] primary_key, String table_name)
         throws IOException {
 
         this.file = new FileManager(table_name);
@@ -33,15 +34,21 @@ public class Table {
         this.column_type = new ArrayList<>();
         this.column_name.add("id");
         this.column_type.add(0);
-
+        ArrayList<Integer> tmp = new ArrayList<Integer>();
         for(int i = 0; i < this.col_num; ++i) {
             this.column_name.add(names[i]);
             this.column_type.add(types[i]);
-            if (names[i] == primary_key)
-                primary_key_index = i + 1;
+            for(int j = 0; j<primary_key.length; j++){
+                if(names[i] == primary_key[j]){
+                    tmp.add(i);
+                }
+            }
         }
-
-        int pos = this.file.writeTableHeader(this.col_num, this.index_num, column_name, column_type);
+        if(tmp.size() == 0){
+            tmp.add(0);
+        }
+        index_key.add(tmp);
+        int pos = this.file.writeTableHeader(this.col_num, this.index_num, tmp.size() ,column_name, column_type, tmp);
         BPlusTree index_tree = new BPlusTree(file, pos, true);
         index_forest.add(index_tree);
 
@@ -55,9 +62,19 @@ public class Table {
         this.col_num = this.file.readTableHeader(this.column_name, this.column_type);
         ArrayList<Integer> tmp = this.file.readIndexForest();
         this.index_num = tmp.get(0);
-        for(int i = 0; i<this.index_num; i++){
-            BPlusTree tmp_tree = new BPlusTree(file, tmp.get(i+1), false);
+        int i = 0;
+        while(i<this.index_num) {
+            i++;
+            BPlusTree tmp_tree = new BPlusTree(file, tmp.get(i), false);
             index_forest.add(tmp_tree);
+            i++;
+            ArrayList<Integer> m_tmp = new ArrayList<Integer>();
+            int j = 0;
+            for( ; j<tmp.get(i); j++){
+                m_tmp.add(i+j+1);
+            }
+            i = i+j;
+            index_key.add(m_tmp);
         }
     }
 
