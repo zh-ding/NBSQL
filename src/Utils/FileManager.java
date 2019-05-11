@@ -1,6 +1,8 @@
 package Utils;
 
 import BPlusTree.BPlusTree;
+import BPlusTree.BPlusTreeNode;
+import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 
 import java.io.*;
 import java.nio.ByteBuffer;
@@ -51,27 +53,73 @@ public class FileManager {
         return calPos(i,page_header_len);
     }
 
-    public int writeRow(ArrayList column_type, ArrayList row, int len) throws IOException{
-        int pos = findBlock(len);
+    public ArrayList<Integer> getType(ArrayList value){
+        ArrayList<Integer> valueType = new ArrayList<Integer>();
+        for(int i = 0; i<valueType.size(); i++){
+            if(value.get(i) instanceof Integer){
+                valueType.add(-1);
+            }
+            if(value.get(i) instanceof Long){
+                valueType.add(-2);
+            }
+            if(value.get(i) instanceof Float){
+                valueType.add(-3);
+            }
+            if(value.get(i) instanceof Double){
+                valueType.add(-4);
+            }
+            if(value.get(i) instanceof String){
+                int tmp = value.get(i).toString().length();
+                valueType.add(tmp);
+            }
+        }
+        return valueType;
+    }
+
+    public int writeValue(ArrayList value) throws IOException{
+        int len = 0;
+        ArrayList<Integer> valueType = new ArrayList<Integer>();
+        for(int i = 0; i<valueType.size(); i++){
+            if(value.get(i) instanceof Integer){
+                valueType.add(-1);
+                len += 4;
+            }
+            if(value.get(i) instanceof Long){
+                valueType.add(-2);
+                len += 8;
+            }
+            if(value.get(i) instanceof Float){
+                valueType.add(-3);
+                len += 4;
+            }
+            if(value.get(i) instanceof Double){
+                valueType.add(-4);
+                len += 8;
+            }
+            if(value.get(i) instanceof String){
+                int tmp = value.get(i).toString().length();
+                valueType.add(tmp);
+                len = len + tmp +2;
+            }
+        }
+        int pos = this.findBlock(len);
         this.file.seek(pos);
-        Iterator type = column_type.iterator();
-        Iterator data = row.iterator();
-        while(data.hasNext()){
-            switch ((Integer)type.next()) {
+        for(int i = 0; i<valueType.size(); i++){
+            switch (valueType.get(i)) {
                 case -1:
-                    this.file.writeInt((int)data.next());
+                    this.file.writeInt((int)value.get(i));
                     break;
                 case -2:
-                    this.file.writeLong((long)data.next());
+                    this.file.writeLong((long)value.get(i));
                     break;
                 case -3:
-                    this.file.writeFloat((float)data.next());
+                    this.file.writeFloat((float)value.get(i));
                     break;
                 case -4:
-                    this.file.writeDouble((double)data.next());
+                    this.file.writeDouble((double)value.get(i));
                     break;
-                case 4:
-                    this.file.writeUTF(data.next().toString());
+                default:
+                    this.file.writeUTF(value.get(i).toString());
                     break;
             }
         }
@@ -81,8 +129,37 @@ public class FileManager {
         this.file.seek((pos/page_size)*page_size);
         int block_len = this.file.readInt()+len;
         this.file.writeInt(block_len);
+        return pos;
+    }
 
-        return 0;
+    public void updateNode(BPlusTreeNode node) throws IOException{
+        ArrayList<Integer> valueType = getType(node.keys.get(0));
+        this.file.seek(node.location);
+        this.file.writeBoolean(node.isLeafNode);
+        this.file.writeInt(node.keyNum);
+        for(int i = 0; i<node.keyNum; i++){
+            this.file.writeInt(node.pointers.get(i));
+            for(int j = 0; j<node.keys.size(); j++){
+                switch (valueType.get(i)) {
+                    case -1:
+                        this.file.writeInt((int)node.keys.get(i).get(j));
+                        break;
+                    case -2:
+                        this.file.writeLong((long)node.keys.get(i).get(j));
+                        break;
+                    case -3:
+                        this.file.writeFloat((float)node.keys.get(i).get(j));
+                        break;
+                    case -4:
+                        this.file.writeDouble((double)node.keys.get(i).get(j));
+                        break;
+                    default:
+                        this.file.writeUTF(node.keys.get(i).get(j).toString());
+                        break;
+                }
+            }
+        }
+        this.file.writeInt(node.pointers.get(node.keyNum));
     }
 
     public int writeTableHeader(int col_num, int index_num, int size, ArrayList<String> column_name,
@@ -103,6 +180,122 @@ public class FileManager {
             this.file.writeInt(key_index.get(i));
         }
         return pos;
+    }
+
+
+
+    private ArrayList<Integer> getKeyType(int id) throws IOException{
+        ArrayList<Integer> num = new ArrayList<Integer>();
+        int offset = 2*page_size;
+        this.file.seek(2*page_size);
+        int index_num = this.file.readInt();
+        offset += 4;
+        for(int i = 0; i<index_num; i++){
+            this.file.readInt();
+            int tmp = this.file.readInt();
+            if(i+1 == id){
+                for(int j = 0; j<tmp; j++){
+                    num.add(this.file.readInt());
+                }
+                break;
+            }
+            offset += 8;
+            offset += tmp*4;
+            this.file.seek(offset);
+        }
+        return num;
+    }
+
+    public int writeNewNode(int id) throws IOException {
+        ArrayList<Integer> keyType = this.getKeyType(id);
+        int len = 0;
+        for(int i = 0; i<keyType.size(); i++){
+            switch (i){
+                case -1:
+                    len += 4;
+                    break;
+                case -2:
+                    len += 8;
+                    break;
+                case -3:
+                    len += 4;
+                    break;
+                case -4:
+                    len += 8;
+                    break;
+                default:
+                    len += 2;
+                    len += i;
+                    break;
+            }
+        }
+        int pos = findBlock(len*3+4*4+4+1+4*3);
+        return pos;
+    }
+
+    public BPlusTreeNode readNode(int offset, int id) throws IOException{
+        ArrayList<ArrayList> keys = new ArrayList<ArrayList>();
+        ArrayList<Integer> pointers = new ArrayList<Integer>();
+        int parent;
+        int leftSibling;
+        int rightSibling;
+        int keyNum;
+        int location;
+        boolean isLeafNode;
+        this.file.seek(offset);
+        isLeafNode = this.file.readBoolean();
+        keyNum = this.file.readInt();
+        pointers.add(this.file.readInt());
+        ArrayList<Integer> keyType = getKeyType(id);
+        for(int i = 0; i<keyNum; i++){
+            ArrayList tmpKey = new ArrayList();
+            for(int j = 0; j<keyType.size(); j++){
+                switch (keyType.get(i)) {
+                    case -1:
+                        tmpKey.add(this.file.readInt());
+                        break;
+                    case -2:
+                        tmpKey.add(this.file.readLong());
+                        break;
+                    case -3:
+                        tmpKey.add(this.file.readFloat());
+                        break;
+                    case -4:
+                        tmpKey.add(this.file.readDouble());
+                        break;
+                    default:
+                        tmpKey.add(this.file.readUTF());
+                        break;
+                }
+            }
+            keys.add(tmpKey);
+            pointers.add(this.file.readInt());
+        }
+        parent = this.file.readInt();
+        leftSibling = this.file.readInt();
+        rightSibling = this.file.readInt();
+        location = offset;
+        BPlusTreeNode node = new BPlusTreeNode(keys, pointers, parent, leftSibling, rightSibling, keyNum, location, isLeafNode, id);
+        return node;
+    }
+
+    public void updateRoot(int id, int location) throws IOException{
+        ArrayList<Integer> num = new ArrayList<Integer>();
+        int offset = 2*page_size;
+        this.file.seek(2*page_size);
+        int index_num = this.file.readInt();
+        offset += 4;
+        for(int i = 0; i<index_num; i++){
+            if(i+1 == id){
+                this.file.writeInt(location);
+                break;
+            }
+            this.file.readInt();
+            int tmp = this.file.readInt();
+            offset += 8;
+            offset += tmp*4;
+            this.file.seek(offset);
+        }
     }
 
     public ArrayList<Integer> readIndexForest() throws IOException {
@@ -140,32 +333,6 @@ public class FileManager {
     public int updateRow() throws IOException{
 
         return 0;
-    }
-
-    public ArrayList readRow(int pos, ArrayList column_type) throws IOException{
-        ArrayList row = new ArrayList();
-        Iterator type = column_type.iterator();
-        this.file.seek(pos);
-        while(type.hasNext()){
-            switch ((Integer)type.next()) {
-                case -1:
-                    row.add((int)this.file.readInt());
-                    break;
-                case -2:
-                    row.add((long)this.file.readLong());
-                    break;
-                case -3:
-                    row.add((float)this.file.readFloat());
-                    break;
-                case -4:
-                    row.add((double)this.file.readDouble());
-                    break;
-                case 4:
-                    row.add(this.file.readUTF().toString());
-                    break;
-            }
-        }
-        return row;
     }
 
     public void write(byte[] bytes, int position) throws IOException {

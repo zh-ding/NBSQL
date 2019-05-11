@@ -1,7 +1,6 @@
 package Table;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 import Utils.FileManager;
 import BPlusTree.BPlusTree;
@@ -49,7 +48,7 @@ public class Table {
         }
         index_key.add(tmp);
         int pos = this.file.writeTableHeader(this.col_num, this.index_num, tmp.size() ,column_name, column_type, tmp);
-        BPlusTree index_tree = new BPlusTree(file, pos, true);
+        BPlusTree index_tree = new BPlusTree(file, pos, true, 1);
         index_forest.add(index_tree);
 
     }
@@ -65,7 +64,7 @@ public class Table {
         int i = 0;
         while(i<this.index_num) {
             i++;
-            BPlusTree tmp_tree = new BPlusTree(file, tmp.get(i), false);
+            BPlusTree tmp_tree = new BPlusTree(file, tmp.get(i), false, i);
             index_forest.add(tmp_tree);
             i++;
             ArrayList<Integer> m_tmp = new ArrayList<Integer>();
