@@ -3,6 +3,7 @@ package BPlusTree;
 import Utils.FileManager;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 
 public abstract class BPlusTreeNode{
@@ -32,7 +33,7 @@ public abstract class BPlusTreeNode{
         this.id = id;
     }
 
-    BPlusTreeNode(FileManager fm, int id){
+    BPlusTreeNode(FileManager fm, int id) throws IOException {
         this.keys = new ArrayList<>();
         this.pointers = new ArrayList<>();
         parent = -1;
@@ -41,17 +42,17 @@ public abstract class BPlusTreeNode{
         this.location = fm.writeNewNode(id);
     }
 
-    public void setParent(FileManager fm, int offset){
+    public void setParent(FileManager fm, int offset)throws IOException{
         this.parent = offset;
         fm.updateNode(this);
     }
 
-    public void setLeftSibling(FileManager fm, int offset){
+    public void setLeftSibling(FileManager fm, int offset)throws IOException{
         this.leftSibling = offset;
         fm.updateNode(this);
     }
 
-    public void setRightSibling(FileManager fm, int offset){
+    public void setRightSibling(FileManager fm, int offset)throws IOException{
         this.rightSibling = offset;
         fm.updateNode(this);
     }
@@ -65,7 +66,7 @@ public abstract class BPlusTreeNode{
             throws BPlusTreeException;
 
     public BPlusTreeNode dealOverflow(FileManager fm)
-            throws BPlusTreeException{
+            throws BPlusTreeException, IOException{
 
         int midIndex = this.keyNum / 2;
         ArrayList upKey = this.keys.get(midIndex);

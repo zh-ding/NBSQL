@@ -2,6 +2,8 @@ package Utils;
 
 import BPlusTree.BPlusTree;
 import BPlusTree.BPlusTreeNode;
+import BPlusTree.BPlusTreeLeafNode;
+import BPlusTree.BPlusTreeInnerNode;
 import com.sun.xml.internal.ws.policy.privateutil.PolicyUtils;
 
 import java.io.*;
@@ -275,7 +277,13 @@ public class FileManager {
         leftSibling = this.file.readInt();
         rightSibling = this.file.readInt();
         location = offset;
-        BPlusTreeNode node = new BPlusTreeNode(keys, pointers, parent, leftSibling, rightSibling, keyNum, location, isLeafNode, id);
+        BPlusTreeNode node = null;
+        if(isLeafNode ==true){
+            node = new BPlusTreeLeafNode(keys, pointers, parent, leftSibling, rightSibling, keyNum, location, isLeafNode, id);
+        }
+        else{
+            node = new BPlusTreeInnerNode(keys, pointers, parent, leftSibling, rightSibling, keyNum, location, isLeafNode, id);
+        }
         return node;
     }
 
