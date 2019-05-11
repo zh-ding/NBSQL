@@ -45,13 +45,17 @@ public class FileManager {
 
     private int findBlock(int len) throws IOException {
         int i;
-        for(i = header_page_num; i*page_size<this.file.length(); i+=1){
+        long test = this.file.length();
+        for(i = header_page_num; i*page_size<this.file.length(); i++){
             this.file.seek(i*page_size);
-            if(len <= page_size-this.file.readInt()){
-                return calPos(i, this.file.readInt());
+            int tmp = this.file.readInt();
+            if(len <= page_size-tmp){
+                return calPos(i, tmp);
             }
         }
-        return calPos(i,page_header_len);
+        this.file.seek(i*page_size);
+        this.file.writeInt(4);
+        return calPos(i,4);
     }
 
     public ArrayList<Integer> getType(ArrayList value){
@@ -80,7 +84,7 @@ public class FileManager {
     public int writeValue(ArrayList value) throws IOException{
         int len = 0;
         ArrayList<Integer> valueType = new ArrayList<Integer>();
-        for(int i = 0; i<valueType.size(); i++){
+        for(int i = 0; i<value.size(); i++){
             if(value.get(i) instanceof Integer){
                 valueType.add(-1);
                 len += 4;
@@ -129,6 +133,7 @@ public class FileManager {
          */
         this.file.seek((pos/page_size)*page_size);
         int block_len = this.file.readInt()+len;
+        this.file.seek((pos/page_size)*page_size);
         this.file.writeInt(block_len);
         return pos;
     }
@@ -164,9 +169,10 @@ public class FileManager {
     }
 
     public int writeTableHeader(int col_num, int index_num, int size, ArrayList<String> column_name,
-                                ArrayList<Integer> column_type, ArrayList<Integer> key_index)
+                                ArrayList<Integer> column_type, ArrayList<Integer> key_index, int auto_id)
             throws IOException{
         this.file.seek(0);
+        this.file.writeInt(auto_id);
         this.file.writeInt(col_num);
         for(int i = 0; i < col_num; ++i){
             this.file.writeUTF(column_name.get(i));
@@ -174,7 +180,30 @@ public class FileManager {
         }
         this.file.seek(2*page_size);
         this.file.writeInt(index_num);
-        int pos = this.findBlock(10);
+        int len = 0;
+        for(int i = 0; i<key_index.size(); i++){
+            switch (column_type.get(key_index.get(i))){
+                case -1:
+                    len += 4;
+                    break;
+                case -2:
+                    len += 8;
+                    break;
+                case -3:
+                    len += 4;
+                    break;
+                case -4:
+                    len += 8;
+                    break;
+                default:
+                    len += 2;
+                    len += column_type.get(i);
+                    break;
+            }
+        }
+        len = 1+4+4*4+3*4+3*(len);
+        int pos = this.findBlock(len);
+        this.file.seek(2*page_size+4);
         this.file.writeInt(pos);
         this.file.writeInt(size);
         for(int i = 0; i<size; i++){
@@ -182,8 +211,6 @@ public class FileManager {
         }
         return pos;
     }
-
-
 
     private ArrayList<Integer> getKeyType(int id) throws IOException{
         ArrayList<Integer> num = new ArrayList<Integer>();
@@ -204,14 +231,25 @@ public class FileManager {
             offset += tmp*4;
             this.file.seek(offset);
         }
-        return num;
+        ArrayList<Integer> col_type = new ArrayList<Integer>();
+        this.file.seek(4);
+        int col_num = this.file.readInt();
+        for(int i = 0; i<col_num; i++){
+            this.file.readUTF();
+            col_type.add(this.file.readInt());
+        }
+        ArrayList<Integer> type = new ArrayList<Integer>();
+        for(int i = 0; i<num.size(); i++){
+            type.add(col_type.get(num.get(i)));
+        }
+        return type;
     }
 
     public int writeNewNode(int id) throws IOException {
         ArrayList<Integer> keyType = this.getKeyType(id);
         int len = 0;
         for(int i = 0; i<keyType.size(); i++){
-            switch (i){
+            switch (keyType.get(i)){
                 case -1:
                     len += 4;
                     break;
@@ -227,10 +265,18 @@ public class FileManager {
                 default:
                     len += 2;
                     len += i;
+                    /*
+                    to do string length
+                     */
                     break;
             }
         }
-        int pos = findBlock(len*3+4*4+4+1+4*3);
+        int total = len*3+4*4+4+1+4*3;
+        int pos = findBlock(total);
+        this.file.seek((pos/page_size)*page_size);
+        int block_len = this.file.readInt()+total;
+        this.file.seek((pos/page_size)*page_size);
+        this.file.writeInt(block_len);
         return pos;
     }
 
