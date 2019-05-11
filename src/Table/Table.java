@@ -1,11 +1,14 @@
 package Table;
 
 import BPlusTree.BPlusTree;
+import BPlusTree.BPlusTreeNode;
 import Exceptions.BPlusTreeException;
 import Utils.FileManager;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class Table {
     private ArrayList<String> column_name;
@@ -114,23 +117,77 @@ public class Table {
       ],
     ]
     */
-    void SelectRows(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_names){
+    ArrayList<ArrayList> SelectRows(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_names)
+            throws BPlusTreeException, IOException{
+        Set<Integer> result = new HashSet<>();
+        int offset;
         for (ArrayList<ArrayList> arr_or: conditions) {
-            if(IsKeyMatch(arr_or)){
+            int index = IsKeyMatch(arr_or);
+            if(index >= 0){
+                ArrayList key = new ArrayList();
+                for(ArrayList arr_and: arr_or)
+                    key.add(arr_and.get(2));
+                offset = this.index_forest.get(index).search(key);
 
+                BPlusTreeNode node = this.file.readNode(offset, index);
+
+                addResult(node, arr_or, result, index);
+            }else{
+                for(ArrayList arr_and: arr_or){
+                    String attr1 = (String)arr_and.get(0);
+                    int relation = (Integer)arr_and.get(1);
+                    String attr2 = (String)arr_and.get(2);
+                    boolean isPrimitive = (Boolean)arr_and.get(3);
+
+                    
+                }
             }
 
-            for(ArrayList arr_and: arr_or){
-                String attr1 = (String)arr_and.get(0);
-                int relation = (Integer)arr_and.get(1);
-                String attr2 = (String)arr_and.get(2);
-                boolean isPrimitive = (Boolean)arr_and.get(3);
-
-            }
         }
     }
 
+    void addResult(BPlusTreeNode node, ArrayList<ArrayList> arr, Set<Integer> result, int index)
+            throws BPlusTreeException, IOException{
+        for(int i = 0; i < node.keys.size(); ++i) {
+            if (node.compare(arr, node.keys.get(i)) == 0){
+                result.add(node.pointers.get(i));
+                if(i == 0 && node.leftSibling != -1) {
+                    BPlusTreeNode n = file.readNode(node.leftSibling, index);
+                    addResult(n, arr, result, index);
+                } else if(i == BPlusTree.ORDER && node.rightSibling != -1){
+                    BPlusTreeNode n = file.readNode(node.leftSibling, index);
+                    addResult(n, arr, result, index);
+                }
+            }
+
+        }
+
+    }
+
     private int IsKeyMatch(ArrayList<ArrayList> arr){
+        for(int i = 0; i < this.index_key.size(); ++i){
+
+            ArrayList<Integer> keys = this.index_key.get(i);
+
+            if(keys.size() != arr.size())
+                continue;
+
+            ArrayList<Integer> tmp = new ArrayList<>();
+            for(Integer index: keys)
+                tmp.add(index);
+
+            for(ArrayList arr_and: arr){
+                if(!(Boolean)arr_and.get(3) || (Integer)arr_and.get(1) != 0)
+                    return -1;
+                int index = this.column_name.indexOf((String)arr_and.get(0));
+                tmp.remove(index);
+            }
+
+            if(tmp.size() == 0)
+                return i;
+        }
+
+        return -1;
 
     }
 }

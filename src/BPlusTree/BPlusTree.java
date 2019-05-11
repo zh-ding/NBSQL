@@ -11,7 +11,7 @@ public class BPlusTree {
     private FileManager fm;
     private BPlusTreeNode root;
     private int ID;
-    protected static final int ORDER = 3;
+    public static final int ORDER = 3;
 
     public BPlusTree(FileManager file, int offset, boolean is_empty, int id) throws IOException {
 
@@ -29,6 +29,9 @@ public class BPlusTree {
             throws BPlusTreeException, IOException{
 
         BPlusTreeLeafNode leaf = this.findLeafNodeToInsert(key);
+        if(this.ID == 0 && leaf.contains(key))
+            throw new BPlusTreeException("Primary key error");
+
         leaf.insertKey(fm, key, offset);
 
         if(leaf.keyNum > ORDER){
@@ -37,19 +40,17 @@ public class BPlusTree {
                 this.root = node;
                 this.fm.updateRoot(ID, this.root.location);
             }
+        }else{
+            fm.updateNode(leaf);
         }
     }
 
-    //return data offset
-    public ArrayList<Integer> search(ArrayList key)
+    //return leaf offset
+    public int search(ArrayList key)
             throws BPlusTreeException, IOException{
         BPlusTreeLeafNode leaf = this.findLeafNodeToInsert(key);
 
-        int index = leaf.search(key);
-        if(index == -1)
-            return -1;
-        else
-            return leaf.pointers.get(index);
+        return leaf.location;
     }
 
     private BPlusTreeLeafNode findLeafNodeToInsert(ArrayList key)

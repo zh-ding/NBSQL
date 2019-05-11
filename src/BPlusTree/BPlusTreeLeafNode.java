@@ -33,6 +33,16 @@ public class BPlusTreeLeafNode extends BPlusTreeNode {
         return -1;
     }
 
+    public boolean contains(ArrayList key)
+            throws BPlusTreeException{
+        for(ArrayList tkey: this.keys){
+            if(this.compare(key, tkey) == 0)
+                return true;
+
+        }
+        return false;
+    }
+
     protected BPlusTreeNode split(FileManager fm) throws IOException{
         int midIndex = this.keyNum / 2;
 
@@ -62,8 +72,6 @@ public class BPlusTreeLeafNode extends BPlusTreeNode {
         while (i < this.keyNum && this.compare(key, this.keys.get(i)) > 0)
             ++i;
         this.insertAt(i, key, offset);
-
-        fm.updateNode(this);
     }
 
     private void insertAt(int i, ArrayList key, int offset){

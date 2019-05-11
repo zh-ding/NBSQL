@@ -39,11 +39,11 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
 
         int i = this.search(key);
         this.insertAt(i, key, leftChild, rightNode);
-        fm.updateNode(this);
 
         if(this.keyNum > BPlusTree.ORDER)
             return this.dealOverflow(fm);
         else{
+            fm.updateNode(this);
             if(this.parent == -1)
                 return null;
             else
