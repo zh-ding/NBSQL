@@ -45,9 +45,9 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
         else{
             fm.updateNode(this);
             if(this.parent == -1)
-                return null;
+                return this;
             else
-                return fm.readNode(this.parent, this.id);
+                return null;
         }
 
     }

@@ -329,7 +329,7 @@ public class FileManager {
         for(int i = 0; i<keyNum; i++){
             ArrayList tmpKey = new ArrayList();
             for(int j = 0; j<keyType.size(); j++){
-                switch (keyType.get(i)) {
+                switch (keyType.get(j)) {
                     case -1:
                         tmpKey.add(this.file.readInt());
                         break;
@@ -372,7 +372,7 @@ public class FileManager {
         int index_num = this.file.readInt();
         offset += 4;
         for(int i = 0; i<index_num; i++){
-            if(i+1 == id){
+            if(i == id){
                 this.file.writeInt(location);
                 break;
             }
