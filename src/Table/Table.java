@@ -1,91 +1,95 @@
 package Table;
 
+import BPlusTree.BPlusTree;
+import Exceptions.BPlusTreeException;
+import Utils.FileManager;
+
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.ArrayList;
 
 public class Table {
     private ArrayList<String> column_name;
     /*
-    0: int
-    1: long
-    2: float
-    3: double
-    4: String
+    -1: int
+    -2: long
+    -3: float
+    -4: double
+    n (n > 0): String, max_length = 0
      */
+    private ArrayList<ArrayList<Integer>> index_key;
+    private ArrayList<BPlusTree> index_forest;
     private ArrayList<Integer> column_type;
     private int primary_key_index = 0;
     private int col_num = 0;
-    private RandomAccessFile file;
     private int index_num = 1;
+    private FileManager file;
 
-    private static final int page_size = 1024 * 4;
-    private static final int header_page_num = 4;
 
-    Table(String[] names, int[] types, String primary_key, String table_name)
+    public Table(String[] names, int[] types, String[] primary_key, String table_name)
         throws IOException {
 
-        this.col_num = names.length;
+        this.file = new FileManager(table_name);
 
+        this.col_num = names.length+1;
+        this.index_key = new ArrayList<>();
+        this.index_forest = new ArrayList<>();
         this.column_name = new ArrayList<>();
         this.column_type = new ArrayList<>();
         this.column_name.add("id");
         this.column_type.add(0);
-
-
+        ArrayList<Integer> tmp = new ArrayList<>();
         for(int i = 0; i < names.length; ++i) {
             this.column_name.add(names[i]);
             this.column_type.add(types[i]);
-            if (names[i] == primary_key)
-                primary_key_index = i + 1;
+            for(int j = 0; j<primary_key.length; j++){
+                if(names[i] == primary_key[j]){
+                    tmp.add(i+1);
+                }
+            }
         }
+        if(tmp.size() == 0){
+            tmp.add(0);
+        }
+        this.index_key.add(tmp);
+        int pos = this.file.writeTableHeader(this.col_num, this.index_num, tmp.size() ,column_name, column_type, tmp);
+        BPlusTree index_tree = new BPlusTree(file, pos, true, 1);
+        index_forest.add(index_tree);
 
-        String path = table_name + ".dat";
-        this.file = new RandomAccessFile(path, "rw");
-
-        writeTableHeader();
     }
 
-    Table(String table_name)
+    public Table(String table_name)
         throws IOException{
 
         this.column_name = new ArrayList<>();
         this.column_type = new ArrayList<>();
-
-        readTableHeader();
-
-    }
-
-    void writeTableHeader() throws IOException{
-
-        this.file.seek(0);
-
-        this.file.writeInt(this.col_num);
-        for(int i = 0; i < this.col_num; ++i){
-            this.file.writeUTF(this.column_name.get(i));
-            this.file.writeInt(this.column_type.get(i));
+        this.col_num = this.file.readTableHeader(this.column_name, this.column_type);
+        ArrayList<Integer> tmp = this.file.readIndexForest();
+        this.index_num = tmp.get(0);
+        int i = 0;
+        while(i<this.index_num) {
+            i++;
+            BPlusTree tmp_tree = new BPlusTree(file, tmp.get(i), false, i);
+            index_forest.add(tmp_tree);
+            i++;
+            ArrayList<Integer> m_tmp = new ArrayList<Integer>();
+            int j = 0;
+            for( ; j<tmp.get(i); j++){
+                m_tmp.add(tmp.get(i+j+1));
+            }
+            i = i+j;
+            index_key.add(m_tmp);
         }
-
-        this.file.writeInt(this.index_num);
-
     }
 
-    void readTableHeader() throws IOException{
-
-        this.file.seek(0);
-
-        this.col_num = this.file.readInt();
-        for(int i = 0; i < this.col_num; ++i){
-            this.column_name.add(this.file.readUTF());
-            this.column_type.add(this.file.readInt());
+    void InsertRow(ArrayList row)
+            throws IOException, BPlusTreeException {
+        int offset = file.writeValue(row);
+        for(int i = 0; i < this.index_forest.size(); ++i){
+            ArrayList key = new ArrayList();
+            for(int j = 0; j < this.index_key.get(i).size(); ++j)
+                key.add(row.get(this.index_key.get(i).get(j)));
+            index_forest.get(i).insert(key, offset);
         }
-
-        this.index_num = this.file.readInt();
-
-    }
-
-    void InsertRow(){
-
     }
 
     void DeleteRow(){

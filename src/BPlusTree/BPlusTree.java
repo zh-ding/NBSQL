@@ -1,24 +1,66 @@
 package BPlusTree;
 
-import Table.TableFile;
+import Exceptions.BPlusTreeException;
+import Utils.FileManager;
 
-import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 
 public class BPlusTree {
 
+    private FileManager fm;
     private BPlusTreeNode root;
-    public TableFile tablefile;
+    private int ID;
+    protected static final int ORDER = 3;
 
-    public BPlusTree(String name){
-        String path = name + ".dat";
-        File f = new File(path);
-        if(f.exists()){
+    public BPlusTree(FileManager file, int offset, boolean is_empty, int id) throws IOException {
 
+        this.fm = file;
+        this.ID = id;
+
+        if(is_empty){
+            this.root = new BPlusTreeLeafNode(fm, ID);
+        }else {
+            this.root = fm.readNode(offset, this.ID);
         }
     }
 
-    public BPlusTree() throws IOException {
+    public void insert(ArrayList key, int offset)
+            throws BPlusTreeException, IOException{
 
+        BPlusTreeLeafNode leaf = this.findLeafNodeToInsert(key);
+        leaf.insertKey(fm, key, offset);
+
+        if(leaf.keyNum > ORDER){
+            BPlusTreeNode node = leaf.dealOverflow(fm);
+            if(node != null){
+                this.root = node;
+                this.fm.updateRoot(ID, this.root.location);
+            }
+        }
     }
+
+    //return data offset
+    public int search(ArrayList key)
+            throws BPlusTreeException, IOException{
+        BPlusTreeLeafNode leaf = this.findLeafNodeToInsert(key);
+
+        int index = leaf.search(key);
+        if(index == -1)
+            return -1;
+        else
+            return leaf.pointers.get(index);
+    }
+
+    private BPlusTreeLeafNode findLeafNodeToInsert(ArrayList key)
+            throws BPlusTreeException, IOException{
+
+        BPlusTreeNode node = this.root;
+        while (!node.isLeafNode) {
+            node = fm.readNode(node.pointers.get(node.search(key)), this.ID);
+        }
+
+        return (BPlusTreeLeafNode)node;
+    }
+
 }
