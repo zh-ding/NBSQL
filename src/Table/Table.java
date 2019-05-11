@@ -1,9 +1,11 @@
 package Table;
 
+import BPlusTree.BPlusTree;
+import Exceptions.BPlusTreeException;
+import Utils.FileManager;
+
 import java.io.IOException;
 import java.util.ArrayList;
-import Utils.FileManager;
-import BPlusTree.BPlusTree;
 
 public class Table {
     private ArrayList<String> column_name;
@@ -14,7 +16,7 @@ public class Table {
     -4: double
     n (n > 0): String, max_length = 0
      */
-    private ArrayList<ArrayList> index_key;
+    private ArrayList<ArrayList<Integer>> index_key;
     private ArrayList<BPlusTree> index_forest;
     private ArrayList<Integer> column_type;
     private int primary_key_index = 0;
@@ -79,8 +81,15 @@ public class Table {
         }
     }
 
-    void InsertRow(){
-
+    void InsertRow(ArrayList row)
+            throws IOException, BPlusTreeException {
+        int offset = file.writeValue(row);
+        for(int i = 0; i < this.index_forest.size(); ++i){
+            ArrayList key = new ArrayList();
+            for(int j = 0; j < this.index_key.get(i).size(); ++j)
+                key.add(row.get(this.index_key.get(i).get(j)));
+            index_forest.get(i).insert(key, offset);
+        }
     }
 
     void DeleteRow(){

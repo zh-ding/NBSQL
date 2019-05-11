@@ -1,8 +1,8 @@
-package BPlusTree;
+package Exceptions;
 
 public class BPlusTreeException extends Exception {
 
-    BPlusTreeException(String message){
+    public BPlusTreeException(String message){
         super(message);
     }
 }

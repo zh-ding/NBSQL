@@ -1,5 +1,6 @@
 package BPlusTree;
 
+import Exceptions.BPlusTreeException;
 import Utils.FileManager;
 
 import java.io.IOException;
@@ -24,11 +25,10 @@ public class BPlusTree {
         }
     }
 
-    public void insert(ArrayList key, ArrayList value)
+    public void insert(ArrayList key, int offset)
             throws BPlusTreeException, IOException{
 
         BPlusTreeLeafNode leaf = this.findLeafNodeToInsert(key);
-        int offset = fm.writeValue(value);
         leaf.insertKey(fm, key, offset);
 
         if(leaf.keyNum > ORDER){

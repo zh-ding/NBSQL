@@ -1,5 +1,6 @@
 package BPlusTree;
 
+import Exceptions.BPlusTreeException;
 import Utils.FileManager;
 
 import java.io.IOException;
@@ -18,7 +19,7 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
     }
 
     public int search(ArrayList key)
-            throws BPlusTreeException{
+            throws BPlusTreeException {
 
         int i = 0;
         for(i = 0; i < this.keys.size(); ++i){
