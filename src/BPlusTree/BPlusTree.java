@@ -17,7 +17,7 @@ public class BPlusTree {
         this.ID = id;
 
         if(is_empty){
-            this.root = new BPlusTreeLeafNode(fm);
+            this.root = new BPlusTreeLeafNode(fm, ID);
         }else {
             this.root = fm.readNode(offset);
         }

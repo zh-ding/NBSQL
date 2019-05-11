@@ -7,12 +7,13 @@ import java.util.ArrayList;
 public class BPlusTreeInnerNode extends BPlusTreeNode {
 
     public BPlusTreeInnerNode(ArrayList<ArrayList> keys, ArrayList<Integer> pointers, int parent,
-                             int leftSibling, int rightSibling, int keyNum, int location, boolean isLeafNode){
-        super(keys, pointers, parent, leftSibling, rightSibling, keyNum, location, isLeafNode);
+                              int leftSibling, int rightSibling, int keyNum, int location,
+                              boolean isLeafNode, int id){
+        super(keys, pointers, parent, leftSibling, rightSibling, keyNum, location, isLeafNode, id);
     }
 
-    public BPlusTreeInnerNode(FileManager fm){
-        super(fm);
+    public BPlusTreeInnerNode(FileManager fm, int id){
+        super(fm, id);
     }
 
     public int search(ArrayList key)
@@ -52,7 +53,7 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
     protected BPlusTreeNode split(FileManager fm) {
         int midIndex = this.keyNum / 2;
 
-        BPlusTreeInnerNode newRNode = new BPlusTreeInnerNode(fm);
+        BPlusTreeInnerNode newRNode = new BPlusTreeInnerNode(fm, this.id);
         for (int i = midIndex + 1; i < this.keyNum; ++i) {
             newRNode.keys.add(this.keys.get(i));
         }
