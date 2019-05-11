@@ -15,7 +15,7 @@ import java.util.Iterator;
 public class FileManager {
 
     private RandomAccessFile file;
-    private File inputFile;
+    private String inputFile;
     private FileChannel fc;
     private ByteBuffer bb;
     private final int blockSize = 1024;
@@ -32,7 +32,7 @@ public class FileManager {
     private static final int page_header_len = 4;
 
     public FileManager(String name) throws IOException{
-        this.inputFile = new File(name);
+        this.inputFile = name + ".dat";
         try {
             this.file = new RandomAccessFile(inputFile, "rw");
         } catch (FileNotFoundException e) {
@@ -389,13 +389,12 @@ public class FileManager {
     public void resetReadWriteCounter(){
     }
 
-    public boolean deleteFile(){
+    public void deleteFile(){
         try {
             file.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return inputFile.delete();
     }
 
     public void close() throws IOException {

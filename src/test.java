@@ -1,28 +1,18 @@
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.util.ArrayList;
-import java.util.Iterator;
+import Table.Table;
 
 
 public class test {
     public static void main(String[] args) throws IOException {
+        int[] a = new int[2];
+        a[0] = -1;
+        a[1] = -1;
+        String[] s = new String[2];
+        s[0] = "m_id";
+        s[1] = "name";
+        String[] p = new String[1];
+        p[0] = "m_id";
+        Table table = new Table(s, a, p, "test");
 
-        ArrayList b = new ArrayList();
-        long fff = 1;
-        b.add(5);
-        b.add("s");
-        b.add(fff);
-        Iterator data = b.iterator();
-        while(data.hasNext()){
-            System.out.print( data.next().toString());
-            System.out.print(1);
-        }
-        RandomAccessFile file = new RandomAccessFile("test.txt","rw");
-        file.seek(0);
-        file.writeInt(1);
-        file.writeInt(2);
-        file.seek(0);
-        System.out.println(file.readInt());
-        System.out.println(file.readInt());
     }
 }

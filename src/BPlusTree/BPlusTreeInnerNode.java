@@ -2,6 +2,7 @@ package BPlusTree;
 
 import Utils.FileManager;
 
+import java.io.IOException;
 import java.util.ArrayList;
 
 public class BPlusTreeInnerNode extends BPlusTreeNode {
@@ -12,7 +13,7 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
         super(keys, pointers, parent, leftSibling, rightSibling, keyNum, location, isLeafNode, id);
     }
 
-    public BPlusTreeInnerNode(FileManager fm, int id){
+    public BPlusTreeInnerNode(FileManager fm, int id)throws IOException {
         super(fm, id);
     }
 
@@ -33,7 +34,7 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
 
     protected BPlusTreeNode pushUpKey(FileManager fm, ArrayList key,
                                       BPlusTreeNode leftChild, BPlusTreeNode rightNode)
-            throws BPlusTreeException{
+            throws BPlusTreeException, IOException{
 
         int i = this.search(key);
         this.insertAt(i, key, leftChild, rightNode);
@@ -50,7 +51,7 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
 
     }
 
-    protected BPlusTreeNode split(FileManager fm) {
+    protected BPlusTreeNode split(FileManager fm) throws IOException{
         int midIndex = this.keyNum / 2;
 
         BPlusTreeInnerNode newRNode = new BPlusTreeInnerNode(fm, this.id);

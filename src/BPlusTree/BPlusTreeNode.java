@@ -59,11 +59,11 @@ public abstract class BPlusTreeNode{
 
     public abstract int search(ArrayList key) throws BPlusTreeException;
 
-    protected abstract BPlusTreeNode split(FileManager fm);
+    protected abstract BPlusTreeNode split(FileManager fm) throws IOException;
 
     protected abstract BPlusTreeNode pushUpKey(FileManager fm, ArrayList key,
                                                BPlusTreeNode leftChild, BPlusTreeNode rightNode)
-            throws BPlusTreeException;
+            throws BPlusTreeException, IOException;
 
     public BPlusTreeNode dealOverflow(FileManager fm)
             throws BPlusTreeException, IOException{
