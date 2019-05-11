@@ -60,7 +60,7 @@ public class FileManager {
 
     public ArrayList<Integer> getType(ArrayList value){
         ArrayList<Integer> valueType = new ArrayList<Integer>();
-        for(int i = 0; i<valueType.size(); i++){
+        for(int i = 0; i<value.size(); i++){
             if(value.get(i) instanceof Integer){
                 valueType.add(-1);
             }
@@ -165,7 +165,9 @@ public class FileManager {
                 }
             }
         }
-        this.file.writeInt(node.pointers.get(node.keyNum));
+        if(node.isLeafNode == false){
+            this.file.writeInt(node.pointers.get(node.keyNum));
+        }
     }
 
     public int writeTableHeader(int col_num, int index_num, int size, ArrayList<String> column_name,
@@ -245,7 +247,7 @@ public class FileManager {
         return type;
     }
 
-    public int writeNewNode(int id) throws IOException {
+    public int writeNewNode(int id, boolean isleafnode) throws IOException {
         ArrayList<Integer> keyType = this.getKeyType(id);
         int len = 0;
         for(int i = 0; i<keyType.size(); i++){
@@ -273,6 +275,8 @@ public class FileManager {
         }
         int total = len*3+4*4+4+1+4*3;
         int pos = findBlock(total);
+        this.file.seek(pos);
+        this.file.writeBoolean(isleafnode);
         this.file.seek((pos/page_size)*page_size);
         int block_len = this.file.readInt()+total;
         this.file.seek((pos/page_size)*page_size);

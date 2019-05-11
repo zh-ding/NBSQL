@@ -41,16 +41,16 @@ public class BPlusTree {
     }
 
     //return data offset
-    public ArrayList<Integer> search(ArrayList key)
-            throws BPlusTreeException, IOException{
-        BPlusTreeLeafNode leaf = this.findLeafNodeToInsert(key);
-
-        int index = leaf.search(key);
-        if(index == -1)
-            return -1;
-        else
-            return leaf.pointers.get(index);
-    }
+//    public ArrayList<Integer> search(ArrayList key)
+//            throws BPlusTreeException, IOException{
+//        BPlusTreeLeafNode leaf = this.findLeafNodeToInsert(key);
+//
+//        int index = leaf.search(key);
+//        if(index == -1)
+//            return -1;
+//        else
+//            return leaf.pointers.get(index);
+//    }
 
     private BPlusTreeLeafNode findLeafNodeToInsert(ArrayList key)
             throws BPlusTreeException, IOException{

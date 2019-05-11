@@ -114,23 +114,23 @@ public class Table {
       ],
     ]
     */
-    void SelectRows(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_names){
-        for (ArrayList<ArrayList> arr_or: conditions) {
-            if(IsKeyMatch(arr_or)){
-
-            }
-
-            for(ArrayList arr_and: arr_or){
-                String attr1 = (String)arr_and.get(0);
-                int relation = (Integer)arr_and.get(1);
-                String attr2 = (String)arr_and.get(2);
-                boolean isPrimitive = (Boolean)arr_and.get(3);
-
-            }
-        }
-    }
-
-    private int IsKeyMatch(ArrayList<ArrayList> arr){
-
-    }
+//    void SelectRows(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_names){
+//        for (ArrayList<ArrayList> arr_or: conditions) {
+//            if(IsKeyMatch(arr_or)){
+//
+//            }
+//
+//            for(ArrayList arr_and: arr_or){
+//                String attr1 = (String)arr_and.get(0);
+//                int relation = (Integer)arr_and.get(1);
+//                String attr2 = (String)arr_and.get(2);
+//                boolean isPrimitive = (Boolean)arr_and.get(3);
+//
+//            }
+//        }
+//    }
+//
+//    private int IsKeyMatch(ArrayList<ArrayList> arr){
+//
+//    }
 }
