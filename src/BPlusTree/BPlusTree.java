@@ -41,7 +41,7 @@ public class BPlusTree {
     }
 
     //return data offset
-    public int search(ArrayList key)
+    public ArrayList<Integer> search(ArrayList key)
             throws BPlusTreeException, IOException{
         BPlusTreeLeafNode leaf = this.findLeafNodeToInsert(key);
 

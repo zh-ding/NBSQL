@@ -33,13 +33,14 @@ public abstract class BPlusTreeNode{
         this.id = id;
     }
 
-    BPlusTreeNode(FileManager fm, int id) throws IOException {
+    BPlusTreeNode(FileManager fm, int id, boolean isLeafNode) throws IOException {
         this.keys = new ArrayList<>();
         this.pointers = new ArrayList<>();
         parent = -1;
         leftSibling = -1;
         rightSibling = -1;
-        this.location = fm.writeNewNode(id);
+        this.isLeafNode = isLeafNode;
+        this.location = fm.writeNewNode(id, isLeafNode);
     }
 
     public void setParent(FileManager fm, int offset)throws IOException{

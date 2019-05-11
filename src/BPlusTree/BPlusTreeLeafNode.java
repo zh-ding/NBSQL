@@ -16,7 +16,7 @@ public class BPlusTreeLeafNode extends BPlusTreeNode {
     }
 
     BPlusTreeLeafNode(FileManager fm, int id) throws IOException {
-        super(fm, id);
+        super(fm, id, true);
     }
 
     public int search(ArrayList key)

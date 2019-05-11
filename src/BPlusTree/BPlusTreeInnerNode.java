@@ -15,7 +15,7 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
     }
 
     public BPlusTreeInnerNode(FileManager fm, int id)throws IOException {
-        super(fm, id);
+        super(fm, id, false);
     }
 
     public int search(ArrayList key)
