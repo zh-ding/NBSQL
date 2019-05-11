@@ -278,6 +278,10 @@ public class FileManager {
         this.file.seek(pos);
         this.file.writeBoolean(isleafnode);
         this.file.writeInt(0);
+        this.file.seek(pos+1+4+4*4+3*len);
+        this.file.writeInt(-1);
+        this.file.writeInt(-1);
+        this.file.writeInt(-1);
         this.file.seek((pos/page_size)*page_size);
         int block_len = this.file.readInt()+total;
         this.file.seek((pos/page_size)*page_size);
@@ -286,6 +290,28 @@ public class FileManager {
     }
 
     public BPlusTreeNode readNode(int offset, int id) throws IOException{
+        ArrayList<Integer> keyType = getKeyType(id);
+        int len = 0;
+        for(int i = 0; i<keyType.size(); i++){
+            switch (keyType.get(i)) {
+                case -1:
+                    len += 4;
+                    break;
+                case -2:
+                    len += 8;
+                    break;
+                case -3:
+                    len += 4;
+                    break;
+                case -4:
+                    len += 8;
+                    break;
+                default:
+                    len += 2;
+                    len += keyType.get(i);
+                    break;
+            }
+        }
         ArrayList<ArrayList> keys = new ArrayList<ArrayList>();
         ArrayList<Integer> pointers = new ArrayList<Integer>();
         int parent;
@@ -297,8 +323,9 @@ public class FileManager {
         this.file.seek(offset);
         isLeafNode = this.file.readBoolean();
         keyNum = this.file.readInt();
-        pointers.add(this.file.readInt());
-        ArrayList<Integer> keyType = getKeyType(id);
+        if(keyNum != 0){
+            pointers.add(this.file.readInt());
+        }
         for(int i = 0; i<keyNum; i++){
             ArrayList tmpKey = new ArrayList();
             for(int j = 0; j<keyType.size(); j++){
@@ -323,6 +350,7 @@ public class FileManager {
             keys.add(tmpKey);
             pointers.add(this.file.readInt());
         }
+        this.file.seek(offset+1+4+4*4+3*len);
         parent = this.file.readInt();
         leftSibling = this.file.readInt();
         rightSibling = this.file.readInt();
