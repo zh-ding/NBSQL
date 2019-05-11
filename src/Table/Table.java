@@ -55,9 +55,8 @@ public class Table {
         }
         this.index_key.add(tmp);
         int pos = this.file.writeTableHeader(this.col_num, this.index_num, tmp.size() ,column_name, column_type, tmp, auto_id);
-        BPlusTree index_tree = new BPlusTree(file, pos, true, 1);
+        BPlusTree index_tree = new BPlusTree(file, pos, true, 0);
         index_forest.add(index_tree);
-
     }
 
     public Table(String table_name)
@@ -190,4 +189,5 @@ public class Table {
         return -1;
 
     }
+
 }
