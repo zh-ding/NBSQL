@@ -19,7 +19,7 @@ public class Table {
     private ArrayList<ArrayList<Integer>> index_key;
     private ArrayList<BPlusTree> index_forest;
     private ArrayList<Integer> column_type;
-    private int primary_key_index = 0;
+    private int auto_id = 0;
     private int col_num = 0;
     private int index_num = 1;
     private FileManager file;
@@ -36,7 +36,7 @@ public class Table {
         this.column_name = new ArrayList<>();
         this.column_type = new ArrayList<>();
         this.column_name.add("id");
-        this.column_type.add(0);
+        this.column_type.add(-1);
         ArrayList<Integer> tmp = new ArrayList<>();
         for(int i = 0; i < names.length; ++i) {
             this.column_name.add(names[i]);
@@ -51,7 +51,7 @@ public class Table {
             tmp.add(0);
         }
         this.index_key.add(tmp);
-        int pos = this.file.writeTableHeader(this.col_num, this.index_num, tmp.size() ,column_name, column_type, tmp);
+        int pos = this.file.writeTableHeader(this.col_num, this.index_num, tmp.size() ,column_name, column_type, tmp, auto_id);
         BPlusTree index_tree = new BPlusTree(file, pos, true, 1);
         index_forest.add(index_tree);
 
@@ -81,8 +81,10 @@ public class Table {
         }
     }
 
-    void InsertRow(ArrayList row)
+    public void InsertRow(ArrayList row)
             throws IOException, BPlusTreeException {
+        auto_id ++;
+        row.add(0, auto_id);
         int offset = file.writeValue(row);
         for(int i = 0; i < this.index_forest.size(); ++i){
             ArrayList key = new ArrayList();
