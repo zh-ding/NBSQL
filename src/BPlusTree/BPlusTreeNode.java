@@ -81,12 +81,12 @@ public abstract class BPlusTreeNode{
         newRNode.setLeftSibling(fm, this.location);
         newRNode.setRightSibling(fm, this.rightSibling);
         if (this.rightSibling != -1){
-            BPlusTreeNode node = fm.readNode(this.rightSibling);
+            BPlusTreeNode node = fm.readNode(this.rightSibling, this.id);
             node.setLeftSibling(fm, newRNode.location);
         }
         this.setRightSibling(fm, newRNode.location);
 
-        BPlusTreeNode node = fm.readNode(this.parent);
+        BPlusTreeNode node = fm.readNode(this.parent, this.id);
         return node.pushUpKey(fm, upKey, this, newRNode);
     }
 

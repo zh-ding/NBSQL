@@ -45,7 +45,7 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
             if(this.parent == -1)
                 return null;
             else
-                return fm.readNode(this.parent);
+                return fm.readNode(this.parent, this.id);
         }
 
     }
@@ -64,7 +64,7 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
         for (int i = midIndex + 1; i <= this.keyNum; ++i) {
             newRNode.pointers.add(this.pointers.get(i));
 
-            BPlusTreeNode node = fm.readNode(this.pointers.get(i));
+            BPlusTreeNode node = fm.readNode(this.pointers.get(i), this.id);
             node.setParent(fm, newRNode.location);
         }
 

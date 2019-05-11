@@ -19,7 +19,7 @@ public class BPlusTree {
         if(is_empty){
             this.root = new BPlusTreeLeafNode(fm, ID);
         }else {
-            this.root = fm.readNode(offset);
+            this.root = fm.readNode(offset, this.id);
         }
     }
 
@@ -56,7 +56,7 @@ public class BPlusTree {
 
         BPlusTreeNode node = this.root;
         while (!node.isLeafNode) {
-            node = fm.readNode(node.pointers.get(node.search(key)));
+            node = fm.readNode(node.pointers.get(node.search(key)), this.id);
         }
 
         return (BPlusTreeLeafNode)node;
