@@ -7,18 +7,20 @@ import java.util.ArrayList;
 
 public abstract class BPlusTreeNode{
 
-    protected ArrayList<ArrayList> keys;
-    protected ArrayList<Integer> pointers;
-    protected int parent;
-    protected int leftSibling;
-    protected int rightSibling;
+    public ArrayList<ArrayList> keys;
+    public ArrayList<Integer> pointers;
+    public int parent;
+    public int leftSibling;
+    public int rightSibling;
     public boolean isLeafNode;
-    protected int keyNum;
-    protected int location;
+    public int keyNum;
+    public int location;
+    public int id;
 
 
     public BPlusTreeNode(ArrayList<ArrayList> keys, ArrayList<Integer> pointers, int parent,
-                         int leftSibling, int rightSibling, int keyNum, int location, boolean isLeafNode){
+                         int leftSibling, int rightSibling, int keyNum, int location,
+                         boolean isLeafNode, int id){
         this.keys = keys;
         this.pointers = pointers;
         this.parent = parent;
@@ -27,15 +29,16 @@ public abstract class BPlusTreeNode{
         this.keyNum = keyNum;
         this.location = location;
         this.isLeafNode = isLeafNode;
+        this.id = id;
     }
 
-    BPlusTreeNode(FileManager fm){
+    BPlusTreeNode(FileManager fm, int id){
         this.keys = new ArrayList<>();
         this.pointers = new ArrayList<>();
         parent = -1;
         leftSibling = -1;
         rightSibling = -1;
-        this.location = fm.writeNewNode();
+        this.location = fm.writeNewNode(id);
     }
 
     public void setParent(FileManager fm, int offset){
@@ -70,7 +73,7 @@ public abstract class BPlusTreeNode{
         BPlusTreeNode newRNode = this.split(fm);
 
         if (this.parent == -1) {
-            BPlusTreeInnerNode node = new BPlusTreeInnerNode(fm);
+            BPlusTreeInnerNode node = new BPlusTreeInnerNode(fm, this.id);
             this.setParent(fm, node.location);
         }
         newRNode.parent = this.parent;
@@ -78,12 +81,12 @@ public abstract class BPlusTreeNode{
         newRNode.setLeftSibling(fm, this.location);
         newRNode.setRightSibling(fm, this.rightSibling);
         if (this.rightSibling != -1){
-            BPlusTreeNode node = fm.readNode(this.rightSibling);
+            BPlusTreeNode node = fm.readNode(this.rightSibling, this.id);
             node.setLeftSibling(fm, newRNode.location);
         }
         this.setRightSibling(fm, newRNode.location);
 
-        BPlusTreeNode node = fm.readNode(this.parent);
+        BPlusTreeNode node = fm.readNode(this.parent, this.id);
         return node.pushUpKey(fm, upKey, this, newRNode);
     }
 
