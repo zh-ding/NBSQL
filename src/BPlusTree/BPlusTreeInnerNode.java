@@ -6,6 +6,11 @@ import java.util.ArrayList;
 
 public class BPlusTreeInnerNode extends BPlusTreeNode {
 
+    public BPlusTreeInnerNode(ArrayList<ArrayList> keys, ArrayList<Integer> pointers, int parent,
+                             int leftSibling, int rightSibling, int keyNum, int location, boolean isLeafNode){
+        super(keys, pointers, parent, leftSibling, rightSibling, keyNum, location, isLeafNode);
+    }
+
     public BPlusTreeInnerNode(FileManager fm){
         super(fm);
     }

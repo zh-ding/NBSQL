@@ -16,6 +16,19 @@ public abstract class BPlusTreeNode{
     protected int keyNum;
     protected int location;
 
+
+    public BPlusTreeNode(ArrayList<ArrayList> keys, ArrayList<Integer> pointers, int parent,
+                         int leftSibling, int rightSibling, int keyNum, int location, boolean isLeafNode){
+        this.keys = keys;
+        this.pointers = pointers;
+        this.parent = parent;
+        this.leftSibling = leftSibling;
+        this.rightSibling = rightSibling;
+        this.keyNum = keyNum;
+        this.location = location;
+        this.isLeafNode = isLeafNode;
+    }
+
     BPlusTreeNode(FileManager fm){
         this.keys = new ArrayList<>();
         this.pointers = new ArrayList<>();

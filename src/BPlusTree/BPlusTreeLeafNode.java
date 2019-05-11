@@ -6,6 +6,11 @@ import java.util.ArrayList;
 
 public class BPlusTreeLeafNode extends BPlusTreeNode {
 
+    public BPlusTreeLeafNode(ArrayList<ArrayList> keys, ArrayList<Integer> pointers, int parent,
+                         int leftSibling, int rightSibling, int keyNum, int location, boolean isLeafNode){
+        super(keys, pointers, parent, leftSibling, rightSibling, keyNum, location, isLeafNode);
+    }
+
     BPlusTreeLeafNode(FileManager fm){
         super(fm);
     }
@@ -31,8 +36,6 @@ public class BPlusTreeLeafNode extends BPlusTreeNode {
         for (int i = midIndex; i < this.keyNum; ++i) {
             newRNode.keys.add(this.keys.get(i));
             newRNode.pointers.add(this.pointers.get(i));
-            this.setKey(i, null);
-            this.setValue(i, null);
         }
 
         for (int i = midIndex; i < this.keyNum; ++i){

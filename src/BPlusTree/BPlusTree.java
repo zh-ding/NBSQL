@@ -7,9 +7,6 @@ import java.util.ArrayList;
 public class BPlusTree {
 
     private FileManager fm;
-    private static byte[] headerBytes;
-    static BPlusTreeNode temporaryParent;
-    private int TREE_LEVEL;
     private BPlusTreeNode root;
     private int ID;
     protected static final int ORDER = 3;
