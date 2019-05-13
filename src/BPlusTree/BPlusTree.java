@@ -53,6 +53,37 @@ public class BPlusTree {
         return leaf.location;
     }
 
+    public void printBPlusTree()
+            throws IOException{
+
+        printBPlusTree(this.root);
+    }
+
+    public BPlusTreeLeafNode getMostLeftLeafNode()
+            throws IOException{
+        return getMostLeftLeafNode(this.root);
+    }
+
+    private void printBPlusTree(BPlusTreeNode node)
+            throws IOException{
+
+        node.print();
+        if(node.isLeafNode)
+            return;
+        for(Integer offset:node.pointers){
+            BPlusTreeNode n = fm.readNode(offset, this.ID);
+            printBPlusTree(n);
+        }
+    }
+
+    private BPlusTreeLeafNode getMostLeftLeafNode(BPlusTreeNode node)
+            throws IOException{
+        if(node.isLeafNode)
+            return (BPlusTreeLeafNode) node;
+        node = fm.readNode(node.pointers.get(0), this.ID);
+        return getMostLeftLeafNode(node);
+    }
+
 
     private BPlusTreeLeafNode findLeafNodeToInsert(ArrayList key)
             throws BPlusTreeException, IOException{

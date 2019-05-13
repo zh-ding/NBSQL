@@ -1,7 +1,6 @@
 package Table;
 
 import BPlusTree.BPlusTree;
-import BPlusTree.BPlusTreeNode;
 import Exceptions.BPlusTreeException;
 import Utils.FileManager;
 
@@ -125,20 +124,50 @@ public class Table {
             if(index >= 0){
                 ArrayList key = new ArrayList();
                 for(ArrayList arr_and: arr_or)
-                    key.add(arr_and.get(2));
+                    this.addKey(arr_and, key);
                 offset = this.index_forest.get(index).search(key);
 
                 BPlusTreeNode node = this.file.readNode(offset, index);
 
                 addResult(node, arr_or, result, index);
             }else{
+                Set<Integer> arr1 = new HashSet<>();
+                Set<Integer> arr2 = new HashSet<>();
+                Boolean isFirst = true;
+
                 for(ArrayList arr_and: arr_or){
                     String attr1 = (String)arr_and.get(0);
                     int relation = (Integer)arr_and.get(1);
-                    String attr2 = (String)arr_and.get(2);
                     boolean isPrimitive = (Boolean)arr_and.get(3);
 
-                    
+                    if(isPrimitive && relation != 5){
+                        int col = column_name.indexOf(attr1);
+                        for(index = 0; index < this.index_key.size(); ++index)
+                            if(attr1 == this.column_name.get(this.index_key.get(index).get(0)))
+                                break;
+
+                        if(index < this.index_key.size()){
+
+                            ArrayList key = new ArrayList();
+                            this.addKey(arr_and, key);
+                            this.addRandomKey(index, key);
+
+                            offset = this.index_forest.get(index).search(key);
+                            BPlusTreeNode node = this.file.readNode(offset, index);
+
+                            addResult(node, arr_and, arr1, arr2, isFirst, relation, index);
+                        }else{
+                            addResultWoIndex(this.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
+
+                        }
+
+                    }else{
+
+                    }
+
+                    isFirst = false;
+
+
                 }
             }
 
@@ -153,11 +182,77 @@ public class Table {
                 if(i == 0 && node.leftSibling != -1) {
                     BPlusTreeNode n = file.readNode(node.leftSibling, index);
                     addResult(n, arr, result, index);
-                } else if(i == BPlusTree.ORDER && node.rightSibling != -1){
+                } else if(i == node.keys.size() - 1 && node.rightSibling != -1){
                     BPlusTreeNode n = file.readNode(node.leftSibling, index);
                     addResult(n, arr, result, index);
                 }
             }
+
+        }
+
+    }
+
+    void addResult(BPlusTreeNode node, ArrayList arr, Set<Integer> arr1, Set<Integer> arr2,
+                   boolean isFirst, int relation, int index)
+            throws BPlusTreeException, IOException{
+
+        for(int i = 0; i < node.keys.size(); ++i) {
+            ArrayList key1 = new ArrayList();
+            this.addKey(arr, key1);
+            for(int j = 1; j < node.keys.get(i).size(); ++i)
+                key1.add(node.keys.get(i).get(j));
+
+            int cmp = node.compare(key1, node.keys.get(i));
+
+            if(cmp == 0){
+                if(relation == 0 || relation == 3 || relation == 4){
+                    if(isFirst || arr1.contains(node.location))
+                        arr2.add(node.location);
+                    if(i == 0 && node.leftSibling != -1)
+                        addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                    else if(i == node.keys.size() - 1 && node.rightSibling != -1)
+                        addResult(this.file.readNode(node.rightSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                }else if(relation == 1 && i == 0 && node.leftSibling != -1){
+                    addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                }else if(relation == 2 && i == node.keys.size() - 1 && node.rightSibling != -1){
+                    addResult(this.file.readNode(node.rightSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                }
+            }else if(cmp < 0){
+                if(relation == 0 && i == 0 && node.leftSibling != -1)
+                    addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                else if(relation == 1 || relation == 3){
+                    if(i == 0 && node.leftSibling != -1)
+                        addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                }else if(relation == 2 || relation == 4){
+                    if(isFirst || arr1.contains(node.location))
+                        arr2.add(node.location);
+                    if(i == 0 && node.leftSibling != -1)
+                        addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                    else if(i == node.keys.size() - 1 && node.rightSibling != -1)
+                        addResult(this.file.readNode(node.rightSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                }
+            }else if(cmp > 0){
+                if(relation == 0 && i == node.keys.size() - 1 && node.rightSibling != -1)
+                    addResult(this.file.readNode(node.rightSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                else if(relation == 2 || relation == 4){
+                    if(i == 0 && node.leftSibling != -1)
+                        addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                }else if(relation == 1 || relation == 3){
+                    if(isFirst || arr1.contains(node.location))
+                        arr2.add(node.location);
+                    if(i == 0 && node.leftSibling != -1)
+                        addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                    else if(i == node.keys.size() - 1 && node.rightSibling != -1)
+                        addResult(this.file.readNode(node.rightSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                }
+            }
+       }
+    }
+
+    private void addResultWoIndex(BPlusTreeLeafNode node, ArrayList arr, Set<Integer> arr1, Set<Integer> arr2,
+                                  boolean isFirst, int relation){
+
+        for(int i = 0; i < node.keyNum; ++i){
 
         }
 
@@ -188,6 +283,34 @@ public class Table {
 
         return -1;
 
+    }
+
+    private void addKey(ArrayList arr, ArrayList key){
+        if(column_type.get(this.column_name.indexOf(arr.get(0))) == -1)
+            key.add((Integer)arr.get(2));
+        else if(column_type.get(this.column_name.indexOf(arr.get(0))) == -2)
+            key.add((Long)arr.get(2));
+        else if(column_type.get(this.column_name.indexOf(arr.get(0))) == -3)
+            key.add((Float)arr.get(2));
+        else if(column_type.get(this.column_name.indexOf(arr.get(0))) == -4)
+            key.add((Double)arr.get(2));
+        else
+            key.add((String)arr.get(2));
+    }
+
+    private void addRandomKey(int index, ArrayList key){
+        for(int i = 1; i < this.index_key.get(index).size(); ++i){
+            if(column_type.get(this.index_key.get(index).get(i)) == -1)
+                key.add((Integer)1);
+            else if(column_type.get(this.index_key.get(index).get(i)) == -2)
+                key.add((Long)1L);
+            else if(column_type.get(this.index_key.get(index).get(i)) == -3)
+                key.add((Float)1f);
+            else if(column_type.get(this.index_key.get(index).get(i)) == -4)
+                key.add((Double)1d);
+            else
+                key.add("1");
+        }
     }
 
 }

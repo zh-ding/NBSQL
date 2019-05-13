@@ -1,6 +1,6 @@
 package Main;
 
-import java.util.ArrayList;
+        import java.util.ArrayList;
 
 public class Main {
 
@@ -20,7 +20,7 @@ public class Main {
             if(a.get(i) instanceof Integer)
                 System.out.println(((Integer)a.get(i)).intValue());
             else if(a.get(i) instanceof Long)
-                System.out.println(((Long)a.get(i)).longValue());
+                System.out.println(((Long)a.get(i)) == 2);
             else if(a.get(i) instanceof Float)
                 System.out.println(((Float)a.get(i)).floatValue());
         }
