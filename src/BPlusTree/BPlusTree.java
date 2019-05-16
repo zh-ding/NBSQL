@@ -45,17 +45,18 @@ public class BPlusTree {
         }
     }
 
-    public void delete(ArrayList key, ArrayList data)
-            throws IOException {
-        /*
-        BPlusTreeLeafNode leaf = this.findLeafNodeToDelete(key);
+    public void delete(ArrayList key, int id)
+            throws IOException, BPlusTreeException {
 
-        if (leaf.delete(key) && leaf.isUnderflow()) {
-            BTreeNode<TKey> n = leaf.dealUnderflow();
+        BPlusTreeLeafNode leaf = this.findLeafNodeToInsert(key);
+
+
+        if (leaf.delete(this.fm, key) && leaf.keyNum < Math.ceil(this.ORDER / 2.0)) {
+            BPlusTreeNode n = leaf.dealUnderflow(fm);
             if (n != null)
                 this.root = n;
         }
-         */
+
     }
 
     //return leaf offset
@@ -109,15 +110,5 @@ public class BPlusTree {
         return (BPlusTreeLeafNode)node;
     }
 
-    private BPlusTreeLeafNode findLeafNodeToDelete(ArrayList key)
-            throws BPlusTreeException, IOException{
-
-        BPlusTreeNode node = this.root;
-        while (!node.isLeafNode) {
-            node = fm.readNode(node.pointers.get(node.search(key)), this.ID);
-        }
-
-        return (BPlusTreeLeafNode)node;
-    }
 
 }
