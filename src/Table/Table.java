@@ -1,6 +1,8 @@
 package Table;
 
 import BPlusTree.BPlusTree;
+import BPlusTree.BPlusTreeNode;
+import BPlusTree.BPlusTreeLeafNode;
 import Exceptions.BPlusTreeException;
 import Utils.FileManager;
 
@@ -19,17 +21,21 @@ public class Table {
     n (n > 0): String, max_length = 0
      */
     private ArrayList<ArrayList<Integer>> index_key;
-    private ArrayList<BPlusTree> index_forest;
+    public ArrayList<BPlusTree> index_forest;
     private ArrayList<Integer> column_type;
     private int auto_id = 0;
     private int col_num = 0;
     private int index_num = 1;
     private FileManager file;
+    public String table_name;
+    private String database_name;
 
 
-    public Table(String[] names, int[] types, String[] primary_key, String table_name)
+    public Table(String[] names, int[] types, String[] primary_key, String table_name, String database_name)
         throws IOException {
-
+        this.database_name = database_name;
+        this.table_name = table_name;
+        table_name = "./dat/"+database_name+"/"+table_name;
         this.file = new FileManager(table_name);
 
         this.col_num = names.length+1;
@@ -58,18 +64,25 @@ public class Table {
         index_forest.add(index_tree);
     }
 
-    public Table(String table_name)
+    public Table(String table_name, String database_name)
         throws IOException{
-
-        this.column_name = new ArrayList<>();
-        this.column_type = new ArrayList<>();
+        this.database_name = database_name;
+        this.table_name = table_name;
+        table_name = "./dat/"+database_name+"/"+table_name;
+        this.file = new FileManager(table_name);
+        this.index_key = new ArrayList<>();
+        this.index_forest = new ArrayList<>();
+        this.column_name = new ArrayList<String>();
+        this.column_type = new ArrayList<Integer>();
         this.col_num = this.file.readTableHeader(this.column_name, this.column_type);
         ArrayList<Integer> tmp = this.file.readIndexForest();
         this.index_num = tmp.get(0);
         int i = 0;
+        int tree_id = 0;
         while(i<this.index_num) {
             i++;
-            BPlusTree tmp_tree = new BPlusTree(file, tmp.get(i), false, i);
+            BPlusTree tmp_tree = new BPlusTree(file, tmp.get(i), false, tree_id);
+            tree_id ++;
             index_forest.add(tmp_tree);
             i++;
             ArrayList<Integer> m_tmp = new ArrayList<Integer>();
@@ -115,6 +128,7 @@ public class Table {
       ],
     ]
     */
+    /*
     ArrayList<ArrayList> SelectRows(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_names)
             throws BPlusTreeException, IOException{
         Set<Integer> result = new HashSet<>();
@@ -172,7 +186,7 @@ public class Table {
             }
 
         }
-    }
+    }*/
 
     void addResult(BPlusTreeNode node, ArrayList<ArrayList> arr, Set<Integer> result, int index)
             throws BPlusTreeException, IOException{
@@ -284,6 +298,7 @@ public class Table {
         return -1;
 
     }
+
 
     private void addKey(ArrayList arr, ArrayList key){
         if(column_type.get(this.column_name.indexOf(arr.get(0))) == -1)

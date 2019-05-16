@@ -85,10 +85,13 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
     }
 
     private void insertAt(int index, ArrayList key, BPlusTreeNode leftChild, BPlusTreeNode rightChild){
+        if(this.keys.size() > index)
+            this.keys.remove(index);
         this.keys.add(index, key);
+        if(this.pointers.size() > index)
+            this.pointers.remove(index);
         this.pointers.add(index, leftChild.location);
         this.pointers.add(index + 1, rightChild.location);
         ++this.keyNum;
     }
-
 }
