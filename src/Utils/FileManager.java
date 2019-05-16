@@ -28,7 +28,7 @@ public class FileManager {
      */
     private static final int page_size = 1024 * 4;
     private static final int header_page_num = 4;
-    private static final int page_header_len = 4;
+    private static final int page_header_len = 8;
 
     public FileManager(String name) throws IOException{
         this.inputFile = name + ".dat";
@@ -54,12 +54,12 @@ public class FileManager {
             }
         }
         this.file.seek(i*page_size);
-        this.file.writeInt(4);
-        return calPos(i,4);
+        this.file.writeInt(page_header_len);
+        this.file.writeInt(0);
+        return calPos(i,page_header_len);
     }
 
-    public int writeValue(ArrayList value) throws IOException{
-        int len = 0;
+    public ArrayList<Integer> getValueType() throws IOException{
         ArrayList<Integer> valueType = new ArrayList<Integer>();
         this.file.seek(4);
         int col_num = this.file.readInt();
@@ -67,26 +67,13 @@ public class FileManager {
             this.file.readUTF();
             valueType.add(this.file.readInt());
         }
-        for(int i = 0; i<valueType.size(); i++){
-            switch (valueType.get(i)){
-                case -1:
-                    len += 4;
-                    break;
-                case -2:
-                    len += 8;
-                    break;
-                case -3:
-                    len += 4;
-                    break;
-                case -4:
-                    len += 8;
-                    break;
-                default:
-                    len += 2;
-                    len += valueType.get(i);
-                    break;
-            }
-        }
+        return valueType;
+    }
+
+    public int writeValue(ArrayList value) throws IOException{
+        ArrayList<Integer> valueType = getValueType();
+        ArrayList<Integer> num = this.calNodeLen(valueType);
+        int len  = num.get(0);
         int pos = this.findBlock(len);
         this.file.seek(pos);
         for(int i = 0; i<valueType.size(); i++){
@@ -113,8 +100,10 @@ public class FileManager {
          */
         this.file.seek((pos/page_size)*page_size);
         int block_len = this.file.readInt()+len;
+        int still_len = this.file.readInt() + len;
         this.file.seek((pos/page_size)*page_size);
         this.file.writeInt(block_len);
+        this.file.writeInt(still_len);
         return pos;
     }
 
@@ -250,8 +239,8 @@ public class FileManager {
         return type;
     }
 
-    public int writeNewNode(int id, boolean isleafnode) throws IOException {
-        ArrayList<Integer> keyType = this.getKeyType(id);
+    private ArrayList<Integer> calNodeLen(ArrayList<Integer> keyType){
+        ArrayList<Integer> num = new ArrayList<>();
         int len = 0;
         for(int i = 0; i<keyType.size(); i++){
             switch (keyType.get(i)){
@@ -273,7 +262,17 @@ public class FileManager {
                     break;
             }
         }
+        num.add(len);
         int total = len*3+4*4+4+1+4*3;
+        num.add(total);
+        return num;
+    }
+
+    public int writeNewNode(int id, boolean isleafnode) throws IOException {
+        ArrayList<Integer> keyType = this.getKeyType(id);
+        ArrayList<Integer> node_len = this.calNodeLen(keyType);
+        int len = node_len.get(0);
+        int total = node_len.get(1);
         int pos = findBlock(total);
         this.file.seek(pos);
         this.file.writeBoolean(isleafnode);
@@ -284,34 +283,20 @@ public class FileManager {
         this.file.writeInt(-1);
         this.file.seek((pos/page_size)*page_size);
         int block_len = this.file.readInt()+total;
+        int still_len = this.file.readInt()+total;
         this.file.seek((pos/page_size)*page_size);
         this.file.writeInt(block_len);
+        this.file.writeInt(still_len);
         return pos;
     }
 
     public BPlusTreeNode readNode(int offset, int id) throws IOException{
-        ArrayList<Integer> keyType = getKeyType(id);
-        int len = 0;
-        for(int i = 0; i<keyType.size(); i++){
-            switch (keyType.get(i)) {
-                case -1:
-                    len += 4;
-                    break;
-                case -2:
-                    len += 8;
-                    break;
-                case -3:
-                    len += 4;
-                    break;
-                case -4:
-                    len += 8;
-                    break;
-                default:
-                    len += 2;
-                    len += keyType.get(i);
-                    break;
-            }
+        if(offset == -1){
+            return null;
         }
+        ArrayList<Integer> keyType = getKeyType(id);
+        ArrayList<Integer> node_len = this.calNodeLen(keyType);
+        int len = node_len.get(0);
         ArrayList<ArrayList> keys = new ArrayList<ArrayList>();
         ArrayList<Integer> pointers = new ArrayList<Integer>();
         int parent;
@@ -363,6 +348,32 @@ public class FileManager {
             node = new BPlusTreeInnerNode(keys, pointers, parent, leftSibling, rightSibling, keyNum, location, isLeafNode, id);
         }
         return node;
+    }
+
+    public ArrayList readData(int offset) throws IOException{
+        ArrayList<Integer> valueType = this.getValueType();
+        ArrayList data = new ArrayList();
+        this.file.seek(offset);
+        for(int i = 0; i<valueType.size(); i++){
+            switch (valueType.get(i)) {
+                case -1:
+                    data.add(this.file.readInt());
+                    break;
+                case -2:
+                    data.add(this.file.readLong());
+                    break;
+                case -3:
+                    data.add(this.file.readFloat());
+                    break;
+                case -4:
+                    data.add(this.file.readDouble());
+                    break;
+                default:
+                    data.add(this.file.readUTF());
+                    break;
+            }
+        }
+        return data;
     }
 
     public void updateRoot(int id, int location) throws IOException{
@@ -466,6 +477,41 @@ public class FileManager {
 
     public void resetReadWriteCounter(){
     }
+
+    private void deleteData(int offset, int total) throws IOException{
+        this.file.seek((offset/page_size)*page_size);
+        int start = this.file.readInt();
+        int len = this.file.readInt();
+        if(len == total){
+            this.file.seek((offset/page_size)*page_size);
+            this.file.writeInt(page_header_len);
+            this.file.writeInt(0);
+        }
+        else{
+            len = len - total;
+            if(start == offset + total){
+                start = offset;
+            }
+            this.file.seek((offset/page_size)*page_size);
+            this.file.writeInt(start);
+            this.file.writeInt(len);
+        }
+    }
+
+    public void deleteNode(int offset, int id) throws IOException{
+        ArrayList<Integer> keyType = getKeyType(id);
+        ArrayList<Integer> node_len = this.calNodeLen(keyType);
+        int total = node_len.get(1);
+        this.deleteData(offset, total);
+    }
+
+    public void deleteValue(int offset) throws IOException{
+        ArrayList<Integer> valueType = getValueType();
+        ArrayList<Integer> node_len = this.calNodeLen(valueType);
+        int total = node_len.get(0);
+        this.deleteData(offset, total);
+    }
+
 
     public void deleteFile(){
         try {
