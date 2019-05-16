@@ -69,6 +69,8 @@ public class test {
         table.index_forest.get(0).printBPlusTree();
         System.out.println();
 
+        db.useDB("test");
+
         table = db.tables.get(0);
         ArrayList test = new ArrayList();
         ArrayList test_test = new ArrayList();
