@@ -411,15 +411,18 @@ public class FileManager {
         return num;
     }
 
-    public int readTableHeader(ArrayList<String> column_name, ArrayList<Integer> column_type) throws IOException{
+    public ArrayList<Integer> readTableHeader(ArrayList<String> column_name, ArrayList<Integer> column_type) throws IOException{
+        ArrayList<Integer> num = new ArrayList<>();
         this.file.seek(0);
+        num.add(this.file.readInt());
         int col_num = this.file.readInt();
+        num.add(col_num);
         for(int i = 0; i < col_num; ++i){
             column_name.add(this.file.readUTF());
             column_type.add(this.file.readInt());
         }
 
-        return col_num;
+        return num;
     }
 
     public int deleteRow() throws IOException{
