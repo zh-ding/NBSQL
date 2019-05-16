@@ -80,6 +80,12 @@ public class test {
         test_test_test1.add(true);
         test_test.add(test_test_test1);
         test.add(test_test);
+        ArrayList sss = new ArrayList();
+        sss.add("name");
+        ArrayList ssss = new ArrayList();
+        ssss.add("test");
+        System.out.println(table.SelectRows(test, ss));
+        table.UpdateRow(test, sss, ssss);
         System.out.println(table.SelectRows(test, ss));
         db.dropTable("test");
         db.dropDB("test");

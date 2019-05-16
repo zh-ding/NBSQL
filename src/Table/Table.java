@@ -99,8 +99,9 @@ public class Table {
 
     public void InsertRow(ArrayList row)
             throws IOException, BPlusTreeException {
-        auto_id ++;
-        row.add(0, auto_id);
+        this.auto_id ++;
+        if(row.size() != this.column_name.size())
+            row.add(0, this.auto_id);
         int offset = file.writeValue(row);
         for(int i = 0; i < this.index_forest.size(); ++i){
             ArrayList key = new ArrayList();
@@ -119,6 +120,26 @@ public class Table {
             key and auto_id
              */
             index_forest.get(i).delete(key, (int)row.get(0));
+        }
+    }
+
+    public void UpdateRow(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_name, ArrayList newRow) throws IOException, BPlusTreeException{
+        ArrayList<ArrayList> rows = SelectRows(conditions, this.column_name);
+        ArrayList<Integer> index = new ArrayList<>();
+        for(int k = 0; k<column_name.size(); ++k){
+            for(int j = 0; j<this.column_name.size(); ++j){
+                if(this.column_name.get(j).compareTo(column_name.get(k).toString()) == 0){
+                    index.add(j);
+                }
+            }
+        }
+
+        for(int i = 0; i<rows.size(); ++i){
+            this.DeleteRow(rows.get(i));
+            for(int k = 0; k<column_name.size(); ++k){
+                rows.get(i).set(index.get(k), newRow.get(k));
+            }
+            this.InsertRow(rows.get(i));
         }
     }
 
@@ -347,7 +368,7 @@ public class Table {
 
     private int IsKeyMatch(ArrayList<ArrayList> arr){
 
-        System.out.println(this.column_name);
+//        System.out.println(this.column_name);
 
         for(int i = 0; i < this.index_key.size(); ++i){
 
