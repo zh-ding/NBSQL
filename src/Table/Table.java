@@ -74,7 +74,9 @@ public class Table {
         this.index_forest = new ArrayList<>();
         this.column_name = new ArrayList<String>();
         this.column_type = new ArrayList<Integer>();
-        this.col_num = this.file.readTableHeader(this.column_name, this.column_type);
+        ArrayList<Integer> m_num= this.file.readTableHeader(this.column_name, this.column_type);
+        this.auto_id = m_num.get(0);
+        this.col_num = m_num.get(1);
         ArrayList<Integer> tmp = this.file.readIndexForest();
         this.index_num = tmp.get(0);
         int i = 0;
