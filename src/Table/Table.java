@@ -26,7 +26,7 @@ public class Table {
     private int auto_id = 0;
     private int col_num = 0;
     private int index_num = 1;
-    private FileManager file;
+    public FileManager file;
     public String table_name;
     private String database_name;
 

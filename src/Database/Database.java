@@ -26,6 +26,10 @@ public class Database {
     }
 
     public void useDB(String db_name) throws IOException{
+        for(int i = 0; i<tables.size(); i++){
+            tables.get(i).file.deleteFile();
+        }
+        this.tables = new ArrayList<Table>();
         this.db_name = db_name;
         db_name = this.path + db_name;
         File db = new File(db_name);
@@ -41,14 +45,20 @@ public class Database {
         this.db_name = db_name;
         db_name = this.path + db_name;
         File db = new File(db_name);
-        if(db.isFile()){
+        if(db.isFile() && db.exists()){
             db.delete();
         }
         else{
+            for(int i = 0; i<tables.size(); i++){
+                tables.get(i).file.deleteFile();
+            }
             File[] tmplist = db.listFiles();
             for(File f: tmplist){
-                f.delete();
+                if(f.exists() && f.isFile()){
+                    f.delete();
+                }
             }
+            db.delete();
         }
     }
 
@@ -76,7 +86,7 @@ public class Database {
 
     public Table getTable (String table_name){
         for(int i = 0; i<tables.size(); i++){
-            if(tables.get(i).table_name == table_name){
+            if(tables.get(i).table_name.compareTo(table_name) == 0){
                 return tables.get(i);
             }
         }
@@ -86,10 +96,12 @@ public class Database {
     public void dropTable (String table_name){
         ArrayList<Table> tmp = new ArrayList<Table>();
         for(int i = 0; i<tables.size(); i++){
-            if(tables.get(i).table_name == table_name){
-                String table_path = this.path + db_name + "/" + table_name;
+            if(tables.get(i).table_name.compareTo(table_name)==0){
+                String table_path = this.path + db_name + "/" + table_name+ ".dat";
                 File db = new File(table_path);
                 if(db.isFile()){
+                    this.tables.get(i).file.deleteFile();
+                    System.gc();
                     db.delete();
                 }
             }
