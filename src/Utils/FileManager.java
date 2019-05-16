@@ -15,10 +15,6 @@ public class FileManager {
 
     private RandomAccessFile file;
     private String inputFile;
-    private FileChannel fc;
-    private ByteBuffer bb;
-    private final int blockSize = 1024;
-    private int size = 0;
 
     /*
     -1: int
@@ -45,18 +41,40 @@ public class FileManager {
 
     private int findBlock(int len) throws IOException {
         int i;
-        long test = this.file.length();
         for(i = header_page_num; i*page_size<this.file.length(); i++){
             this.file.seek(i*page_size);
             int tmp = this.file.readInt();
-            if(len <= page_size-tmp){
-                return calPos(i, tmp);
+            if(tmp == -1){
+                int number = this.file.readInt();
+                i += number;
+                --i;
+            }
+            else {
+                if(len <= page_size-tmp){
+                    return calPos(i, tmp);
+                }
             }
         }
-        this.file.seek(i*page_size);
-        this.file.writeInt(page_header_len);
-        this.file.writeInt(0);
-        return calPos(i,page_header_len);
+        if(len > page_size - page_header_len){
+            this.file.seek(i*page_size);
+            this.file.writeInt(-1);
+            int tmp = len - (page_size - page_header_len);
+            int num = 0;
+            if(tmp % page_size == 0){
+                num = tmp/page_size + 1;
+            }
+            else{
+                num = tmp/page_size + 2;
+            }
+            this.file.writeInt(num);
+            return calPos(i, page_header_len);
+        }
+        else{
+            this.file.seek(i*page_size);
+            this.file.writeInt(page_header_len);
+            this.file.writeInt(0);
+            return calPos(i,page_header_len);
+        }
     }
 
     public ArrayList<Integer> getValueType() throws IOException{
@@ -98,13 +116,18 @@ public class FileManager {
         /*
         change page header
          */
-        this.file.seek((pos/page_size)*page_size);
-        int block_len = this.file.readInt()+len;
-        int still_len = this.file.readInt() + len;
-        this.file.seek((pos/page_size)*page_size);
-        this.file.writeInt(block_len);
-        this.file.writeInt(still_len);
-        return pos;
+        if(len > page_size-page_header_len){
+            return pos;
+        }
+        else{
+            this.file.seek((pos/page_size)*page_size);
+            int block_len = this.file.readInt()+len;
+            int still_len = this.file.readInt() + len;
+            this.file.seek((pos/page_size)*page_size);
+            this.file.writeInt(block_len);
+            this.file.writeInt(still_len);
+            return pos;
+        }
     }
 
     private String formatStr(String str, int len){
@@ -159,7 +182,6 @@ public class FileManager {
         this.file.writeInt(node.parent);
         this.file.writeInt(node.leftSibling);
         this.file.writeInt(node.rightSibling);
-
     }
 
     public int writeTableHeader(int col_num, int index_num, int size, ArrayList<String> column_name,
@@ -281,13 +303,18 @@ public class FileManager {
         this.file.writeInt(-1);
         this.file.writeInt(-1);
         this.file.writeInt(-1);
-        this.file.seek((pos/page_size)*page_size);
-        int block_len = this.file.readInt()+total;
-        int still_len = this.file.readInt()+total;
-        this.file.seek((pos/page_size)*page_size);
-        this.file.writeInt(block_len);
-        this.file.writeInt(still_len);
-        return pos;
+        if(total > page_size - page_header_len){
+            return pos;
+        }
+        else{
+            this.file.seek((pos/page_size)*page_size);
+            int block_len = this.file.readInt()+total;
+            int still_len = this.file.readInt()+total;
+            this.file.seek((pos/page_size)*page_size);
+            this.file.writeInt(block_len);
+            this.file.writeInt(still_len);
+            return pos;
+        }
     }
 
     public BPlusTreeNode readNode(int offset, int id) throws IOException{
@@ -425,79 +452,34 @@ public class FileManager {
         return num;
     }
 
-    public int deleteRow() throws IOException{
-
-        return 0;
-    }
-
-    public int updateRow() throws IOException{
-
-        return 0;
-    }
-
-    public void write(byte[] bytes, int position) throws IOException {
-        if(position < 0 || position > size){
-            //error
-        }else{
-            writeBytes(bytes);
-            if(position == size)
-                size++;
-        }
-    }
-
-    public int write(byte[] bytes) throws IOException{
-        writeBytes(bytes);
-        return ++size;
-    }
-
-    private void writeBytes(byte[] bytes) throws IOException{
-        bb = ByteBuffer.allocate(blockSize);
-        bb.put(bytes);
-        bb.rewind();
-        fc.write(bb, size*blockSize);
-    }
-
-    public byte[] read(int blockPosition) throws IOException{
-        if(blockPosition < 0 || blockPosition > size){
-            throw new IndexOutOfBoundsException();
-        }
-
-        bb = ByteBuffer.allocate(blockSize);
-        fc.read(bb, blockPosition*blockSize);
-        return bb.array();
-    }
-
-    public int getBlockSize(){
-        return blockSize;
-    }
-
-    public int getSize(){
-        return size;
-    }
-    public long getNumberOfReadWrites(){
-        return 0;
-    }
-
-    public void resetReadWriteCounter(){
-    }
-
     private void deleteData(int offset, int total) throws IOException{
         this.file.seek((offset/page_size)*page_size);
         int start = this.file.readInt();
         int len = this.file.readInt();
-        if(len == total){
-            this.file.seek((offset/page_size)*page_size);
-            this.file.writeInt(page_header_len);
-            this.file.writeInt(0);
+        if(start == -1){
+            int begin = (offset/page_size)*page_size;
+            for(int i = 0; i<len; i++){
+                begin = begin + i*page_size;
+                this.file.seek(begin);
+                this.file.writeInt(page_header_len);
+                this.file.writeInt(0);
+            }
         }
         else{
-            len = len - total;
-            if(start == offset + total){
-                start = offset;
+            if(len == total){
+                this.file.seek((offset/page_size)*page_size);
+                this.file.writeInt(page_header_len);
+                this.file.writeInt(0);
             }
-            this.file.seek((offset/page_size)*page_size);
-            this.file.writeInt(start);
-            this.file.writeInt(len);
+            else{
+                len = len - total;
+                if(start == offset + total){
+                    start = offset;
+                }
+                this.file.seek((offset/page_size)*page_size);
+                this.file.writeInt(start);
+                this.file.writeInt(len);
+            }
         }
     }
 
@@ -515,16 +497,11 @@ public class FileManager {
         this.deleteData(offset, total);
     }
 
-
     public void deleteFile(){
         try {
             file.close();
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void close() throws IOException {
-        file.close();
     }
 }

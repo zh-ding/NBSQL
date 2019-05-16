@@ -57,6 +57,8 @@ public class test {
         table.InsertRow(arr5);
 
 
+        db.useDB("test");
+
         table = db.tables.get(0);
         table.index_forest.get(0).printBPlusTree();
         System.out.println();
