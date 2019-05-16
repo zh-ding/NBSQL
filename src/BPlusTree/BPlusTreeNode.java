@@ -96,6 +96,46 @@ public abstract class BPlusTreeNode{
         return node.pushUpKey(fm, upKey, this, newRNode);
     }
 
+    public BPlusTreeNode dealUnderflow(FileManager fm)
+            throws IOException, BPlusTreeException {
+        if (this.parent == -1)
+            return null;
+
+        BPlusTreeNode leftSibling = fm.readNode(this.leftSibling, this.id);
+        BPlusTreeNode parent = fm.readNode(this.parent, this.id);
+        if (leftSibling != null && leftSibling.keyNum > Math.ceil(BPlusTree.ORDER / 2.0)) {
+            parent.processChildrenTransfer(fm, this, leftSibling, leftSibling.keyNum - 1);
+            return null;
+        }
+
+        BPlusTreeNode rightSibling = fm.readNode(this.rightSibling, this.id);
+        if (rightSibling != null && rightSibling.keyNum > Math.ceil(BPlusTree.ORDER / 2.0)) {
+            parent.processChildrenTransfer(fm, this, rightSibling, 0);
+            return null;
+        }
+
+        if (leftSibling != null) {
+            return parent.processChildrenFusion(fm, leftSibling, this);
+        }
+        else {
+            return parent.processChildrenFusion(fm,this, rightSibling);
+        }
+    }
+
+    protected abstract void processChildrenTransfer(FileManager fm, BPlusTreeNode borrower, BPlusTreeNode lender, int borrowIndex)
+            throws IOException, BPlusTreeException;
+
+
+    protected abstract BPlusTreeNode processChildrenFusion(FileManager fm, BPlusTreeNode leftChild, BPlusTreeNode rightChild)
+            throws IOException, BPlusTreeException;
+
+    protected abstract void fusionWithSibling(FileManager fm, ArrayList sinkKey, BPlusTreeNode rightSibling)
+            throws BPlusTreeException, IOException;
+
+    protected abstract ArrayList transferFromSibling(FileManager fm, ArrayList sinkKey, BPlusTreeNode sibling, int borrowIndex)
+            throws IOException, BPlusTreeException;
+
+
     public void print(){
         System.out.print(this.location);
         System.out.print(' ');

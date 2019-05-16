@@ -81,11 +81,72 @@ public class BPlusTreeLeafNode extends BPlusTreeNode {
         ++this.keyNum;
     }
 
+    public boolean delete(FileManager fm, ArrayList key)
+            throws BPlusTreeException, IOException {
+        int index = 0;
+        for(int i = 0; i < this.keyNum; ++i)
+            if(this.compare(key, this.keys.get(i)) == 0)
+                break;
+        if (index == this.keyNum)
+            return false;
+
+        this.deleteAt(index);
+        fm.updateNode(this);
+        return true;
+    }
+
+    private void deleteAt(int index) {
+        this.keys.remove(index);
+        --this.keyNum;
+    }
+
     protected BPlusTreeNode pushUpKey(FileManager fm, ArrayList key,
                                       BPlusTreeNode leftChild, BPlusTreeNode rightNode)
             throws BPlusTreeException{
 
         throw new BPlusTreeException("pushUpKey in leaf node");
+    }
+
+    protected void processChildrenTransfer(FileManager fm, BPlusTreeNode borrower, BPlusTreeNode lender, int borrowIndex)
+            throws IOException, BPlusTreeException{
+        throw new BPlusTreeException("processChildrenTransfer in leaf node");
+    }
+
+    protected BPlusTreeNode processChildrenFusion(FileManager fm, BPlusTreeNode leftChild, BPlusTreeNode rightChild)
+            throws BPlusTreeException{
+        throw new BPlusTreeException("processChildrenFusion in leaf node");
+    }
+
+    protected void fusionWithSibling(FileManager fm, ArrayList sinkKey, BPlusTreeNode rightSibling)
+            throws IOException {
+        BPlusTreeLeafNode siblingLeaf = (BPlusTreeLeafNode)rightSibling;
+
+        int j = this.keyNum;
+        for (int i = 0; i < siblingLeaf.keyNum; ++i) {
+            this.keys.add(siblingLeaf.keys.get(i));
+            this.pointers.add(siblingLeaf.pointers.get(i));
+        }
+        this.keyNum += siblingLeaf.keyNum;
+
+
+        this.rightSibling = siblingLeaf.rightSibling;
+        if (siblingLeaf.rightSibling != -1){
+            BPlusTreeNode node = fm.readNode(siblingLeaf.rightSibling, this.id);
+            node.leftSibling = this.location;
+            fm.updateNode(node);
+        }
+
+        fm.updateNode(this);
+    }
+
+    protected ArrayList transferFromSibling(FileManager fm, ArrayList sinkKey, BPlusTreeNode sibling, int borrowIndex)
+            throws BPlusTreeException, IOException {
+        BPlusTreeLeafNode siblingNode = (BPlusTreeLeafNode) sibling;
+
+        this.insertKey(fm, siblingNode.keys.get(borrowIndex), siblingNode.pointers.get(borrowIndex));
+        siblingNode.deleteAt(borrowIndex);
+
+        return borrowIndex == 0 ? sibling.keys.get(0) : this.keys.get(0);
     }
 
 }
