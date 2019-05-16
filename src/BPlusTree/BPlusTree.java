@@ -45,6 +45,19 @@ public class BPlusTree {
         }
     }
 
+    public void delete(ArrayList key, ArrayList data)
+            throws IOException {
+        /*
+        BPlusTreeLeafNode leaf = this.findLeafNodeToDelete(key);
+
+        if (leaf.delete(key) && leaf.isUnderflow()) {
+            BTreeNode<TKey> n = leaf.dealUnderflow();
+            if (n != null)
+                this.root = n;
+        }
+         */
+    }
+
     //return leaf offset
     public int search(ArrayList key)
             throws BPlusTreeException, IOException{
@@ -86,6 +99,17 @@ public class BPlusTree {
 
 
     private BPlusTreeLeafNode findLeafNodeToInsert(ArrayList key)
+            throws BPlusTreeException, IOException{
+
+        BPlusTreeNode node = this.root;
+        while (!node.isLeafNode) {
+            node = fm.readNode(node.pointers.get(node.search(key)), this.ID);
+        }
+
+        return (BPlusTreeLeafNode)node;
+    }
+
+    private BPlusTreeLeafNode findLeafNodeToDelete(ArrayList key)
             throws BPlusTreeException, IOException{
 
         BPlusTreeNode node = this.root;

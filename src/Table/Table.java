@@ -128,7 +128,6 @@ public class Table {
       ],
     ]
     */
-    /*
     ArrayList<ArrayList> SelectRows(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_names)
             throws BPlusTreeException, IOException{
         Set<Integer> result = new HashSet<>();
@@ -172,21 +171,35 @@ public class Table {
                             addResult(node, arr_and, arr1, arr2, isFirst, relation, index);
                         }else{
                             addResultWoIndex(this.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
-
                         }
 
-                    }else{
 
+                    }else if(isPrimitive && relation == 5){
+                        addResultWoIndex(this.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
+                    }else{
+                        addResultNotPrimitive(this.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
                     }
+
+                    arr1 = arr2;
+                    arr2 = new HashSet<>();
 
                     isFirst = false;
 
 
                 }
+                result.addAll(arr1);
             }
 
+
+
         }
-    }*/
+        ArrayList<ArrayList> re = new ArrayList<>();
+        for(int off: result){
+            re.add(this.file.readData(off));
+        }
+
+        return re;
+    }
 
     void addResult(BPlusTreeNode node, ArrayList<ArrayList> arr, Set<Integer> result, int index)
             throws BPlusTreeException, IOException{
@@ -220,8 +233,8 @@ public class Table {
 
             if(cmp == 0){
                 if(relation == 0 || relation == 3 || relation == 4){
-                    if(isFirst || arr1.contains(node.location))
-                        arr2.add(node.location);
+                    if(isFirst || arr1.contains(node.pointers.get(i)))
+                        arr2.add(node.pointers.get(i));
                     if(i == 0 && node.leftSibling != -1)
                         addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
                     else if(i == node.keys.size() - 1 && node.rightSibling != -1)
@@ -238,8 +251,8 @@ public class Table {
                     if(i == 0 && node.leftSibling != -1)
                         addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
                 }else if(relation == 2 || relation == 4){
-                    if(isFirst || arr1.contains(node.location))
-                        arr2.add(node.location);
+                    if(isFirst || arr1.contains(node.pointers.get(i)))
+                        arr2.add(node.pointers.get(i));
                     if(i == 0 && node.leftSibling != -1)
                         addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
                     else if(i == node.keys.size() - 1 && node.rightSibling != -1)
@@ -252,8 +265,8 @@ public class Table {
                     if(i == 0 && node.leftSibling != -1)
                         addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
                 }else if(relation == 1 || relation == 3){
-                    if(isFirst || arr1.contains(node.location))
-                        arr2.add(node.location);
+                    if(isFirst || arr1.contains(node.pointers.get(i)))
+                        arr2.add(node.pointers.get(i));
                     if(i == 0 && node.leftSibling != -1)
                         addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
                     else if(i == node.keys.size() - 1 && node.rightSibling != -1)
@@ -264,12 +277,62 @@ public class Table {
     }
 
     private void addResultWoIndex(BPlusTreeLeafNode node, ArrayList arr, Set<Integer> arr1, Set<Integer> arr2,
-                                  boolean isFirst, int relation){
+                                  boolean isFirst, int relation)
+            throws IOException, BPlusTreeException{
+
+        ArrayList key1 = new ArrayList();
+        this.addKey(arr, key1);
+
+        ArrayList key2 = new ArrayList();
+        key2.add(0);
+        int index = this.column_name.indexOf((String)arr.get(0));
 
         for(int i = 0; i < node.keyNum; ++i){
 
-        }
+            key2.set(0, this.file.readData(node.pointers.get(i)).get(index));
+            int cmp = node.compare(key1, key2);
 
+            if(cmp == 0 && (relation == 0 || relation == 3 || relation == 4) && (isFirst || arr1.contains(node.pointers.get(i)))){
+                arr2.add(node.pointers.get(i));
+            }else if(cmp < 0 && (relation == 2 || relation == 4 || relation == 5) && (isFirst || arr1.contains(node.pointers.get(i)))){
+                arr2.add(node.pointers.get(i));
+            }else if(cmp > 0 && (relation == 1 || relation == 3 || relation == 5) && (isFirst || arr1.contains(node.pointers.get(i)))){
+                arr2.add(node.pointers.get(i));
+            }
+
+        }
+        if(node.rightSibling != -1)
+            addResultWoIndex((BPlusTreeLeafNode) this.file.readNode(node.rightSibling, 0), arr, arr1, arr2, isFirst, relation);
+
+    }
+
+    private void addResultNotPrimitive(BPlusTreeLeafNode node, ArrayList arr, Set<Integer> arr1, Set<Integer> arr2,
+                                       boolean isFirst, int relation)
+            throws BPlusTreeException, IOException{
+
+        String attr1 = (String)arr.get(0);
+        String attr2 = (String)arr.get(2);
+        int index1 = this.column_name.indexOf((String)arr.get(0));
+        int index2 = this.column_name.indexOf((String)arr.get(2));
+
+
+        for(int i = 0; i < node.keyNum; ++i){
+            ArrayList key1 = new ArrayList();
+            ArrayList key2 = new ArrayList();
+            key1.add(this.file.readData(node.pointers.get(i)).get(index1));
+            key2.add(this.file.readData(node.pointers.get(i)).get(index2));
+
+            int cmp = node.compare(key1, key2);
+
+            if(cmp == 0 && (relation == 0 || relation == 3 || relation == 4) && (isFirst || arr1.contains(node.pointers.get(i)))){
+                arr2.add(node.pointers.get(i));
+            }else if(cmp > 0 && (relation == 2 || relation == 4 || relation == 5) && (isFirst || arr1.contains(node.pointers.get(i)))){
+                arr2.add(node.pointers.get(i));
+            }else if(cmp < 0 && (relation == 1 || relation == 3 || relation == 5) && (isFirst || arr1.contains(node.pointers.get(i)))){
+                arr2.add(node.pointers.get(i));
+            }
+
+        }
     }
 
     private int IsKeyMatch(ArrayList<ArrayList> arr){
