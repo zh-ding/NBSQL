@@ -101,12 +101,18 @@ public class test {
         ArrayList test_test = new ArrayList();
         ArrayList test_test_test = new ArrayList();
         test_test_test.add("m_id");
-        test_test_test.add(0);
+        test_test_test.add(1);
         test_test_test.add(5);
         test_test_test.add(true);
         test_test.add(test_test_test);
+        ArrayList test_test_test1 = new ArrayList();
+        test_test_test1.add("m_id");
+        test_test_test1.add(2);
+        test_test_test1.add(1);
+        test_test_test1.add(true);
+        test_test.add(test_test_test1);
         test.add(test_test);
-        table.SelectRows(test, ss);
+        System.out.println(table.SelectRows(test, ss));
         table.index_forest.get(0).printBPlusTree();
         System.out.println();
 

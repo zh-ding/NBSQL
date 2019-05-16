@@ -144,7 +144,7 @@ public class Table {
 
                 BPlusTreeNode node = this.file.readNode(offset, index);
 
-                addResult(node, arr_or, result, index);
+                addResult(node, key, result, index);
             }else{
                 Set<Integer> arr1 = new HashSet<>();
                 Set<Integer> arr2 = new HashSet<>();
