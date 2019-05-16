@@ -125,15 +125,18 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
 
     protected BPlusTreeNode processChildrenFusion(FileManager fm, BPlusTreeNode leftChild, BPlusTreeNode rightChild)
             throws IOException, BPlusTreeException{
+
         int index = 0;
-        while (index < this.keyNum && this.getChild(fm, index) != leftChild)
+        while (index < this.keyNum && this.pointers.get(index) != leftChild.location)
             ++index;
         ArrayList sinkKey = this.keys.get(index);
 
         leftChild.fusionWithSibling(fm, sinkKey, rightChild);
 
         this.deleteAt(index);
+        BPlusTreeNode node1 = fm.readNode(this.location, this.id);
         fm.updateNode(this);
+        BPlusTreeNode node2 = fm.readNode(this.location, this.id);
 
         if (this.keyNum < Math.ceil(BPlusTree.ORDER / 2.0)) {
             if (this.parent == -1) {
@@ -163,12 +166,16 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
             throws IOException {
         BPlusTreeInnerNode rightSiblingNode = (BPlusTreeInnerNode)rightSibling;
 
-        this.keys.add(sinkKey);
+        int j = this.keyNum;
+        while(this.keys.size() < j + 1)this.keys.add(new ArrayList());
+        this.keys.set(j++, sinkKey);
 
         for (int i = 0; i < rightSiblingNode.keyNum; ++i) {
-            this.keys.add(rightSiblingNode.keys.get(i));
+            while(this.keys.size() < j + i + 1)this.keys.add(new ArrayList());
+            this.keys.set(j + i, rightSiblingNode.keys.get(i));
         }
         for (int i = 0; i < rightSiblingNode.keyNum + 1; ++i) {
+            while(this.pointers.size() < j + i + 1)this.pointers.add(0);
             this.pointers.add(rightSiblingNode.pointers.get(i));
         }
         this.keyNum += 1 + rightSiblingNode.keyNum;

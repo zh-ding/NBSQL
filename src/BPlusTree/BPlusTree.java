@@ -43,6 +43,8 @@ public class BPlusTree {
         }else{
             fm.updateNode(leaf);
         }
+
+        this.root = fm.readNode(this.root.location, this.ID);
     }
 
     public void delete(ArrayList key, int id)
@@ -53,10 +55,13 @@ public class BPlusTree {
 
         if (leaf.delete(this.fm, key) && leaf.keyNum < Math.ceil(this.ORDER / 2.0)) {
             BPlusTreeNode n = leaf.dealUnderflow(fm);
-            if (n != null)
+            if (n != null) {
                 this.root = n;
+                fm.updateRoot(this.ID, this.root.location);
+            }
         }
 
+        this.root = fm.readNode(this.root.location, this.ID);
     }
 
     //return leaf offset

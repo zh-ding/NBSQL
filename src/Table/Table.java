@@ -110,7 +110,7 @@ public class Table {
         }
     }
 
-    void DeleteRow(ArrayList row)throws IOException{
+    public void DeleteRow(ArrayList row)throws IOException, BPlusTreeException{
         for(int i = 0; i<this.index_forest.size(); ++i){
             ArrayList key = new ArrayList();
             for(int j = 0; j<this.index_key.get(i).size(); ++j)

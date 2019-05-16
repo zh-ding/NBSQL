@@ -84,8 +84,8 @@ public class BPlusTreeLeafNode extends BPlusTreeNode {
     public boolean delete(FileManager fm, ArrayList key)
             throws BPlusTreeException, IOException {
         int index = 0;
-        for(int i = 0; i < this.keyNum; ++i)
-            if(this.compare(key, this.keys.get(i)) == 0)
+        for(index = 0; index < this.keyNum; ++index)
+            if(this.compare(key, this.keys.get(index)) == 0)
                 break;
         if (index == this.keyNum)
             return false;
@@ -97,6 +97,7 @@ public class BPlusTreeLeafNode extends BPlusTreeNode {
 
     private void deleteAt(int index) {
         this.keys.remove(index);
+        this.pointers.remove(index);
         --this.keyNum;
     }
 
@@ -123,8 +124,12 @@ public class BPlusTreeLeafNode extends BPlusTreeNode {
 
         int j = this.keyNum;
         for (int i = 0; i < siblingLeaf.keyNum; ++i) {
-            this.keys.add(siblingLeaf.keys.get(i));
-            this.pointers.add(siblingLeaf.pointers.get(i));
+            while(this.keys.size() < j + i + 1)
+                this.keys.add(new ArrayList());
+            while(this.pointers.size() < j + i + 1)
+                this.pointers.add(0);
+            this.keys.set(j + i, siblingLeaf.keys.get(i));
+            this.pointers.set(j + i, siblingLeaf.pointers.get(i));
         }
         this.keyNum += siblingLeaf.keyNum;
 
