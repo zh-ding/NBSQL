@@ -45,7 +45,7 @@ public class BPlusTree {
         }
     }
 
-    public void delete(ArrayList key, ArrayList data)
+    public void delete(ArrayList key, int auto_id)
             throws IOException {
         /*
         BPlusTreeLeafNode leaf = this.findLeafNodeToDelete(key);
