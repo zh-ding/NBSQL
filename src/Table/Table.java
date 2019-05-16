@@ -336,6 +336,9 @@ public class Table {
     }
 
     private int IsKeyMatch(ArrayList<ArrayList> arr){
+
+        System.out.println(this.column_name);
+
         for(int i = 0; i < this.index_key.size(); ++i){
 
             ArrayList<Integer> keys = this.index_key.get(i);
@@ -351,7 +354,7 @@ public class Table {
                 if(!(Boolean)arr_and.get(3) || (Integer)arr_and.get(1) != 0)
                     return -1;
                 int index = this.column_name.indexOf((String)arr_and.get(0));
-                tmp.remove(index);
+                tmp.remove((Integer)index);
             }
 
             if(tmp.size() == 0)
