@@ -40,6 +40,9 @@ public class test {
         String[] s = new String[2];
         s[0] = "m_id";
         s[1] = "name";
+        ArrayList ss = new ArrayList();
+        ss.add(s[0]);
+        ss.add(s[1]);
         String[] p = new String[1];
         p[0] = "m_id";
         db.createTable(s, a, p, "test");
@@ -94,9 +97,19 @@ public class test {
         Database db2 = new Database("test", 1);
 
         table = db2.tables.get(0);
-
+        ArrayList test = new ArrayList();
+        ArrayList test_test = new ArrayList();
+        ArrayList test_test_test = new ArrayList();
+        test_test_test.add("m_id");
+        test_test_test.add(0);
+        test_test_test.add(5);
+        test_test_test.add(true);
+        test_test.add(test_test_test);
+        test.add(test_test);
+        table.SelectRows(test, ss);
         table.index_forest.get(0).printBPlusTree();
         System.out.println();
+
 
 //        File db = new File(path);
 //        if(db.exists()){

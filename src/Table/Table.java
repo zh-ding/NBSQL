@@ -128,7 +128,7 @@ public class Table {
       ],
     ]
     */
-    ArrayList<ArrayList> SelectRows(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_names)
+    public ArrayList<ArrayList> SelectRows(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_names)
             throws BPlusTreeException, IOException{
         Set<Integer> result = new HashSet<>();
         int offset;
