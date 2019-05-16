@@ -26,7 +26,7 @@ public class Table {
     private int auto_id = 0;
     private int col_num = 0;
     private int index_num = 1;
-    private FileManager file;
+    public FileManager file;
     public String table_name;
     private String database_name;
 
@@ -110,8 +110,16 @@ public class Table {
         }
     }
 
-    void DeleteRow(){
-
+    void DeleteRow(ArrayList row)throws IOException{
+        for(int i = 0; i<this.index_forest.size(); ++i){
+            ArrayList key = new ArrayList();
+            for(int j = 0; j<this.index_key.get(i).size(); ++j)
+                key.add(row.get(this.index_key.get(i).get(j)));
+            /*
+            key and auto_id
+             */
+            index_forest.get(i).delete(key, (int)row.get(0));
+        }
     }
 
     /*
