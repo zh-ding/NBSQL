@@ -92,24 +92,53 @@ public class FileManager {
         ArrayList<Integer> valueType = getValueType();
         ArrayList<Integer> num = this.calNodeLen(valueType);
         int len  = num.get(0);
+        len += valueType.size();
         int pos = this.findBlock(len);
         this.file.seek(pos);
         for(int i = 0; i<valueType.size(); i++){
+            int tmp = 0;
+            if(value.get(i) == null){
+                this.file.writeBoolean(true);
+                tmp = 1;
+            }
+            else{
+                this.file.writeBoolean(false);
+            }
             switch (valueType.get(i)) {
                 case -1:
-                    this.file.writeInt((int)value.get(i));
+                    if(tmp == 1){
+                        this.file.writeInt(0);
+                    }
+                    else
+                        this.file.writeInt((int)value.get(i));
                     break;
                 case -2:
-                    this.file.writeLong((long)value.get(i));
+                    if(tmp == 1){
+                        this.file.writeLong(0);
+                    }
+                    else
+                        this.file.writeLong((long)value.get(i));
                     break;
                 case -3:
-                    this.file.writeFloat((float)value.get(i));
+                    if(tmp == 1){
+                        this.file.writeFloat(0);
+                    }
+                    else
+                        this.file.writeFloat((float)value.get(i));
                     break;
                 case -4:
-                    this.file.writeDouble((double)value.get(i));
+                    if(tmp == 1){
+                        this.file.writeDouble(0);
+                    }
+                    else
+                        this.file.writeDouble((double)value.get(i));
                     break;
                 default:
-                    this.file.writeUTF(formatStr(value.get(i).toString(), valueType.get(i)));
+                    if(tmp == 1){
+                        this.file.writeUTF("");
+                    }
+                    else
+                        this.file.writeUTF(formatStr(value.get(i).toString(), valueType.get(i)));
                     break;
             }
         }
@@ -185,7 +214,7 @@ public class FileManager {
     }
 
     public int writeTableHeader(int col_num, int index_num, int size, ArrayList<String> column_name,
-                                ArrayList<Integer> column_type, ArrayList<Integer> key_index, int auto_id)
+                                ArrayList<Integer> column_type, ArrayList<Integer> key_index, int auto_id, ArrayList<Boolean> column_isNotNull)
             throws IOException{
         this.file.seek(0);
         this.file.writeInt(auto_id);
@@ -193,6 +222,9 @@ public class FileManager {
         for(int i = 0; i < col_num; ++i){
             this.file.writeUTF(column_name.get(i));
             this.file.writeInt(column_type.get(i));
+        }
+        for(int i = 0; i<col_num; ++i){
+            this.file.writeBoolean(column_isNotNull.get(i));
         }
         this.file.seek(2*page_size);
         this.file.writeInt(index_num);
@@ -382,21 +414,51 @@ public class FileManager {
         ArrayList data = new ArrayList();
         this.file.seek(offset);
         for(int i = 0; i<valueType.size(); i++){
+            int tmp = 0;
+            if(this.file.readBoolean() == true){
+                data.add(null);
+                tmp = 1;
+            }
             switch (valueType.get(i)) {
                 case -1:
-                    data.add(this.file.readInt());
+                    if(tmp == 1){
+                        this.file.readInt();
+                        break;
+                    }
+                    else
+                        data.add(this.file.readInt());
                     break;
                 case -2:
-                    data.add(this.file.readLong());
+                    if(tmp == 1){
+                        this.file.readLong();
+                        break;
+                    }
+                    else
+                        data.add(this.file.readLong());
                     break;
                 case -3:
-                    data.add(this.file.readFloat());
+                    if(tmp == 1){
+                        this.file.readFloat();
+                        break;
+                    }
+                    else
+                        data.add(this.file.readFloat());
                     break;
                 case -4:
-                    data.add(this.file.readDouble());
+                    if(tmp == 1){
+                        this.file.readDouble();
+                        break;
+                    }
+                    else
+                        data.add(this.file.readDouble());
                     break;
                 default:
-                    data.add(this.file.readUTF());
+                    if(tmp == 1){
+                        this.file.readUTF();
+                        break;
+                    }
+                    else
+                        data.add(this.file.readUTF());
                     break;
             }
         }
@@ -438,7 +500,7 @@ public class FileManager {
         return num;
     }
 
-    public ArrayList<Integer> readTableHeader(ArrayList<String> column_name, ArrayList<Integer> column_type) throws IOException{
+    public ArrayList<Integer> readTableHeader(ArrayList<String> column_name, ArrayList<Integer> column_type, ArrayList<Boolean> column_isNotNull) throws IOException{
         ArrayList<Integer> num = new ArrayList<>();
         this.file.seek(0);
         num.add(this.file.readInt());
@@ -448,7 +510,9 @@ public class FileManager {
             column_name.add(this.file.readUTF());
             column_type.add(this.file.readInt());
         }
-
+        for(int i = 0; i<col_num; i++){
+            column_isNotNull.add(this.file.readBoolean());
+        }
         return num;
     }
 
@@ -494,6 +558,7 @@ public class FileManager {
         ArrayList<Integer> valueType = getValueType();
         ArrayList<Integer> node_len = this.calNodeLen(valueType);
         int total = node_len.get(0);
+        total += valueType.size();
         this.deleteData(offset, total);
     }
 

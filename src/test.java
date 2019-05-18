@@ -1,12 +1,13 @@
 import Database.Database;
 import Exceptions.BPlusTreeException;
+import Exceptions.TableException;
 import Table.Table;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
 public class test {
-    public static void main(String[] args) throws BPlusTreeException,IOException {
+    public static void main(String[] args) throws BPlusTreeException,IOException, TableException {
 
         String path = "./dat/";
         Database db = new Database("test", 0);
@@ -21,19 +22,22 @@ public class test {
         ss.add(s[1]);
         String[] p = new String[1];
         p[0] = "m_id";
-        db.createTable(s, a, p, "test");
+        boolean[] isNotNull = new boolean[2];
+        isNotNull[0] = true;
+        isNotNull[1] = false;
+        db.createTable(s, a, p, "test", isNotNull);
 
         db.useDB("test");
         Table table = db.tables.get(0);
 
         ArrayList arr = new ArrayList<>();
         arr.add(1);
-        arr.add("testa");
+        arr.add("twew0");
         table.InsertRow(arr);
 
         ArrayList arr1 = new ArrayList<>();
         arr1.add(2);
-        arr1.add("twew1");
+        arr1.add(null);
         table.InsertRow(arr1);
 
         ArrayList arr2 = new ArrayList<>();
@@ -80,23 +84,15 @@ public class test {
         test_test_test1.add(true);
         test_test.add(test_test_test1);
         test.add(test_test);
+        System.out.println(table.SelectRows(test, ss));
         ArrayList sss = new ArrayList();
         sss.add("name");
         ArrayList ssss = new ArrayList();
         ssss.add("test");
-        System.out.println(table.SelectRows(test, ss));
         table.UpdateRow(test, sss, ssss);
         System.out.println(table.SelectRows(test, ss));
         db.dropTable("test");
         db.dropDB("test");
-//        File db = new File(path);
-//        if(db.exists()){
-//            File[] tmplist = db.listFiles();
-//            for(File f: tmplist){
-//                System.out.print(f.getName().substring(0,f.getName().lastIndexOf(".")));
-//                System.out.print("\n");
-//            }
-//        }
 
     }
 }

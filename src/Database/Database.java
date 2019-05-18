@@ -77,9 +77,9 @@ public class Database {
         }
     }
 
-    public Table createTable (String[] names, int[] types, String[] primary_key, String table_name)
+    public Table createTable (String[] names, int[] types, String[] primary_key, String table_name, boolean[] isNotNull)
         throws IOException {
-        Table table = new Table(names, types, primary_key, table_name, this.db_name);
+        Table table = new Table(names, types, primary_key, table_name, this.db_name, isNotNull);
         this.tables.add(table);
         return table;
     }
