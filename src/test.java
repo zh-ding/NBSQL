@@ -28,12 +28,12 @@ public class test {
 
         ArrayList arr = new ArrayList<>();
         arr.add(1);
-        arr.add("testa");
+        arr.add("twew0");
         table.InsertRow(arr);
 
         ArrayList arr1 = new ArrayList<>();
         arr1.add(2);
-        arr1.add("twew1");
+        arr1.add(null);
         table.InsertRow(arr1);
 
         ArrayList arr2 = new ArrayList<>();
@@ -80,23 +80,15 @@ public class test {
         test_test_test1.add(true);
         test_test.add(test_test_test1);
         test.add(test_test);
+        System.out.println(table.SelectRows(test, ss));
         ArrayList sss = new ArrayList();
         sss.add("name");
         ArrayList ssss = new ArrayList();
         ssss.add("test");
-        System.out.println(table.SelectRows(test, ss));
         table.UpdateRow(test, sss, ssss);
         System.out.println(table.SelectRows(test, ss));
         db.dropTable("test");
         db.dropDB("test");
-//        File db = new File(path);
-//        if(db.exists()){
-//            File[] tmplist = db.listFiles();
-//            for(File f: tmplist){
-//                System.out.print(f.getName().substring(0,f.getName().lastIndexOf(".")));
-//                System.out.print("\n");
-//            }
-//        }
 
     }
 }
