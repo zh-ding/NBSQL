@@ -33,6 +33,8 @@ public class TestParser {
             stmt.accept(visitor);
             System.out.println(output.toString());
         }
+
+        db.dropDB("TEST");
     }
 }
 
