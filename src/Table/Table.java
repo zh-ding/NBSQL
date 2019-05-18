@@ -106,6 +106,10 @@ public class Table {
         }
     }
 
+    public ArrayList<String> getColumnName(){
+        return this.column_name;
+    }
+
     public void InsertRow(ArrayList row)
             throws IOException, BPlusTreeException, TableException {
 

@@ -1,5 +1,7 @@
 package Parser;
 import Database.Database;
+import Exceptions.BPlusTreeException;
+import Exceptions.TableException;
 import Table.Table;
 
 import java.io.IOException;
@@ -121,23 +123,78 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         return null;
     }
 
-//    @Override
-//    public Void visitInsert_stmt(SQLParser.Insert_stmtContext ctx) {
-//        String tableName = ctx.table_name().getText();
-//        Table t = this.db.getTable(tableName);
-//        ArrayList<String> colomns= new ArrayList<String>();
-//        for(int i = 0; i < ctx.column_name().size(); i++)
-//        {
-//            colomns.add(ctx.column_name(i).getText());
-//        }
-//
-//        int count = 0;
-//        if(colomns.size())
-//        for(int i = 0; i < ctx.expr().size(); i++)
-//        {
-//
-//        }
-//    }
+    @Override
+    public Void visitInsert_stmt(SQLParser.Insert_stmtContext ctx){
+        String tableName = ctx.table_name().getText().toUpperCase();
+        Table t = this.db.getTable(tableName);
+        ArrayList<String> colomns= new ArrayList<String>();
+        for(int i = 0; i < ctx.column_name().size(); i++)
+        {
+            colomns.add(ctx.column_name(i).getText().toUpperCase());
+        }
+
+        ArrayList data = new ArrayList();
+        for(int i = 0; i < ctx.expr().size(); i++)
+        {
+            DataTypes dataTmp = ctx.expr(i).literal_value().accept(new SQLVisitorLiteralValue());
+            switch (dataTmp.type){
+                case 0:
+                    data.add(dataTmp.int_data);
+                    break;
+                case 1:
+                    data.add(dataTmp.long_data);
+                    break;
+                case 2:
+                    data.add(dataTmp.float_data);
+                    break;
+                case 3:
+                    data.add(dataTmp.double_data);
+                    break;
+                case 4:
+                    data.add(dataTmp.string_data);
+                    break;
+                default:
+                    break;
+            }
+        }
+        ArrayList<String> col_name = t.getColumnName();
+        ArrayList row = new ArrayList();
+        if(colomns.size() == 0){
+            int k = 0;
+            for(int i = 0; i<col_name.size(); ++i){
+                if(col_name.get(i).toString().compareTo("id")==0){
+                    continue;
+                }
+                if(k < data.size()){
+                    row.add(data.get(k));
+                    k++;
+                    continue;
+                }
+                row.add(null);
+            }
+        }
+        else{
+            for(int i = 0; i<col_name.size(); ++i){
+                if(col_name.get(i).toString().compareTo("id")==0){
+                    continue;
+                }
+                for(int j = 0; j<colomns.size(); ++j){
+                    if(col_name.get(i) == colomns.get(j)){
+                        row.add(data.get(j));
+                        continue;
+                    }
+                }
+                row.add(null);
+            }
+        }
+        try{
+            t.InsertRow(row);
+        }
+        catch (Exception a){
+
+        }
+        return null;
+    }
 
     @Override
     public Void visitSelect_stmt(SQLParser.Select_stmtContext ctx) {
