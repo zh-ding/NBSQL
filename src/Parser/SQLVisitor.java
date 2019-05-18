@@ -1,4 +1,5 @@
 // Generated from /Users/zzh/Documents/GitHub/NBSQL/src/Parser/SQL.g4 by ANTLR 4.7.2
+package Parser;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
@@ -14,9 +15,7 @@ public interface SQLVisitor<T> extends ParseTreeVisitor<T> {
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitSql_stmt(SQLParser.Sql_stmtContext ctx)
-	{
-	}
+	T visitSql_stmt(SQLParser.Sql_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SQLParser#show_table_stmt}.
 	 * @param ctx the parse tree
@@ -59,6 +58,36 @@ public interface SQLVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitUpdate_stmt(SQLParser.Update_stmtContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SQLParser#show_databases_stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitShow_databases_stmt(SQLParser.Show_databases_stmtContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SQLParser#show_database_stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitShow_database_stmt(SQLParser.Show_database_stmtContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SQLParser#create_database_stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCreate_database_stmt(SQLParser.Create_database_stmtContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SQLParser#drop_database_stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitDrop_database_stmt(SQLParser.Drop_database_stmtContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SQLParser#use_database_stmt}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitUse_database_stmt(SQLParser.Use_database_stmtContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SQLParser#column_def}.
 	 * @param ctx the parse tree

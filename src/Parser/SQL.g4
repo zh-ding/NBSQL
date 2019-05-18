@@ -39,6 +39,11 @@ sql_stmt
     | insert_stmt
     | select_stmt
     | update_stmt
+    | show_databases_stmt
+    | create_database_stmt
+    | drop_database_stmt
+    | use_database_stmt
+    | show_database_stmt
     )
  ;
 
@@ -64,20 +69,40 @@ drop_table_stmt
 
 insert_stmt
  : K_INSERT K_INTO
-   ( database_name '.' )? table_name ( '(' column_name ( ',' column_name )* ')' )?
+   table_name ( '(' column_name ( ',' column_name )* ')' )?
    K_VALUES '(' expr ( ',' expr )* ')' ( ',' '(' expr ( ',' expr )* ')' )*
  ;
 
 
 select_stmt
  : K_SELECT result_column ( ',' result_column )*
-   K_FROM (( database_name '.' )? table_name | join_clause)
+   K_FROM (table_name | join_clause)
    ( K_WHERE expr )?
  ;
 
 update_stmt
  : K_UPDATE table_name
    K_SET column_name '=' expr ( ',' column_name '=' expr )* ( K_WHERE expr )?
+ ;
+
+show_databases_stmt
+ : K_SHOW K_DATABASES
+ ;
+
+show_database_stmt
+ : K_SHOW K_DATABASE database_name
+ ;
+
+create_database_stmt
+ : K_CREATE K_DATABASE database_name
+ ;
+
+drop_database_stmt
+ : K_DROP K_DATABASE database_name
+ ;
+
+use_database_stmt
+ : K_USE K_DATABASE database_name
  ;
 
 column_def
@@ -100,7 +125,7 @@ column_constraint
 
 expr
  : literal_value
- | ( ( database_name '.' )? table_name '.' )? column_name
+ | ( table_name '.' )? column_name
  | unary_operator expr
  | expr ( '*' | '/' | '%' ) expr
  | expr ( '+' | '-' ) expr
@@ -131,7 +156,7 @@ result_column
 
 
 join_clause
- : ( database_name '.' )? table_name ( join_operator ( database_name '.' )? table_name K_ON expr )*
+ : table_name ( join_operator table_name K_ON expr )*
  ;
 
 join_operator
@@ -249,7 +274,6 @@ keyword
  | K_WITHOUT
  ;
 
-// TODO check all names below
 
 database_name
  : any_name
@@ -344,6 +368,7 @@ K_CURRENT_DATE : C U R R E N T '_' D A T E;
 K_CURRENT_TIME : C U R R E N T '_' T I M E;
 K_CURRENT_TIMESTAMP : C U R R E N T '_' T I M E S T A M P;
 K_DATABASE : D A T A B A S E;
+K_DATABASES : D A T A B A S E S;
 K_DEFAULT : D E F A U L T;
 K_DEFERRABLE : D E F E R R A B L E;
 K_DEFERRED : D E F E R R E D;
@@ -428,6 +453,7 @@ K_TRIGGER : T R I G G E R;
 K_UNION : U N I O N;
 K_UNIQUE : U N I Q U E;
 K_UPDATE : U P D A T E;
+K_USE : U S E;
 K_USING : U S I N G;
 K_VACUUM : V A C U U M;
 K_VALUES : V A L U E S;
