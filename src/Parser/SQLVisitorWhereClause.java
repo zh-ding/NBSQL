@@ -16,8 +16,8 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
         if(ctx.K_OR() != null)
         {
             this.curExp.add(new ArrayList<ArrayList>());
-            ctx.expr(0).accept(new SQLVisitorWhereClause(this.curExp, this.orPos));
-            ctx.expr(1).accept(new SQLVisitorWhereClause(this.curExp, this.orPos+1));
+            ctx.expr(0).accept(new SQLVisitorWhereClause(this.curExp, this.orPos+1));
+            ctx.expr(1).accept(new SQLVisitorWhereClause(this.curExp, this.orPos));
         }
         else if(ctx.K_AND() != null)
         {
@@ -27,16 +27,15 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
         else
         {
             int type = resolveType(ctx);
-            String colomn_name1 = "";
-            String colomn_name2 = "";
+            String column_name1 = "";
+            String column_name2 = "";
             DataTypes data = null;
             ArrayList condition = new ArrayList();
-            //todo:交换顺序后调整符号
             if(ctx.expr(0).column_name() != null)
             {
                 if(ctx.expr(0).table_name() != null)
-                    colomn_name1.concat(ctx.expr(0).table_name().getText()).concat(".");
-                colomn_name1.concat(ctx.expr(0).column_name().getText());
+                    column_name1.concat(ctx.expr(0).table_name().accept(new SQLVisitorNames())).concat(".");
+                column_name1 = column_name1.concat(ctx.expr(0).column_name().accept(new SQLVisitorNames()));
             }
             else
             {
@@ -45,24 +44,32 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
             if(ctx.expr(1).column_name() != null)
             {
                 if(ctx.expr(1).table_name() != null)
-                    colomn_name2.concat(ctx.expr(1).table_name().getText()).concat(".");
-                colomn_name2.concat(ctx.expr(1).column_name().getText());
+                    column_name2.concat(ctx.expr(1).table_name().accept(new SQLVisitorNames())).concat(".");
+                column_name2 = column_name2.concat(ctx.expr(1).column_name().accept(new SQLVisitorNames()));
             }
             else
             {
                 data = ctx.expr(1).literal_value().accept(new SQLVisitorLiteralValue());
             }
-            if(data == null)
+            if(!column_name1.equals("") && !column_name2.equals(""))
             {
-                condition.add(colomn_name1);
+                condition.add(column_name1);
                 condition.add(type);
-                condition.add(colomn_name2);
+                condition.add(column_name2);
                 condition.add(false);
             }
             else
             {
-                condition.add((colomn_name1 == "") ? colomn_name2 : colomn_name1);
-                condition.add(type);
+                if(column_name2.equals(""))
+                {
+                    condition.add(column_name1);
+                    condition.add(type);
+                }
+                else
+                {
+                    condition.add(column_name2);
+                    condition.add(switchType(type));
+                }
                 switch (data.type)
                 {
                     case 0:
@@ -102,6 +109,26 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
             return 4;
         else if(ctx.NOT_EQ2() != null)
             return 5;
+        return -1;
+    }
+
+    private int switchType(int type)
+    {
+        switch (type)
+        {
+            case 0:
+                return 0;
+            case 1:
+                return 2;
+            case 2:
+                return 1;
+            case 3:
+                return 4;
+            case 4:
+                return 3;
+            case 5:
+                return 5;
+        }
         return -1;
     }
 }

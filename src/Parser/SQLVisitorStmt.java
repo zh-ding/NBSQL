@@ -144,21 +144,27 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
 
         if(ctx.join_clause() == null)
         {
-
+            simple_Select(ctx);
         }
         return null;
     }
 
-//    private ArrayList<String> simple_Select(SQLParser.Select_stmtContext ctx) {
-//        String tableName = ctx.table_name().getText();
-//        ArrayList<String> colomns = new ArrayList<String>();
-//        for(int i = 0; i < ctx.result_column().size(); i++)
-//        {
-//
-//        }
-//        ArrayList<ArrayList<ArrayList>> conditions = new ArrayList<ArrayList<ArrayList>>();
-//        conditions.add(new ArrayList<ArrayList>());
-//        ctx.expr().accept(new SQLVisitorWhereClause(conditions,0));
-//        this.db.getTable(tableName).SelectRows(conditions,);
-//    }
+    private ArrayList<String> simple_Select(SQLParser.Select_stmtContext ctx) {
+        String tableName = ctx.table_name().getText().toUpperCase();
+        ArrayList<String> columns = new ArrayList<String>();
+        for(int i = 0; i < ctx.result_column().size(); i++)
+        {
+            columns.add(ctx.result_column(i).getText().toUpperCase());
+        }
+        ArrayList<ArrayList<ArrayList>> conditions = new ArrayList<ArrayList<ArrayList>>();
+        conditions.add(new ArrayList<ArrayList>());
+        ctx.expr().accept(new SQLVisitorWhereClause(conditions,0));
+        try {
+            this.db.getTable(tableName).SelectRows(conditions, columns);
+        } catch (Exception e)
+        {
+
+        }
+        return null;
+    }
 }
