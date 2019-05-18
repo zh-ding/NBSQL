@@ -235,7 +235,10 @@ public class Table {
     void addResult(BPlusTreeNode node, ArrayList<ArrayList> arr, Set<Integer> result, int index)
             throws BPlusTreeException, IOException{
         for(int i = 0; i < node.keys.size(); ++i) {
-            if (node.compare(arr, node.keys.get(i)) == 0){
+            int cmp = node.compare(arr, node.keys.get(i));
+            if(cmp == 2)
+                continue;
+            if (cmp == 0){
                 result.add(node.pointers.get(i));
                 if(i == 0 && node.leftSibling != -1) {
                     BPlusTreeNode n = file.readNode(node.leftSibling, index);
@@ -261,6 +264,8 @@ public class Table {
                 key1.add(node.keys.get(i).get(j));
 
             int cmp = node.compare(key1, node.keys.get(i));
+            if(cmp == 2)
+                continue;
 
             if(cmp == 0){
                 if(relation == 0 || relation == 3 || relation == 4){
@@ -322,6 +327,8 @@ public class Table {
 
             key2.set(0, this.file.readData(node.pointers.get(i)).get(index));
             int cmp = node.compare(key1, key2);
+            if(cmp == 2)
+                continue;
 
             if(cmp == 0 && (relation == 0 || relation == 3 || relation == 4) && (isFirst || arr1.contains(node.pointers.get(i)))){
                 arr2.add(node.pointers.get(i));
@@ -354,6 +361,8 @@ public class Table {
             key2.add(this.file.readData(node.pointers.get(i)).get(index2));
 
             int cmp = node.compare(key1, key2);
+            if(cmp == 2)
+                continue;
 
             if(cmp == 0 && (relation == 0 || relation == 3 || relation == 4) && (isFirst || arr1.contains(node.pointers.get(i)))){
                 arr2.add(node.pointers.get(i));

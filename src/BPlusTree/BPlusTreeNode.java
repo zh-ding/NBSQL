@@ -172,6 +172,7 @@ public abstract class BPlusTreeNode{
     0: key1 == key2
     -1: key1 < key2
     1: key1 > key2
+    2: null
     */
     public int compare(ArrayList key1, ArrayList key2)
             throws BPlusTreeException{
@@ -181,6 +182,8 @@ public abstract class BPlusTreeNode{
         for(int i = 0; i < len; ++i){
             Object k1 = key1.get(i);
             Object k2 = key2.get(i);
+            if(k1 == null || k2 == null)
+                return 2;
             if(k1 instanceof Integer && k2 instanceof Integer){
                 if((Integer)k1 < (Integer)k2)
                     return -1;

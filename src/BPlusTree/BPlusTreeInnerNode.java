@@ -24,6 +24,8 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
         int i = 0;
         for(i = 0; i < this.keys.size(); ++i){
             int cmp = this.compare(key, this.keys.get(i));
+            if(cmp == 2)
+                throw new BPlusTreeException("key null");
             if(cmp == 0)
                 return i + 1;
             else if(cmp < 0)
