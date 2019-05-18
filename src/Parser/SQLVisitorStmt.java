@@ -24,7 +24,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             ArrayList<String> names = new ArrayList<>();
             int[] types = new int[ctx.column_def().size()];
             ArrayList<String> primary_key = new ArrayList<>();
-            ArrayList<String> not_null = new ArrayList<>();
+            boolean[] not_null = new boolean[ctx.column_def().size()];
             for(int i = 0; i < ctx.column_def().size(); i++)
             {
                 ArrayList def = ctx.column_def(i).accept(new SQLVisitorColumnDef());
@@ -32,14 +32,16 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                 types[i] = ((Integer)def.get(1)).intValue();
                 if(def.get(2) == null)
                 {
+                    not_null[i] = false;
                 }
                 else if((Integer)def.get(2) == 0)
                 {
                     primary_key.add((String)def.get(0));
+                    not_null[i] = false;
                 }
                 else if((Integer)def.get(2) == 1)
                 {
-                    not_null.add((String)def.get(0));
+                    not_null[i] = true;
                 }
             }
             for(int i = 0; i < ctx.table_constraint().size(); i++)
@@ -51,11 +53,14 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                 }
                 else if(ctx.table_constraint(i).K_NOT() != null && ctx.table_constraint(i).K_NULL() != null)
                 {
-                    not_null.addAll(columns);
+                    for(String s:columns)
+                    {
+                        not_null[names.indexOf(s)] = true;
+                    }
                 }
             }
             try {
-                this.db.createTable(names.toArray(new String[names.size()]), types, primary_key.toArray(new String[primary_key.size()]), tableName);
+                this.db.createTable(names.toArray(new String[names.size()]), types, primary_key.toArray(new String[primary_key.size()]), tableName, not_null);
             }
             catch (IOException e)
             {

@@ -36,4 +36,4 @@ public class TestParser {
     }
 }
 
-// create table test(attr1 int primary key, attr2 long, attr3 float, attr4 double, attr5 string(10));
+// create table test(attr1 int, attr2 long, attr3 float not null, attr4 double, attr5 string(10), primary key(attr1), not null(attr5));

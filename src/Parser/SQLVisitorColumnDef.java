@@ -30,7 +30,7 @@ public class SQLVisitorColumnDef extends SQLBaseVisitor<ArrayList> {
         ArrayList<String> columns = new ArrayList<>();
         for(int i = 0; i < ctx.indexed_column().size(); i++)
         {
-            columns.add(ctx.indexed_column(i).getText());
+            columns.add(ctx.indexed_column(i).getText().toUpperCase());
         }
         return columns;
     }
