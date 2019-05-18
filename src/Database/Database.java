@@ -34,10 +34,13 @@ public class Database {
         db_name = this.path + db_name;
         File db = new File(db_name);
         File[] tmplist = db.listFiles();
-        for(File f:tmplist){
-            String tmp = f.getName();
-            Table tmpTable = new Table(tmp.substring(0, tmp.lastIndexOf(".")), this.db_name);
-            this.tables.add(tmpTable);
+        if(tmplist != null)
+        {
+            for(File f:tmplist){
+                String tmp = f.getName();
+                Table tmpTable = new Table(tmp.substring(0, tmp.lastIndexOf(".")), this.db_name);
+                this.tables.add(tmpTable);
+            }
         }
     }
 
