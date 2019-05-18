@@ -214,7 +214,7 @@ public class FileManager {
     }
 
     public int writeTableHeader(int col_num, int index_num, int size, ArrayList<String> column_name,
-                                ArrayList<Integer> column_type, ArrayList<Integer> key_index, int auto_id)
+                                ArrayList<Integer> column_type, ArrayList<Integer> key_index, int auto_id, ArrayList<Boolean> column_isNotNull)
             throws IOException{
         this.file.seek(0);
         this.file.writeInt(auto_id);
@@ -222,6 +222,9 @@ public class FileManager {
         for(int i = 0; i < col_num; ++i){
             this.file.writeUTF(column_name.get(i));
             this.file.writeInt(column_type.get(i));
+        }
+        for(int i = 0; i<col_num; ++i){
+            this.file.writeBoolean(column_isNotNull.get(i));
         }
         this.file.seek(2*page_size);
         this.file.writeInt(index_num);
@@ -497,7 +500,7 @@ public class FileManager {
         return num;
     }
 
-    public ArrayList<Integer> readTableHeader(ArrayList<String> column_name, ArrayList<Integer> column_type) throws IOException{
+    public ArrayList<Integer> readTableHeader(ArrayList<String> column_name, ArrayList<Integer> column_type, ArrayList<Boolean> column_isNotNull) throws IOException{
         ArrayList<Integer> num = new ArrayList<>();
         this.file.seek(0);
         num.add(this.file.readInt());
@@ -507,7 +510,9 @@ public class FileManager {
             column_name.add(this.file.readUTF());
             column_type.add(this.file.readInt());
         }
-
+        for(int i = 0; i<col_num; i++){
+            column_isNotNull.add(this.file.readBoolean());
+        }
         return num;
     }
 

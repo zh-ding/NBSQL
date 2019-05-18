@@ -4,6 +4,7 @@ import BPlusTree.BPlusTree;
 import BPlusTree.BPlusTreeNode;
 import BPlusTree.BPlusTreeLeafNode;
 import Exceptions.BPlusTreeException;
+import Exceptions.TableException;
 import Utils.FileManager;
 
 import java.io.IOException;
@@ -29,9 +30,11 @@ public class Table {
     public FileManager file;
     public String table_name;
     private String database_name;
+    private ArrayList<Boolean> column_isNotNull;
 
 
-    public Table(String[] names, int[] types, String[] primary_key, String table_name, String database_name)
+
+    public Table(String[] names, int[] types, String[] primary_key, String table_name, String database_name, boolean[] isNotNull)
         throws IOException {
         this.database_name = database_name;
         this.table_name = table_name;
@@ -43,12 +46,17 @@ public class Table {
         this.index_forest = new ArrayList<>();
         this.column_name = new ArrayList<>();
         this.column_type = new ArrayList<>();
+        this.column_isNotNull = new ArrayList<>();
         this.column_name.add("id");
         this.column_type.add(-1);
+        this.column_isNotNull.add(true);
+
         ArrayList<Integer> tmp = new ArrayList<>();
         for(int i = 0; i < names.length; ++i) {
             this.column_name.add(names[i]);
             this.column_type.add(types[i]);
+            this.column_isNotNull.add(isNotNull[i]);
+
             for(int j = 0; j<primary_key.length; j++){
                 if(names[i] == primary_key[j]){
                     tmp.add(i+1);
@@ -59,7 +67,7 @@ public class Table {
             tmp.add(0);
         }
         this.index_key.add(tmp);
-        int pos = this.file.writeTableHeader(this.col_num, this.index_num, tmp.size() ,column_name, column_type, tmp, auto_id);
+        int pos = this.file.writeTableHeader(this.col_num, this.index_num, tmp.size() ,column_name, column_type, tmp, auto_id, this.column_isNotNull);
         BPlusTree index_tree = new BPlusTree(file, pos, true, 0);
         index_forest.add(index_tree);
     }
@@ -74,7 +82,8 @@ public class Table {
         this.index_forest = new ArrayList<>();
         this.column_name = new ArrayList<String>();
         this.column_type = new ArrayList<Integer>();
-        ArrayList<Integer> m_num= this.file.readTableHeader(this.column_name, this.column_type);
+        this.column_isNotNull = new ArrayList<>();
+        ArrayList<Integer> m_num= this.file.readTableHeader(this.column_name, this.column_type, this.column_isNotNull);
         this.auto_id = m_num.get(0);
         this.col_num = m_num.get(1);
         ArrayList<Integer> tmp = this.file.readIndexForest();
@@ -98,10 +107,16 @@ public class Table {
     }
 
     public void InsertRow(ArrayList row)
-            throws IOException, BPlusTreeException {
+            throws IOException, BPlusTreeException, TableException {
+
         this.auto_id ++;
         if(row.size() != this.column_name.size())
             row.add(0, this.auto_id);
+        for(int i = 0; i<row.size(); i++){
+            if(row.get(i) == null && this.column_isNotNull.get(i)){
+                throw new TableException("value can't be null");
+            }
+        }
         int offset = file.writeValue(row);
         for(int i = 0; i < this.index_forest.size(); ++i){
             ArrayList key = new ArrayList();
@@ -123,7 +138,7 @@ public class Table {
         }
     }
 
-    public void UpdateRow(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_name, ArrayList newRow) throws IOException, BPlusTreeException{
+    public void UpdateRow(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_name, ArrayList newRow) throws IOException, BPlusTreeException, TableException{
         ArrayList<ArrayList> rows = SelectRows(conditions, this.column_name);
         ArrayList<Integer> index = new ArrayList<>();
         for(int k = 0; k<column_name.size(); ++k){

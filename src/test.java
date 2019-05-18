@@ -1,12 +1,13 @@
 import Database.Database;
 import Exceptions.BPlusTreeException;
+import Exceptions.TableException;
 import Table.Table;
 
 import java.io.IOException;
 import java.util.ArrayList;
 
 public class test {
-    public static void main(String[] args) throws BPlusTreeException,IOException {
+    public static void main(String[] args) throws BPlusTreeException,IOException, TableException {
 
         String path = "./dat/";
         Database db = new Database("test", 0);
@@ -21,7 +22,10 @@ public class test {
         ss.add(s[1]);
         String[] p = new String[1];
         p[0] = "m_id";
-        db.createTable(s, a, p, "test");
+        boolean[] isNotNull = new boolean[2];
+        isNotNull[0] = true;
+        isNotNull[1] = false;
+        db.createTable(s, a, p, "test", isNotNull);
 
         db.useDB("test");
         Table table = db.tables.get(0);
