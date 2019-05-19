@@ -6,6 +6,8 @@ import Table.Table;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     Database db = null;
@@ -63,6 +65,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             }
             try {
                 this.db.createTable(names.toArray(new String[names.size()]), types, primary_key.toArray(new String[primary_key.size()]), tableName, not_null);
+                output.append("create table success");
             }
             catch (IOException e)
             {
@@ -137,24 +140,31 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         for(int i = 0; i < ctx.expr().size(); i++)
         {
             DataTypes dataTmp = ctx.expr(i).literal_value().accept(new SQLVisitorLiteralValue());
-            switch (dataTmp.type){
-                case 0:
-                    data.add(dataTmp.int_data);
-                    break;
-                case 1:
-                    data.add(dataTmp.long_data);
-                    break;
-                case 2:
-                    data.add(dataTmp.float_data);
-                    break;
-                case 3:
-                    data.add(dataTmp.double_data);
-                    break;
-                case 4:
-                    data.add(dataTmp.string_data);
-                    break;
-                default:
-                    break;
+            if(dataTmp != null)
+            {
+                switch (dataTmp.type){
+                    case 0:
+                        data.add(dataTmp.int_data);
+                        break;
+                    case 1:
+                        data.add(dataTmp.long_data);
+                        break;
+                    case 2:
+                        data.add(dataTmp.float_data);
+                        break;
+                    case 3:
+                        data.add(dataTmp.double_data);
+                        break;
+                    case 4:
+                        data.add(dataTmp.string_data);
+                        break;
+                    default:
+                        break;
+                }
+            }
+            else
+            {
+                data.add(null);
             }
         }
         ArrayList<String> col_name = t.getColumnName();
@@ -198,7 +208,6 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
 
     @Override
     public Void visitSelect_stmt(SQLParser.Select_stmtContext ctx) {
-
         if(ctx.join_clause() == null)
         {
             simple_Select(ctx);
@@ -206,22 +215,131 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         return null;
     }
 
-    private ArrayList<String> simple_Select(SQLParser.Select_stmtContext ctx) {
+    private Void simple_Select(SQLParser.Select_stmtContext ctx) {
         String tableName = ctx.table_name().getText().toUpperCase();
-        ArrayList<String> columns = new ArrayList<String>();
+        //获得每一列名称
+        ArrayList<String> column_names = new ArrayList<String>();
         for(int i = 0; i < ctx.result_column().size(); i++)
         {
-            columns.add(ctx.result_column(i).getText().toUpperCase());
+            if(ctx.result_column(i).STAR() != null)
+            {
+                column_names.addAll(this.db.getTable(tableName).getColumnName());
+            }
+            else if(ctx.result_column(i).column_alias() != null)
+                column_names.add(ctx.result_column(i).column_alias().getText().toUpperCase());
+            else
+                column_names.add(ctx.result_column(i).expr().getText().toUpperCase());
         }
+        //获得所有要查询的列
+        ArrayList<String> column_queries = new ArrayList<>();
+        for(int i = 0; i < ctx.result_column().size(); i++) {
+            if (ctx.result_column(i).STAR() != null) {
+                column_queries.addAll(this.db.getTable(tableName).getColumnName());
+            } else {
+                ArrayList<String> temp = new ArrayList<>();
+                ctx.result_column(i).expr().accept(new SQLVisitorEvalColumns(temp));
+                column_queries.addAll(temp);
+            }
+        }
+        Set<String> column_queries_set = new HashSet<String>(column_queries);
+        column_queries = new ArrayList<>(column_queries_set);
+        //condition
         ArrayList<ArrayList<ArrayList>> conditions = new ArrayList<ArrayList<ArrayList>>();
         conditions.add(new ArrayList<ArrayList>());
-        ctx.expr().accept(new SQLVisitorWhereClause(conditions,0));
+        if(ctx.K_WHERE() != null)
+            ctx.expr().accept(new SQLVisitorWhereClause(conditions,0));
+        ArrayList<ArrayList> result = new ArrayList<>();
         try {
-            this.db.getTable(tableName).SelectRows(conditions, columns);
+            result = this.db.getTable(tableName).SelectRows(conditions, column_queries);
+            for(String c:column_names)
+            {
+                output.append(c).append("\t");
+            }
+            output.append("\n");
+            for(ArrayList r:result)
+            {
+                for(int i = 0; i < r.size(); i++)
+                    output.append(r.get(i).toString()).append("\t");
+                output.append("\n");
+            }
         } catch (Exception e)
         {
-
+            output.append("select fail");
         }
         return null;
+    }
+    @Override
+    public Void visitDelete_stmt(SQLParser.Delete_stmtContext ctx) {
+        String tableName = ctx.table_name().getText().toUpperCase();
+        ArrayList<ArrayList<ArrayList>> conditions = new ArrayList<ArrayList<ArrayList>>();
+        conditions.add(new ArrayList<ArrayList>());
+        if(ctx.K_WHERE() != null)
+            ctx.expr().accept(new SQLVisitorWhereClause(conditions,0));
+        ArrayList<ArrayList> result;
+        try {
+            result = this.db.getTable(tableName).SelectRows(conditions,db.getTable(tableName).getColumnName());
+            for(ArrayList row:result)
+            {
+                this.db.getTable(tableName).DeleteRow(row);
+            }
+            this.output.append("delete rows success");
+        } catch (Exception e)
+        {
+            this.output.append("delete rows fail");
+        }
+        return null;
+    }
+
+    @Override
+    public Void visitUpdate_stmt(SQLParser.Update_stmtContext ctx) {
+        String tableName = ctx.table_name().getText().toUpperCase();
+        ArrayList<String> column_names = new ArrayList<>();
+        ArrayList data = new ArrayList();
+        ArrayList<ArrayList<ArrayList>> conditions = new ArrayList<ArrayList<ArrayList>>();
+        conditions.add(new ArrayList<ArrayList>());
+        if(ctx.K_WHERE() != null)
+        {
+            ctx.expr().get(ctx.expr().size()-1).accept(new SQLVisitorWhereClause(conditions,0));
+            for(int i = 0; i < ctx.expr().size()-1; i++)
+            {
+                column_names.add(ctx.expr(i).expr(0).getText().toUpperCase());
+                DataTypes dataTmp = ctx.expr(i).expr(0).accept(new SQLVisitorLiteralValue());
+                if(dataTmp != null)
+                {
+                    switch (dataTmp.type){
+                        case 0:
+                            data.add(dataTmp.int_data);
+                            break;
+                        case 1:
+                            data.add(dataTmp.long_data);
+                            break;
+                        case 2:
+                            data.add(dataTmp.float_data);
+                            break;
+                        case 3:
+                            data.add(dataTmp.double_data);
+                            break;
+                        case 4:
+                            data.add(dataTmp.string_data);
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else
+                {
+                    data.add(null);
+                }
+            }
+        }
+        try {
+            this.db.getTable(tableName).UpdateRow(conditions,column_names,data);
+            this.output.append("update rows success");
+        } catch (Exception e)
+        {
+            this.output.append("update rows fail");
+        }
+        return null;
+
     }
 }

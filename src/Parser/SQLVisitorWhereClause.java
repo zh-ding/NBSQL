@@ -70,23 +70,30 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
                     condition.add(column_name2);
                     condition.add(switchType(type));
                 }
-                switch (data.type)
+                if(data != null)
                 {
-                    case 0:
-                        condition.add(data.int_data);
-                        break;
-                    case 1:
-                        condition.add(data.long_data);
-                        break;
-                    case 2:
-                        condition.add(data.float_data);
-                        break;
-                    case 3:
-                        condition.add(data.double_data);
-                        break;
-                    case 4:
-                        condition.add(data.string_data);
-                        break;
+                    switch (data.type)
+                    {
+                        case 0:
+                            condition.add(data.int_data);
+                            break;
+                        case 1:
+                            condition.add(data.long_data);
+                            break;
+                        case 2:
+                            condition.add(data.float_data);
+                            break;
+                        case 3:
+                            condition.add(data.double_data);
+                            break;
+                        case 4:
+                            condition.add(data.string_data);
+                            break;
+                    }
+                }
+                else
+                {
+                    condition.add(null);
                 }
                 condition.add(true);
             }
