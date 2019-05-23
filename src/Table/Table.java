@@ -224,34 +224,25 @@ public class Table {
                         }else{
                             addResultWoIndex(this.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
                         }
-
-
                     }else if(isPrimitive && relation == 5){
                         addResultWoIndex(this.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
                     }else{
                         addResultNotPrimitive(this.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
                     }
-
                     arr1 = arr2;
                     arr2 = new HashSet<>();
-
                     isFirst = false;
-
-
                 }
                 result.addAll(arr1);
             }
-
-
-
         }
         ArrayList<ArrayList> re = new ArrayList<>();
         for(int off: result){
             re.add(this.file.readData(off));
         }
-
         return re;
     }
+
 
     void addResult(BPlusTreeNode node, ArrayList<ArrayList> arr, Set<Integer> result, int index)
             throws BPlusTreeException, IOException{

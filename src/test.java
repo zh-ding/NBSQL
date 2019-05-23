@@ -2,10 +2,12 @@ import Database.Database;
 import Exceptions.BPlusTreeException;
 import Exceptions.TableException;
 import Table.Table;
+import com.sun.javafx.collections.MappingChange;
 
 import java.io.IOException;
 import java.util.ArrayList;
-
+import java.util.HashMap;
+import java.util.Map;
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException {
 
@@ -16,7 +18,7 @@ public class test {
         a[1] = 8;
         String[] s = new String[2];
         s[0] = "m_id";
-        s[1] = "name";
+        s[1] = "1_name";
         ArrayList ss = new ArrayList();
         ss.add(s[0]);
         ss.add(s[1]);
@@ -27,72 +29,92 @@ public class test {
         isNotNull[1] = false;
         db.createTable(s, a, p, "test", isNotNull);
 
+        s[1] = "2_name";
+        db.createTable(s, a, p, "test1", isNotNull);
+
         db.useDB("test");
         Table table = db.tables.get(0);
+        Table table1 = db.tables.get(1);
 
         ArrayList arr = new ArrayList<>();
         arr.add(1);
         arr.add("twew0");
         table.InsertRow(arr);
+        table1.InsertRow(arr);
 
         ArrayList arr1 = new ArrayList<>();
         arr1.add(2);
-        arr1.add(null);
+        arr1.add("twew1");
         table.InsertRow(arr1);
+        table1.InsertRow(arr1);
 
         ArrayList arr2 = new ArrayList<>();
         arr2.add(3);
         arr2.add("twew2");
         table.InsertRow(arr2);
+        table1.InsertRow(arr2);
 
         ArrayList arr3 = new ArrayList<>();
         arr3.add(4);
         arr3.add("twew3");
         table.InsertRow(arr3);
+        table1.InsertRow(arr3);
 
         ArrayList arr4 = new ArrayList<>();
         arr4.add(5);
         arr4.add("twew4");
         table.InsertRow(arr4);
+        table1.InsertRow(arr4);
 
         ArrayList arr5 = new ArrayList<>();
         arr5.add(6);
         arr5.add("twew5");
         table.InsertRow(arr5);
+        table1.InsertRow(arr5);
 
 
         db.useDB("test");
 
         table = db.tables.get(0);
-        table.index_forest.get(0).printBPlusTree();
-        System.out.println();
-        table.DeleteRow(arr3);
-        table.index_forest.get(0).printBPlusTree();
-        System.out.println();
-        ArrayList test = new ArrayList();
-        ArrayList test_test = new ArrayList();
-        ArrayList test_test_test = new ArrayList();
-        test_test_test.add("m_id");
-        test_test_test.add(1);
-        test_test_test.add(5);
-        test_test_test.add(true);
-        test_test.add(test_test_test);
-        ArrayList test_test_test1 = new ArrayList();
-        test_test_test1.add("m_id");
-        test_test_test1.add(2);
-        test_test_test1.add(1);
-        test_test_test1.add(true);
-        test_test.add(test_test_test1);
-        test.add(test_test);
-        System.out.println(table.SelectRows(test, ss));
-        ArrayList sss = new ArrayList();
-        sss.add("name");
-        ArrayList ssss = new ArrayList();
-        ssss.add("test");
-        table.UpdateRow(test, sss, ssss);
-        System.out.println(table.SelectRows(test, ss));
+        table1 = db.tables.get(1);
+
+//        table.index_forest.get(0).printBPlusTree();
+//        System.out.println();
+//        table.DeleteRow(arr3);
+//        table.index_forest.get(0).printBPlusTree();
+//        System.out.println();
+//        ArrayList test = new ArrayList();
+//        ArrayList test_test = new ArrayList();
+//        ArrayList test_test_test = new ArrayList();
+//        test_test_test.add("m_id");
+//        test_test_test.add(1);
+//        test_test_test.add(5);
+//        test_test_test.add(true);
+//        test_test.add(test_test_test);
+//        ArrayList test_test_test1 = new ArrayList();
+//        test_test_test1.add("m_id");
+//        test_test_test1.add(2);
+//        test_test_test1.add(1);
+//        test_test_test1.add(true);
+//        test_test.add(test_test_test1);
+//        test.add(test_test);
+//        System.out.println(table.SelectRows(test, ss));
+//        ArrayList sss = new ArrayList();
+//        sss.add("name");
+//        ArrayList ssss = new ArrayList();
+//        ssss.add("test");
+//        table.UpdateRow(test, sss, ssss);
+//        System.out.println(table.SelectRows(test, ss));
+        ArrayList<Table> tmp = new ArrayList<Table>();
+        tmp.add(table);
+        tmp.add(table1);
+        Map res = db.joinTwoTables(tmp, null);
+        System.out.print(res);
+        db.dropTable("test1");
         db.dropTable("test");
         db.dropDB("test");
+
+
 
     }
 }
