@@ -3,11 +3,15 @@ import Exceptions.BPlusTreeException;
 import Exceptions.TableException;
 import Table.Table;
 import com.sun.javafx.collections.MappingChange;
+import javafx.scene.control.Tab;
 
 import java.io.IOException;
+import java.security.cert.TrustAnchor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException {
 
@@ -105,11 +109,39 @@ public class test {
 //        ssss.add("test");
 //        table.UpdateRow(test, sss, ssss);
 //        System.out.println(table.SelectRows(test, ss));
+        ArrayList test = new ArrayList();
+        ArrayList test1 = new ArrayList();
+        ArrayList test_test = new ArrayList();
+        ArrayList test_test_test = new ArrayList();
+        test.add("test");
+        test.add("m_id");
+        test.add(0);
+        test.add("test1");
+        test.add("m_id");
+        test.add(false);
+        test1.add("test");
+        test1.add("m_id");
+        test1.add(0);
+        test1.add(2);
+        test1.add(null);
+        test1.add(true);
+        test_test.add(test);
+        test_test.add(test1);
+
+        test_test_test.add(test_test);
+
         ArrayList<Table> tmp = new ArrayList<Table>();
         tmp.add(table);
         tmp.add(table1);
-        Map res = db.joinTwoTables(tmp, null);
+        Set<ArrayList> res = db.joinTwoTables(tmp, test_test_test);
         System.out.print(res);
+        System.out.println();
+        for (ArrayList tmpres : res) {
+            System.out.print(table.file.readData((int)tmpres.get(0)));
+            System.out.print(table1.file.readData((int)tmpres.get(1)));
+            System.out.println();
+        }
+        System.out.print("test1".hashCode());
         db.dropTable("test1");
         db.dropTable("test");
         db.dropDB("test");
