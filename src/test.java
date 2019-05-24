@@ -121,8 +121,11 @@ public class test {
 //        System.out.println(table.SelectRows(test, ss));
         ArrayList test = new ArrayList();
         ArrayList test1 = new ArrayList();
+        ArrayList test2 = new ArrayList();
         ArrayList test_test = new ArrayList();
+        ArrayList test_test1 = new ArrayList();
         ArrayList test_test_test = new ArrayList();
+        ArrayList test_test_test1 = new ArrayList();
         ArrayList test_test_test_test = new ArrayList();
         test.add("test");
         test.add("m_id");
@@ -141,7 +144,15 @@ public class test {
 
         test_test_test.add(test_test);
         test_test_test_test.add(test_test_test);
-        test_test_test_test.add(null);
+        test2.add("test");
+        test2.add("m_id");
+        test2.add(0);
+        test2.add("test2");
+        test2.add("m_id");
+        test2.add(false);
+        test_test1.add(test2);
+        test_test_test1.add(test_test1);
+        test_test_test_test.add(test_test_test1);
         ArrayList<Table> tmp = new ArrayList<Table>();
         tmp.add(table);
         tmp.add(table1);
