@@ -1,11 +1,12 @@
 package Table;
 
 import BPlusTree.BPlusTree;
-import BPlusTree.BPlusTreeNode;
 import BPlusTree.BPlusTreeLeafNode;
+import BPlusTree.BPlusTreeNode;
 import Exceptions.BPlusTreeException;
 import Exceptions.TableException;
 import Utils.FileManager;
+import generator.Generator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -145,7 +146,6 @@ public class Table {
     }
 
     public void UpdateRow(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_name, ArrayList newRow) throws IOException, BPlusTreeException, TableException{
-        ArrayList<ArrayList> rows = SelectRows(conditions, this.column_name);
         ArrayList<Integer> index = new ArrayList<>();
         for(int k = 0; k<column_name.size(); ++k){
             for(int j = 0; j<this.column_name.size(); ++j){
@@ -155,13 +155,14 @@ public class Table {
             }
         }
 
-        for(int i = 0; i<rows.size(); ++i){
-            this.DeleteRow(rows.get(i));
+        for(ArrayList row: SelectRows(conditions, this.column_name)){
+            this.DeleteRow(row);
             for(int k = 0; k<column_name.size(); ++k){
-                rows.get(i).set(index.get(k), newRow.get(k));
+                row.set(index.get(k), newRow.get(k));
             }
-            this.InsertRow(rows.get(i));
+            this.InsertRow(row);
         }
+
     }
 
     /*
@@ -180,67 +181,142 @@ public class Table {
       ],
     ]
     */
-    public ArrayList<ArrayList> SelectRows(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_names)
+    public Generator<ArrayList> SelectRows(ArrayList<ArrayList<ArrayList>> conditions, ArrayList<String> column_names)
             throws BPlusTreeException, IOException{
-        Set<Integer> result = new HashSet<>();
-        int offset;
-        for (ArrayList<ArrayList> arr_or: conditions) {
-            int index = IsKeyMatch(arr_or);
-            if(index >= 0){
-                ArrayList key = new ArrayList();
-                for(ArrayList arr_and: arr_or)
-                    this.addKey(arr_and, key);
-                offset = this.index_forest.get(index).search(key);
+        Table table = this;
 
-                BPlusTreeNode node = this.file.readNode(offset, index);
+        Generator<ArrayList> simpleGenerator = new Generator<ArrayList>() {
+            public void run() throws InterruptedException {
+                Set<Integer> result = new HashSet<>();
+                int offset;
+                for (ArrayList<ArrayList> arr_or: conditions) {
+                    int index = IsKeyMatch(arr_or);
+                    if(index >= 0){
+                        ArrayList key = new ArrayList();
+                        for(ArrayList arr_and: arr_or)
+                            table.addKey(arr_and, key);
 
-                addResult(node, key, result, index);
-            }else{
-                Set<Integer> arr1 = new HashSet<>();
-                Set<Integer> arr2 = new HashSet<>();
-                Boolean isFirst = true;
+                        try {
+                            offset = table.index_forest.get(index).search(key);
 
-                for(ArrayList arr_and: arr_or){
-                    String attr1 = (String)arr_and.get(0);
-                    int relation = (Integer)arr_and.get(1);
-                    boolean isPrimitive = (Boolean)arr_and.get(3);
+                            BPlusTreeNode node = table.file.readNode(offset, index);
 
-                    if(isPrimitive && relation != 5){
-                        int col = column_name.indexOf(attr1);
-                        for(index = 0; index < this.index_key.size(); ++index)
-                            if(attr1 == this.column_name.get(this.index_key.get(index).get(0)))
-                                break;
-
-                        if(index < this.index_key.size()){
-
-                            ArrayList key = new ArrayList();
-                            this.addKey(arr_and, key);
-                            this.addRandomKey(index, key);
-
-                            offset = this.index_forest.get(index).search(key);
-                            BPlusTreeNode node = this.file.readNode(offset, index);
-
-                            addResult(node, arr_and, arr1, arr2, isFirst, relation, index);
-                        }else{
-                            addResultWoIndex(this.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
+                            addResult(node, key, result, index);
+                        }catch (BPlusTreeException e){
+                            System.out.println(e);
+                            throw new InterruptedException();
+                        }catch (IOException e){
+                            System.out.println(e);
+                            throw new InterruptedException();
                         }
-                    }else if(isPrimitive && relation == 5){
-                        addResultWoIndex(this.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
                     }else{
-                        addResultNotPrimitive(this.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
+                        Set<Integer> arr1 = new HashSet<>();
+                        Set<Integer> arr2 = new HashSet<>();
+                        Boolean isFirst = true;
+
+                        for(ArrayList arr_and: arr_or){
+                            String attr1 = (String)arr_and.get(0);
+                            int relation = (Integer)arr_and.get(1);
+                            boolean isPrimitive = (Boolean)arr_and.get(3);
+
+                            if(isPrimitive && relation != 5){
+                                int col = column_name.indexOf(attr1);
+                                for(index = 0; index < table.index_key.size(); ++index)
+                                    if(attr1 == table.column_name.get(table.index_key.get(index).get(0)))
+                                        break;
+
+                                if(index < table.index_key.size()){
+
+                                    ArrayList key = new ArrayList();
+                                    table.addKey(arr_and, key);
+                                    table.addRandomKey(index, key);
+
+                                    try {
+
+                                        offset = table.index_forest.get(index).search(key);
+                                        BPlusTreeNode node = table.file.readNode(offset, index);
+
+                                        addResult(node, arr_and, arr1, arr2, isFirst, relation, index);
+                                    }catch (BPlusTreeException e){
+                                        System.out.println(e);
+                                        throw new InterruptedException();
+                                    }catch (IOException e){
+                                        System.out.println(e);
+                                        throw new InterruptedException();
+                                    }
+                                }else {
+                                    try {
+                                        addResultWoIndex(table.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
+
+                                    }catch (BPlusTreeException e){
+                                        System.out.println(e);
+                                        throw new InterruptedException();
+                                    }catch (IOException e){
+                                        System.out.println(e);
+                                        throw new InterruptedException();
+                                    }
+                                }
+                            }else if(isPrimitive && relation == 5){
+                                try{
+                                    addResultWoIndex(table.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
+                                }catch (BPlusTreeException e){
+                                    System.out.println(e);
+                                    throw new InterruptedException();
+                                }catch (IOException e){
+                                    System.out.println(e);
+                                    throw new InterruptedException();
+                                }
+                            }else{
+                                try {
+                                    addResultNotPrimitive(table.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
+                                }catch (BPlusTreeException e){
+                                    System.out.println(e);
+                                    throw new InterruptedException();
+                                }catch (IOException e){
+                                    System.out.println(e);
+                                    throw new InterruptedException();
+                                }
+                            }
+                            arr1 = arr2;
+                            arr2 = new HashSet<>();
+                            isFirst = false;
+                        }
+                        result.addAll(arr1);
                     }
-                    arr1 = arr2;
-                    arr2 = new HashSet<>();
-                    isFirst = false;
                 }
-                result.addAll(arr1);
+                if(column_names == null){
+                    for(int off: result){
+                        try {
+                            ArrayList row = table.file.readData(off);
+                            yield(row);
+                        }catch(IOException e){
+                            System.out.println(e);
+                            throw new InterruptedException();
+                        }
+                    }
+                }else{
+                    ArrayList<Integer> idx = new ArrayList<>();
+                    for(String col: column_names){
+                        idx.add(table.column_name.indexOf(col));
+                    }
+                    for(int off: result){
+                        try {
+                            ArrayList row = table.file.readData(off);
+                            ArrayList newRow = new ArrayList();
+                            for(int i: idx)
+                                newRow.add(row.get(i));
+                            yield(newRow);
+                        }catch(IOException e){
+                            System.out.println(e);
+                            throw new InterruptedException();
+                        }
+                    }
+                }
+
             }
-        }
-        ArrayList<ArrayList> re = new ArrayList<>();
-        for(int off: result){
-            re.add(this.file.readData(off));
-        }
-        return re;
+        };
+
+        return simpleGenerator;
     }
 
 

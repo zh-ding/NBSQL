@@ -1,8 +1,7 @@
 package Parser;
 import Database.Database;
-import Exceptions.BPlusTreeException;
-import Exceptions.TableException;
 import Table.Table;
+import generator.Generator;
 
 import java.io.File;
 import java.io.IOException;
@@ -361,7 +360,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         conditions.add(new ArrayList<ArrayList>());
         if(ctx.K_WHERE() != null)
             ctx.expr().accept(new SQLVisitorWhereClause(conditions,0));
-        ArrayList<ArrayList> result = new ArrayList<>();
+        Generator<ArrayList> result;
         try {
             result = this.db.getTable(tableName).SelectRows(conditions, column_queries);
             for(String c:column_names)
@@ -434,7 +433,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         conditions.add(new ArrayList<ArrayList>());
         if(ctx.K_WHERE() != null)
             ctx.expr().accept(new SQLVisitorWhereClause(conditions,0));
-        ArrayList<ArrayList> result;
+        Generator<ArrayList> result;
         try {
             result = this.db.getTable(tableName).SelectRows(conditions,db.getTable(tableName).getColumnName());
             for(ArrayList row:result)

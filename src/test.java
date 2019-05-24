@@ -2,14 +2,9 @@ import Database.Database;
 import Exceptions.BPlusTreeException;
 import Exceptions.TableException;
 import Table.Table;
-import com.sun.javafx.collections.MappingChange;
-import javafx.scene.control.Tab;
 
 import java.io.IOException;
-import java.security.cert.TrustAnchor;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
 
 public class test {
@@ -92,33 +87,7 @@ public class test {
         table1 = db.tables.get(1);
         table2 = db.tables.get(2);
 
-//        table.index_forest.get(0).printBPlusTree();
-//        System.out.println();
-//        table.DeleteRow(arr3);
-//        table.index_forest.get(0).printBPlusTree();
-//        System.out.println();
-//        ArrayList test = new ArrayList();
-//        ArrayList test_test = new ArrayList();
-//        ArrayList test_test_test = new ArrayList();
-//        test_test_test.add("m_id");
-//        test_test_test.add(1);
-//        test_test_test.add(5);
-//        test_test_test.add(true);
-//        test_test.add(test_test_test);
-//        ArrayList test_test_test1 = new ArrayList();
-//        test_test_test1.add("m_id");
-//        test_test_test1.add(2);
-//        test_test_test1.add(1);
-//        test_test_test1.add(true);
-//        test_test.add(test_test_test1);
-//        test.add(test_test);
-//        System.out.println(table.SelectRows(test, ss));
-//        ArrayList sss = new ArrayList();
-//        sss.add("name");
-//        ArrayList ssss = new ArrayList();
-//        ssss.add("test");
-//        table.UpdateRow(test, sss, ssss);
-//        System.out.println(table.SelectRows(test, ss));
+
         ArrayList test = new ArrayList();
         ArrayList test1 = new ArrayList();
         ArrayList test2 = new ArrayList();
@@ -166,7 +135,7 @@ public class test {
             System.out.print(table2.file.readData((int)tmpres.get(2)));
             System.out.println();
         }
-        System.out.print("test1".hashCode());
+
         db.dropTable("test2");
         db.dropTable("test1");
         db.dropTable("test");
