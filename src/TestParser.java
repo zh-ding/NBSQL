@@ -27,11 +27,16 @@ public class TestParser {
             if (sql.compareTo("quit") == 0)
                 break;
             StringBuffer output = new StringBuffer();
-            SQLParser parser = new SQLParser(new CommonTokenStream(new SQLLexer(CharStreams.fromString(sql))));
-            SQLParser.Sql_stmtContext stmt = parser.sql_stmt();
-            SQLVisitorStmt visitor = new SQLVisitorStmt(dbName, output);
-            stmt.accept(visitor);
-            System.out.println(output.toString());
+            try {
+                SQLParser parser = new SQLParser(new CommonTokenStream(new SQLLexer(CharStreams.fromString(sql))));
+                SQLParser.Sql_stmtContext stmt = parser.sql_stmt();
+                SQLVisitorStmt visitor = new SQLVisitorStmt(dbName, output);
+                stmt.accept(visitor);
+                System.out.println(output.toString());
+            } catch (Exception e)
+            {
+                System.out.println(e.getMessage());
+            }
         }
 
         db.dropDB("TEST");
