@@ -209,10 +209,33 @@ public class Database {
         return res;
     }
 
-    private Set<ArrayList> joinTable(Set<ArrayList> tmpRes, Table table, int num, ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList>> condition)
-        throws IOException{
+    private ArrayList<ArrayList> makeSimpleCrossFromSet(Set<ArrayList> tmpRes, Table table) throws IOException{
+        ArrayList<ArrayList> res = new ArrayList<>();
+        BPlusTreeLeafNode node = table.index_forest.get(0).getMostLeftLeafNode();
+        ArrayList tmp1 = new ArrayList();
+        while(node != null) {
+            for (int i = 0; i < node.keyNum; ++i) {
+                int offset = node.pointers.get(i);
+                tmp1.add(offset);
+            }
+            node = (BPlusTreeLeafNode) table.file.readNode(node.rightSibling,0);
+        }
+        for (ArrayList tmp : tmpRes) {
+            for(int i = 0; i<tmp1.size(); ++i){
+                ArrayList t = new ArrayList();
+                t.addAll(tmp);
+                t.add(tmp1.get(i));
+                res.add(t);
+            }
+
+        }
+        return res;
+    }
+
+    private Set<ArrayList> joinTable(Set<ArrayList> tmpRes, Table table, int num, ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList>> conditions)
+        throws IOException, BPlusTreeException{
         Set<ArrayList> result = new HashSet<>();
-        if(condition == null){
+        if(conditions == null){
             ArrayList<ArrayList> index = getCommonIndex(tabs, num);
             ArrayList<ArrayList> tmp1 = new ArrayList();
             ArrayList tmp2 = new ArrayList();
@@ -249,7 +272,172 @@ public class Database {
             }
         }
         else{
-
+            for(int i = 0; i<conditions.size(); ++i){
+                ArrayList<ArrayList> tmpCond = new ArrayList<>();
+                ArrayList<ArrayList> tmp1 = new ArrayList<>();
+                ArrayList<Integer> tmp2 = new ArrayList<>();
+                Map<Integer, ArrayList<ArrayList>> hashtmp1 = new HashMap<>();
+                Map<Integer, ArrayList> hashtmp2 = new HashMap<>();
+                for(int j = 0; j<conditions.get(i).size(); ++j){
+                    if(((boolean)conditions.get(i).get(j).get(5)==false) && ((int)conditions.get(i).get(j).get(2)==0) &&
+                            (conditions.get(i).get(j).get(0).toString().compareTo(conditions.get(i).get(j).get(3).toString())!=0)
+                            && ((conditions.get(i).get(j).get(0).toString().compareTo(table.table_name) == 0) || (conditions.get(i).get(j).get(3).toString().compareTo(table.table_name) == 0))
+                            ){
+                        for(int k = 0; k<num; ++k){
+                            ArrayList tmp = new ArrayList();
+                            if(tabs.get(k).table_name.compareTo(conditions.get(i).get(j).get(0).toString()) == 0){
+                                tmp.add(k);
+                                tmp.add(tabs.get(k).getColumnName().indexOf(conditions.get(i).get(j).get(1).toString()));
+                                tmp1.add(tmp);
+                                tmp2.add(tabs.get(num).getColumnName().indexOf(conditions.get(i).get(j).get(4).toString()));
+                                break;
+                            }
+                            if(tabs.get(k).table_name.compareTo(conditions.get(i).get(j).get(3).toString()) == 0){
+                                tmp.add(k);
+                                tmp.add(tabs.get(k).getColumnName().indexOf(conditions.get(i).get(j).get(4).toString()));
+                                tmp1.add(tmp);
+                                tmp2.add(tabs.get(num).getColumnName().indexOf(conditions.get(i).get(j).get(1).toString()));
+                                break;
+                            }
+                        }
+                    }
+                    else{
+                        tmpCond.add(conditions.get(i).get(j));
+                    }
+                }
+                if(tmp1.size() != 0){
+                    hashtmp1 = getHashMapFromSet(tabs, tmpRes, tmp1);
+                    hashtmp2 = makeHashMap(table, tmp2);
+                    for(Integer key : hashtmp1.keySet()){
+                        if(hashtmp2.containsKey(key)){
+                            for(int l = 0; l<(hashtmp1.get(key).size()); ++l){
+                                for(int j = 0; j<hashtmp2.get(key).size(); ++j){
+                                    ArrayList<ArrayList> tmp1value = getValues(tabs,hashtmp1.get(key).get(l));
+                                    ArrayList tmp2value = tabs.get(num).file.readData((int)hashtmp2.get(key).get(j));
+                                    boolean flag = true;
+                                    for(int k = 0; k<tmp1.size(); ++k){
+                                        if(tmp1value.get((int)tmp1.get(k).get(0)).get((int)tmp1.get(k).get(1)).toString().compareTo(tmp2value.get((int)tmp2.get(k)).toString())!=0){
+                                            flag = false;
+                                        }
+                                    }
+                                    if(flag) {
+                                        for (int k = 0; k < tmpCond.size(); ++k) {
+                                            if ((boolean) tmpCond.get(k).get(5)) {
+                                                ArrayList tmpC = new ArrayList();
+                                                tmpC.add(tmpCond.get(k));
+                                                for (int t = 0; t <= num; t++) {
+                                                    if (tabs.get(t).table_name.compareTo(tmpCond.get(k).get(0).toString()) == 0) {
+                                                        if(t != num){
+                                                            if (!isObeyConditions(tmpC, tabs.get(t), tabs.get(num), tmp1value.get(t), tmp2value)) {
+                                                                flag = false;
+                                                                break;
+                                                            }
+                                                        }
+                                                        else{
+                                                            if (!isObeyConditions(tmpC, tabs.get(t), tabs.get(num), tmp2value, tmp2value)) {
+                                                                flag = false;
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                if(!flag){
+                                                    break;
+                                                }
+                                            }
+                                            else {
+                                                ArrayList tmpC = new ArrayList();
+                                                tmpC.add(tmpCond.get(k));
+                                                int t1 = -1;
+                                                int t2 = -1;
+                                                for (int t = 0; t < num; t++) {
+                                                    if (tabs.get(t).table_name.compareTo(tmpCond.get(k).get(0).toString()) == 0) {
+                                                        t1 = t;
+                                                    }
+                                                    if (tabs.get(t).table_name.compareTo(tmpCond.get(k).get(3).toString()) == 0) {
+                                                        t2 = t;
+                                                    }
+                                                }
+                                                if(t1 == -1 && t2 != -1){
+                                                    if (!isObeyConditions(tmpC, tabs.get(t2), tabs.get(num), tmp1value.get(t2), tmp2value)) {
+                                                        flag = false;
+                                                        break;
+                                                    }
+                                                }else if(t1 != -1 && t2 == -1){
+                                                    if (!isObeyConditions(tmpC, tabs.get(t1), tabs.get(num), tmp1value.get(t1), tmp2value)) {
+                                                        flag = false;
+                                                        break;
+                                                    }
+                                                }else if(t1 != -1 && t2 != -1){
+                                                    if (!isObeyConditions(tmpC, tabs.get(t1), tabs.get(t2), tmp1value.get(t1), tmp1value.get(t2))) {
+                                                        flag = false;
+                                                        break;
+                                                    }
+                                                }else{
+                                                    if (!isObeyConditions(tmpC, tabs.get(num), tabs.get(num), tmp1value.get(num), tmp1value.get(num))) {
+                                                        flag = false;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if(flag){
+                                        ArrayList tmpitem = new ArrayList();
+                                        tmpitem.addAll(hashtmp1.get(key).get(l));
+                                        tmpitem.add(hashtmp2.get(key).get(j));
+                                        result.add(tmpitem);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else {
+                    ArrayList<ArrayList> tmp = makeSimpleCrossFromSet(tmpRes, table);
+                    for(int j = 0; j<tmp.size(); j++){
+                        ArrayList<ArrayList> tmpvalue = getValues(tabs, tmp.get(j));
+                        boolean flag = true;
+                        for (int l = 0; l < conditions.get(i).size(); ++l) {
+                            if ((boolean) conditions.get(i).get(l).get(5)) {
+                                ArrayList tmpC = new ArrayList();
+                                tmpC.add(conditions.get(i).get(l));
+                                for (int t = 0; t <= num; t++) {
+                                    if (tabs.get(t).table_name.compareTo(conditions.get(i).get(l).get(0).toString()) == 0) {
+                                        if (!isObeyConditions(tmpC, tabs.get(t), tabs.get(num), tmpvalue.get(t), tmpvalue.get(num))) {
+                                            flag = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if(!flag){
+                                    break;
+                                }
+                            }
+                            else{
+                                ArrayList tmpC = new ArrayList();
+                                tmpC.add(conditions.get(i).get(l));
+                                int t1 = 0, t2 = 0;
+                                for (int t = 0; t <= num; t++) {
+                                    if (tabs.get(t).table_name.compareTo(conditions.get(i).get(l).get(0).toString()) == 0) {
+                                        t1 = t;
+                                    }
+                                    if (tabs.get(t).table_name.compareTo(conditions.get(i).get(l).get(3).toString()) == 0) {
+                                        t2 = t;
+                                    }
+                                }
+                                if (!isObeyConditions(tmpC, tabs.get(t1), tabs.get(t2), tmpvalue.get(t1), tmpvalue.get(t2))) {
+                                    flag = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if(flag == true){
+                            result.add(tmp.get(j));
+                        }
+                    }
+                }
+            }
         }
         return result;
     }
@@ -565,24 +753,24 @@ public class Database {
             else{
                 if(condition.get(i).get(0).toString().compareTo(tab1.table_name) == 0){
                     if(condition.get(i).get(3).toString().compareTo(tab1.table_name) == 0){
-                        if(!isObey(tmp1.get(tab1.getColumnName().indexOf(condition.get(i).get(1))), (int)condition.get(i).get(2), tmp1.get(tab1.getColumnName().indexOf(condition.get(i).get(3))))){
+                        if(!isObey(tmp1.get(tab1.getColumnName().indexOf(condition.get(i).get(1))), (int)condition.get(i).get(2), tmp1.get(tab1.getColumnName().indexOf(condition.get(i).get(4))))){
                             return false;
                         }
                     }
                     else{
-                        if(!isObey(tmp1.get(tab1.getColumnName().indexOf(condition.get(i).get(1))), (int)condition.get(i).get(2), tmp2.get(tab2.getColumnName().indexOf(condition.get(i).get(3))))){
+                        if(!isObey(tmp1.get(tab1.getColumnName().indexOf(condition.get(i).get(1))), (int)condition.get(i).get(2), tmp2.get(tab2.getColumnName().indexOf(condition.get(i).get(4))))){
                             return false;
                         }
                     }
                 }
                 else{
                     if(condition.get(i).get(3).toString().compareTo(tab1.table_name) == 0){
-                        if(!isObey(tmp2.get(tab2.getColumnName().indexOf(condition.get(i).get(1))), (int)condition.get(i).get(2), tmp1.get(tab1.getColumnName().indexOf(condition.get(i).get(3))))){
+                        if(!isObey(tmp2.get(tab2.getColumnName().indexOf(condition.get(i).get(1))), (int)condition.get(i).get(2), tmp1.get(tab1.getColumnName().indexOf(condition.get(i).get(4))))){
                             return false;
                         }
                     }
                     else{
-                        if(!isObey(tmp2.get(tab2.getColumnName().indexOf(condition.get(i).get(1))), (int)condition.get(i).get(2), tmp2.get(tab2.getColumnName().indexOf(condition.get(i).get(3))))){
+                        if(!isObey(tmp2.get(tab2.getColumnName().indexOf(condition.get(i).get(1))), (int)condition.get(i).get(2), tmp2.get(tab2.getColumnName().indexOf(condition.get(i).get(4))))){
                             return false;
                         }
                     }
@@ -679,12 +867,10 @@ public class Database {
                     // to do brute-force
                     ArrayList<ArrayList> tmp = makeSimpleCross(tabs.get(0), tabs.get(1));
                     for(int j = 0; j<tmp.size(); j++){
-                        for(int k = 0; k<conditions.get(i).size(); ++k){
-                            ArrayList tmp1value = tabs.get(0).file.readData((int)tmp.get(j).get(0));
-                            ArrayList tmp2value = tabs.get(1).file.readData((int)tmp.get(j).get(1));
-                            if(isObeyConditions(conditions.get(i), tabs.get(0), tabs.get(1), tmp1value, tmp2value)){
-                                result.add(tmp.get(j));
-                            }
+                        ArrayList tmp1value = tabs.get(0).file.readData((int)tmp.get(j).get(0));
+                        ArrayList tmp2value = tabs.get(1).file.readData((int)tmp.get(j).get(1));
+                        if(isObeyConditions(conditions.get(i), tabs.get(0), tabs.get(1), tmp1value, tmp2value)){
+                            result.add(tmp.get(j));
                         }
                     }
                 }

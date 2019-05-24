@@ -185,7 +185,7 @@ public class Table {
             throws BPlusTreeException, IOException{
         Table table = this;
 
-        Generator<ArrayList> simpleGenerator = new Generator<>() {
+        Generator<ArrayList> simpleGenerator = new Generator<ArrayList>() {
             public void run() throws InterruptedException {
                 Set<Integer> result = new HashSet<>();
                 int offset;
