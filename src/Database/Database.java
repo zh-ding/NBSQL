@@ -2,14 +2,11 @@ package Database;
 
 import BPlusTree.BPlusTreeLeafNode;
 import Exceptions.BPlusTreeException;
-import Utils.FileManager;
 import Table.Table;
-import javafx.scene.control.Tab;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.DoubleBinaryOperator;
 
 public class Database {
     public ArrayList<Table> tables;

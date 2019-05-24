@@ -2,15 +2,10 @@ import Database.Database;
 import Exceptions.BPlusTreeException;
 import Exceptions.TableException;
 import Table.Table;
-import com.sun.javafx.collections.MappingChange;
-import javafx.scene.control.Tab;
+import generator.Generator;
 
 import java.io.IOException;
-import java.security.cert.TrustAnchor;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
 
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException {
@@ -82,26 +77,30 @@ public class test {
         table = db.tables.get(0);
         table1 = db.tables.get(1);
 
-//        table.index_forest.get(0).printBPlusTree();
-//        System.out.println();
-//        table.DeleteRow(arr3);
-//        table.index_forest.get(0).printBPlusTree();
-//        System.out.println();
-//        ArrayList test = new ArrayList();
-//        ArrayList test_test = new ArrayList();
-//        ArrayList test_test_test = new ArrayList();
-//        test_test_test.add("m_id");
-//        test_test_test.add(1);
-//        test_test_test.add(5);
-//        test_test_test.add(true);
-//        test_test.add(test_test_test);
-//        ArrayList test_test_test1 = new ArrayList();
-//        test_test_test1.add("m_id");
-//        test_test_test1.add(2);
-//        test_test_test1.add(1);
-//        test_test_test1.add(true);
-//        test_test.add(test_test_test1);
-//        test.add(test_test);
+        table.index_forest.get(0).printBPlusTree();
+        System.out.println();
+        table.DeleteRow(arr3);
+        table.index_forest.get(0).printBPlusTree();
+        System.out.println();
+        ArrayList test = new ArrayList();
+        ArrayList test_test = new ArrayList();
+        ArrayList test_test_test = new ArrayList();
+        test_test_test.add("m_id");
+        test_test_test.add(1);
+        test_test_test.add(5);
+        test_test_test.add(true);
+        test_test.add(test_test_test);
+        ArrayList test_test_test1 = new ArrayList();
+        test_test_test1.add("m_id");
+        test_test_test1.add(2);
+        test_test_test1.add(1);
+        test_test_test1.add(true);
+        test_test.add(test_test_test1);
+        test.add(test_test);
+        Generator<ArrayList> gen = table.SelectRows(test, ss);
+        for(ArrayList arr11: gen){
+            System.out.println(arr11);
+        }
 //        System.out.println(table.SelectRows(test, ss));
 //        ArrayList sss = new ArrayList();
 //        sss.add("name");
@@ -109,38 +108,38 @@ public class test {
 //        ssss.add("test");
 //        table.UpdateRow(test, sss, ssss);
 //        System.out.println(table.SelectRows(test, ss));
-        ArrayList test = new ArrayList();
-        ArrayList test1 = new ArrayList();
-        ArrayList test_test = new ArrayList();
-        ArrayList test_test_test = new ArrayList();
-        test.add("test");
-        test.add("m_id");
-        test.add(0);
-        test.add("test1");
-        test.add("m_id");
-        test.add(false);
-        test1.add("test");
-        test1.add("m_id");
-        test1.add(0);
-        test1.add(2);
-        test1.add(null);
-        test1.add(true);
-        test_test.add(test);
-        test_test.add(test1);
-
-        test_test_test.add(test_test);
-
-        ArrayList<Table> tmp = new ArrayList<Table>();
-        tmp.add(table);
-        tmp.add(table1);
-        Set<ArrayList> res = db.joinTwoTables(tmp, test_test_test);
-        System.out.print(res);
-        System.out.println();
-        for (ArrayList tmpres : res) {
-            System.out.print(table.file.readData((int)tmpres.get(0)));
-            System.out.print(table1.file.readData((int)tmpres.get(1)));
-            System.out.println();
-        }
+//        ArrayList test = new ArrayList();
+//        ArrayList test1 = new ArrayList();
+//        ArrayList test_test = new ArrayList();
+//        ArrayList test_test_test = new ArrayList();
+//        test.add("test");
+//        test.add("m_id");
+//        test.add(0);
+//        test.add("test1");
+//        test.add("m_id");
+//        test.add(false);
+//        test1.add("test");
+//        test1.add("m_id");
+//        test1.add(0);
+//        test1.add(2);
+//        test1.add(null);
+//        test1.add(true);
+//        test_test.add(test);
+//        test_test.add(test1);
+//
+//        test_test_test.add(test_test);
+//
+//        ArrayList<Table> tmp = new ArrayList<Table>();
+//        tmp.add(table);
+//        tmp.add(table1);
+//        Set<ArrayList> res = db.joinTwoTables(tmp, test_test_test);
+//        System.out.print(res);
+//        System.out.println();
+//        for (ArrayList tmpres : res) {
+//            System.out.print(table.file.readData((int)tmpres.get(0)));
+//            System.out.print(table1.file.readData((int)tmpres.get(1)));
+//            System.out.println();
+//        }
         System.out.print("test1".hashCode());
         db.dropTable("test1");
         db.dropTable("test");
