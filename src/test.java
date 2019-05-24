@@ -30,52 +30,62 @@ public class test {
 
         s[1] = "2_name";
         db.createTable(s, a, p, "test1", isNotNull);
+        s[1] = "3_name";
+        db.createTable(s, a, p, "test2", isNotNull);
 
         db.useDB("test");
         Table table = db.tables.get(0);
         Table table1 = db.tables.get(1);
+        Table table2 = db.tables.get(2);
 
         ArrayList arr = new ArrayList<>();
         arr.add(1);
         arr.add("twew0");
         table.InsertRow(arr);
         table1.InsertRow(arr);
+        table2.InsertRow(arr);
 
         ArrayList arr1 = new ArrayList<>();
         arr1.add(2);
         arr1.add("twew1");
         table.InsertRow(arr1);
         table1.InsertRow(arr1);
+        table2.InsertRow(arr1);
 
         ArrayList arr2 = new ArrayList<>();
         arr2.add(3);
         arr2.add("twew2");
         table.InsertRow(arr2);
         table1.InsertRow(arr2);
+        table2.InsertRow(arr2);
 
         ArrayList arr3 = new ArrayList<>();
         arr3.add(4);
         arr3.add("twew3");
         table.InsertRow(arr3);
         table1.InsertRow(arr3);
+        table2.InsertRow(arr3);
 
         ArrayList arr4 = new ArrayList<>();
         arr4.add(5);
         arr4.add("twew4");
         table.InsertRow(arr4);
         table1.InsertRow(arr4);
+        table2.InsertRow(arr4);
 
         ArrayList arr5 = new ArrayList<>();
         arr5.add(6);
         arr5.add("twew5");
         table.InsertRow(arr5);
         table1.InsertRow(arr5);
+        table2.InsertRow(arr5);
 
 
         db.useDB("test");
 
         table = db.tables.get(0);
         table1 = db.tables.get(1);
+        table2 = db.tables.get(2);
 
         table.index_forest.get(0).printBPlusTree();
         System.out.println();
@@ -140,12 +150,11 @@ public class test {
 //            System.out.print(table1.file.readData((int)tmpres.get(1)));
 //            System.out.println();
 //        }
+
         System.out.print("test1".hashCode());
+        db.dropTable("test2");
         db.dropTable("test1");
         db.dropTable("test");
         db.dropDB("test");
-
-
-
     }
 }
