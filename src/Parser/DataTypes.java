@@ -47,6 +47,14 @@ public class DataTypes {
         this.bool_data = data;
     }
 
+//    public Void typeConvert(int newType)
+//    {
+//        switch(newType)
+//        {
+//            case
+//        }
+//    }
+
     public DataTypes add(DataTypes b) throws ParserException
     {
         switch(this.type)

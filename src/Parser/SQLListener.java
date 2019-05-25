@@ -68,6 +68,16 @@ public interface SQLListener extends ParseTreeListener {
 	 */
 	void exitInsert_stmt(SQLParser.Insert_stmtContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#insert_values}.
+	 * @param ctx the parse tree
+	 */
+	void enterInsert_values(SQLParser.Insert_valuesContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#insert_values}.
+	 * @param ctx the parse tree
+	 */
+	void exitInsert_values(SQLParser.Insert_valuesContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#select_stmt}.
 	 * @param ctx the parse tree
 	 */

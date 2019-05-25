@@ -1,6 +1,23 @@
 package Parser;
 
+import Exceptions.ParserException;
+import com.sun.org.apache.xml.internal.utils.StopParseException;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
+
 public class SQLVisitorLiteralValue extends SQLBaseVisitor<DataTypes> {
+
+    private int type = -5;
+
+    public SQLVisitorLiteralValue(int type)
+    {
+        this.type = type;
+    }
+
+    public SQLVisitorLiteralValue()
+    {
+
+    }
 
     @Override
     public DataTypes visitLiteral_value(SQLParser.Literal_valueContext ctx) {
@@ -11,13 +28,37 @@ public class SQLVisitorLiteralValue extends SQLBaseVisitor<DataTypes> {
             String number = ctx.NUMERIC_LITERAL().getText();
             if(number.contains("."))
             {
-                double data = new Double(number).doubleValue();
-                return new DataTypes(data);
+                switch (type) {
+                    case -3:
+                        float dataFloat = Float.parseFloat(number);
+                        return new DataTypes(dataFloat);
+                    case -4:
+                    case -5:
+                        double dataDouble = Double.parseDouble(number);
+                        return new DataTypes(dataDouble);
+                    default:
+                        throw new ParseCancellationException("type mismatch");
+                }
             }
             else
             {
-                long data = new Long(number).longValue();
-                return new DataTypes(data);
+                switch (type) {
+                    case -1:
+                        int dataInt = Integer.parseInt(number);
+                        return new DataTypes(dataInt);
+                    case -2:
+                    case -5:
+                        long dataLong = Long.parseLong(number);
+                        return new DataTypes(dataLong);
+                    case -3:
+                        float dataFloat = Float.parseFloat(number);
+                        return new DataTypes(dataFloat);
+                    case -4:
+                        double dataDouble = Double.parseDouble(number);
+                        return new DataTypes(dataDouble);
+                    default:
+                        throw new ParseCancellationException("type mismatch");
+                }
             }
         }
         else

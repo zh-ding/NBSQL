@@ -185,10 +185,58 @@ public class Table {
             throws BPlusTreeException, IOException{
         Table table = this;
 
+        if(conditions == null){
+            Generator<ArrayList> allGenerator = new Generator<ArrayList>() {
+                @Override
+                protected void run() throws InterruptedException {
+                    Set<Integer> result = new HashSet<>();
+                    try {
+                        addAllResult(table.index_forest.get(0).getMostLeftLeafNode(), result);
+                    }catch (IOException e){
+                        System.out.println(e);
+                        throw new InterruptedException();
+                    }
+
+                    if(column_names == null){
+                        for(int off: result){
+                            try {
+                                ArrayList row = table.file.readData(off);
+                                yield(row);
+                            }catch(IOException e){
+                                System.out.println(e);
+                                throw new InterruptedException();
+                            }
+                        }
+                    }else{
+                        ArrayList<Integer> idx = new ArrayList<>();
+                        for(String col: column_names){
+                            idx.add(table.column_name.indexOf(col));
+                        }
+                        for(int off: result){
+                            try {
+                                ArrayList row = table.file.readData(off);
+                                ArrayList newRow = new ArrayList();
+                                for(int i: idx)
+                                    newRow.add(row.get(i));
+                                yield(newRow);
+                            }catch(IOException e){
+                                System.out.println(e);
+                                throw new InterruptedException();
+                            }
+                        }
+                    }
+
+                }
+            };
+
+            return allGenerator;
+        }
+
         Generator<ArrayList> simpleGenerator = new Generator<ArrayList>() {
             public void run() throws InterruptedException {
                 Set<Integer> result = new HashSet<>();
                 int offset;
+
                 for (ArrayList<ArrayList> arr_or: conditions) {
                     int index = IsKeyMatch(arr_or);
                     if(index >= 0){
@@ -430,6 +478,17 @@ public class Table {
         if(node.rightSibling != -1)
             addResultWoIndex((BPlusTreeLeafNode) this.file.readNode(node.rightSibling, 0), arr, arr1, arr2, isFirst, relation);
 
+    }
+
+    private void addAllResult(BPlusTreeLeafNode node, Set<Integer> arr)
+        throws IOException{
+
+        for(int i =0; i < node.keyNum; ++i){
+            arr.add(node.pointers.get(i));
+        }
+
+        if(node.rightSibling != -1)
+            addAllResult((BPlusTreeLeafNode) this.file.readNode(node.rightSibling, 0), arr);
     }
 
     private void addResultNotPrimitive(BPlusTreeLeafNode node, ArrayList arr, Set<Integer> arr1, Set<Integer> arr2,
