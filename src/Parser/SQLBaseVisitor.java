@@ -1,7 +1,5 @@
 // Generated from /Users/zzh/Documents/GitHub/NBSQL/src/Parser/SQL.g4 by ANTLR 4.7.2
 package Parser;
-import Exceptions.ParserException;
-import com.sun.javafx.tools.packager.PackagerException;
 import org.antlr.v4.runtime.tree.AbstractParseTreeVisitor;
 
 /**

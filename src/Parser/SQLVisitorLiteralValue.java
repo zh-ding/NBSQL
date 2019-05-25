@@ -1,8 +1,5 @@
 package Parser;
 
-import Exceptions.ParserException;
-import com.sun.org.apache.xml.internal.utils.StopParseException;
-import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 public class SQLVisitorLiteralValue extends SQLBaseVisitor<DataTypes> {
