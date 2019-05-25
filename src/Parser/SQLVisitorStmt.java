@@ -235,79 +235,102 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     public Void visitInsert_stmt(SQLParser.Insert_stmtContext ctx){
         String tableName = ctx.table_name().getText().toUpperCase();
         Table t = this.db.getTable(tableName);
-        ArrayList<String> columns= new ArrayList<String>();
+        ArrayList<String> column_names = this.db.getTable(tableName).getColumnName();
+        column_names = new ArrayList<String>(column_names.subList(1,column_names.size()));
+        ArrayList<Integer> column_types = this.db.getTable(tableName).getColumnType();
+        column_types = new ArrayList<Integer>(column_types.subList(1,column_types.size()));
+
+        ArrayList<String> columns = new ArrayList<String>();
         for(int i = 0; i < ctx.column_name().size(); i++)
         {
             columns.add(ctx.column_name(i).getText().toUpperCase());
         }
-
-        ArrayList data = new ArrayList();
-        for(int i = 0; i < ctx.expr().size(); i++)
+        if(columns.size() == 0)
         {
-            DataTypes dataTmp = ctx.expr(i).literal_value().accept(new SQLVisitorLiteralValue());
-            if(dataTmp != null)
-            {
-                switch (dataTmp.type){
-                    case 0:
-                        data.add(dataTmp.int_data);
-                        break;
-                    case 1:
-                        data.add(dataTmp.long_data);
-                        break;
-                    case 2:
-                        data.add(dataTmp.float_data);
-                        break;
-                    case 3:
-                        data.add(dataTmp.double_data);
-                        break;
-                    case 4:
-                        data.add(dataTmp.string_data);
-                        break;
-                    default:
-                        break;
-                }
-            }
-            else
-            {
-                data.add(null);
-            }
+            columns.addAll(column_names);
         }
-        ArrayList<String> col_name = t.getColumnName();
-        ArrayList row = new ArrayList();
-        if(columns.size() == 0){
-            int k = 0;
-            for(int i = 0; i<col_name.size(); ++i){
-                if(col_name.get(i).toString().compareTo("id")==0){
-                    continue;
-                }
-                if(k < data.size()){
-                    row.add(data.get(k));
-                    k++;
-                    continue;
-                }
-                row.add(null);
-            }
-        }
-        else{
-            for(int i = 0; i<col_name.size(); ++i){
-                if(col_name.get(i).toString().compareTo("id")==0){
-                    continue;
-                }
-                for(int j = 0; j<columns.size(); ++j){
-                    if(col_name.get(i) == columns.get(j)){
-                        row.add(data.get(j));
-                        continue;
+
+        ArrayList<ArrayList> dataAll = new ArrayList<ArrayList>();
+        for(int i = 0; i < ctx.insert_values().size(); i++)
+        {
+            ArrayList data = new ArrayList();
+            for(int j = 0; j < ctx.insert_values(i).expr().size(); j++) {
+                int type = column_types.get(column_names.indexOf(columns.get(j)));
+                DataTypes dataTmp = ctx.insert_values(i).expr(j).literal_value().accept(new SQLVisitorLiteralValue(type));
+                if (dataTmp != null) {
+                    switch (dataTmp.type) {
+                        case 0:
+                            data.add(dataTmp.int_data);
+                            break;
+                        case 1:
+                            data.add(dataTmp.long_data);
+                            break;
+                        case 2:
+                            data.add(dataTmp.float_data);
+                            break;
+                        case 3:
+                            data.add(dataTmp.double_data);
+                            break;
+                        case 4:
+                            data.add(dataTmp.string_data);
+                            break;
+                        default:
+                            break;
                     }
+                } else {
+                    data.add(null);
                 }
-                row.add(null);
+            }
+            dataAll.add(data);
+        }
+//        ArrayList<String> col_name = t.getColumnName();
+//        ArrayList row = new ArrayList();
+//        if(columns.size() == 0){
+//            int k = 0;
+//            for(int i = 0; i<column_names.size(); ++i){
+////                if(col_name.get(i).toString().compareTo("id")==0){
+////                    continue;
+////                }
+//                if(k < data.size()){
+//                    row.add(data.get(k));
+//                    k++;
+//                    continue;
+//                }
+//                row.add(null);
+//            }
+//        }
+//        else{
+        for(ArrayList data:dataAll) {
+            ArrayList row = new ArrayList();
+            for (int i = 0; i < column_names.size(); ++i) {
+//                if(col_name.get(i).toString().compareTo("id")==0){
+//                    continue;
+//                }
+                int index = columns.indexOf(column_names.get(i));
+                if(index >= 0)
+                {
+                    row.add(data.get(index));
+                }
+                else
+                {
+                    row.add(null);
+                }
+//                for (int j = 0; j < columns.size(); ++j) {
+//                    if (column_names.get(i).equals(columns.get(j))) {
+//                        row.add(data.get(j));
+//                        continue;
+//                    }
+//                }
+//                row.add(null);
+            }
+            try {
+                t.InsertRow(row);
+            } catch (Exception a) {
+                output.append(a.getMessage());
+                return null;
             }
         }
-        try{
-            t.InsertRow(row);
-        }
-        catch (Exception a){
-            System.out.println(a.getMessage());
-        }
+        output.append("insert success");
         return null;
     }
 
@@ -330,7 +353,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         {
             if(ctx.result_column(i).STAR() != null)
             {
-                column_names.addAll(tableColumnNames);
+                column_names.addAll(tableColumnNames.subList(1,tableColumnNames.size()));
             }
             else if(ctx.result_column(i).column_alias() != null)
                 column_names.add(ctx.result_column(i).column_alias().getText().toUpperCase());

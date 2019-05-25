@@ -70,7 +70,11 @@ drop_table_stmt
 insert_stmt
  : K_INSERT K_INTO
    table_name ( '(' column_name ( ',' column_name )* ')' )?
-   K_VALUES '(' expr ( ',' expr )* ')' ( ',' '(' expr ( ',' expr )* ')' )*
+   K_VALUES insert_values ( ',' insert_values )*
+ ;
+
+insert_values
+ : '(' expr ( ',' expr )* ')'
  ;
 
 

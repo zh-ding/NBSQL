@@ -111,28 +111,28 @@ public class FileManager {
                         this.file.writeInt(0);
                     }
                     else
-                        this.file.writeInt(Integer.valueOf(value.get(i).toString()).intValue());
+                        this.file.writeInt((int)value.get(i));
                     break;
                 case -2:
                     if(tmp == 1){
                         this.file.writeLong(0);
                     }
                     else
-                        this.file.writeLong(Long.valueOf(value.get(i).toString()).longValue());
+                        this.file.writeLong((long)value.get(i));
                     break;
                 case -3:
                     if(tmp == 1){
                         this.file.writeFloat(0);
                     }
                     else
-                        this.file.writeFloat(Float.valueOf(value.get(i).toString()).floatValue());
+                        this.file.writeFloat((float)value.get(i));
                     break;
                 case -4:
                     if(tmp == 1){
                         this.file.writeDouble(0);
                     }
                     else
-                        this.file.writeDouble(Double.valueOf(value.get(i).toString()).doubleValue());
+                        this.file.writeDouble((double)value.get(i));
                     break;
                 default:
                     if(tmp == 1){

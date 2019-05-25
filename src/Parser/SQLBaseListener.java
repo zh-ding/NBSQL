@@ -88,6 +88,18 @@ public class SQLBaseListener implements SQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterInsert_values(SQLParser.Insert_valuesContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitInsert_values(SQLParser.Insert_valuesContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterSelect_stmt(SQLParser.Select_stmtContext ctx) { }
 	/**
 	 * {@inheritDoc}
