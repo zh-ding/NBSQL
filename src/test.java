@@ -81,22 +81,30 @@ public class test {
         }
 
         System.out.println("----------------------start testing delete-----------------");
-//        ArrayList test = new ArrayList();
-//
-//        for(int i = 0; i<table_num; ++i){
-//            Table table = db.tables.get(i);
-//            Generator<ArrayList> tmp =  table.SelectRows(null, null);
-//            int number = 0;
-//            for(ArrayList tmpres: tmp){
-//                number++;
-//            }
-//            if(number == num){
-//                System.out.println("table " + Integer.toString(i) + " reload success");
-//            }
-//            else {
-//                System.out.println("table " + Integer.toString(i) + " reload fail");
-//            }
-//        }
+        ArrayList test = new ArrayList();
+        test.add("m_id");
+        test.add(0);
+        test.add(65);
+        test.add(true);
+        ArrayList<ArrayList> test_test = new ArrayList();
+        test_test.add(test);
+        ArrayList<ArrayList<ArrayList>> test_test_test = new ArrayList();
+        test_test_test.add(test_test);
+        for(int i = 0; i<table_num; ++i){
+            Table table = db.tables.get(i);
+            table.DeleteRows(test_test_test);
+            Generator<ArrayList> tmp =  table.SelectRows(null, null);
+            int number = 0;
+            for(ArrayList tmpres: tmp){
+                number++;
+            }
+            if(number == num/2){
+                System.out.println("table " + Integer.toString(i) + " reload success");
+            }
+            else {
+                System.out.println("table " + Integer.toString(i) + " reload fail");
+            }
+        }
 
 //        table = db.tables.get(0);
 //        table1 = db.tables.get(1);

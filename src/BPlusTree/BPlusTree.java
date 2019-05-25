@@ -62,6 +62,7 @@ public class BPlusTree {
         }
 
         this.root = fm.readNode(this.root.location, this.ID);
+        System.out.println(this.root);
     }
 
     //return leaf offset
