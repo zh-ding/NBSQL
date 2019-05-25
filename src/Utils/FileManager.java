@@ -3,6 +3,7 @@ package Utils;
 import BPlusTree.BPlusTreeInnerNode;
 import BPlusTree.BPlusTreeLeafNode;
 import BPlusTree.BPlusTreeNode;
+import org.omg.PortableInterceptor.INACTIVE;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -110,28 +111,28 @@ public class FileManager {
                         this.file.writeInt(0);
                     }
                     else
-                        this.file.writeInt((int)value.get(i));
+                        this.file.writeInt(Integer.valueOf(value.get(i).toString()).intValue());
                     break;
                 case -2:
                     if(tmp == 1){
                         this.file.writeLong(0);
                     }
                     else
-                        this.file.writeLong((long)value.get(i));
+                        this.file.writeLong(Long.valueOf(value.get(i).toString()).longValue());
                     break;
                 case -3:
                     if(tmp == 1){
                         this.file.writeFloat(0);
                     }
                     else
-                        this.file.writeFloat((float)value.get(i));
+                        this.file.writeFloat(Float.valueOf(value.get(i).toString()).floatValue());
                     break;
                 case -4:
                     if(tmp == 1){
                         this.file.writeDouble(0);
                     }
                     else
-                        this.file.writeDouble((double)value.get(i));
+                        this.file.writeDouble(Double.valueOf(value.get(i).toString()).doubleValue());
                     break;
                 default:
                     if(tmp == 1){
