@@ -470,11 +470,12 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             conditions = null;
         Generator<ArrayList> result;
         try {
-            result = this.db.getTable(tableName).SelectRows(conditions,tableColumnNames);
-            for(ArrayList row:result)
-            {
-                this.db.getTable(tableName).DeleteRow(row);
-            }
+            this.db.getTable(tableName).DeleteRows(conditions);
+//            result = this.db.getTable(tableName).SelectRows(conditions,tableColumnNames);
+//            for(ArrayList row:result)
+//            {
+//                this.db.getTable(tableName).DeleteRow(row);
+//            }
             this.output.append("delete rows success");
         } catch (Exception e)
         {
