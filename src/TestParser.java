@@ -2,22 +2,25 @@ import Exceptions.BPlusTreeException;
 import Parser.SQLLexer;
 import Parser.SQLParser;
 import Parser.SQLVisitorStmt;
+import Parser.ThrowingErrorListener;
 import org.antlr.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.TokenStream;
 import Database.Database;
 
-import java.io.BufferedInputStream;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 
 public class TestParser {
     public static void main(String[] args) throws BPlusTreeException, IOException {
+        File dat = new File("./dat/");
+        if(!dat.exists())
+        {
+            dat.mkdir();
+        }
         StringBuffer dbName = new StringBuffer("TEST");
         Database db = new Database("TEST", 0);
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in ));
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         while(true) {
             String sql = "quit";
             try {
@@ -28,7 +31,12 @@ public class TestParser {
                 break;
             StringBuffer output = new StringBuffer();
             try {
-                SQLParser parser = new SQLParser(new CommonTokenStream(new SQLLexer(CharStreams.fromString(sql))));
+                SQLLexer lexer = new SQLLexer(CharStreams.fromString(sql));
+                lexer.removeErrorListeners();
+                lexer.addErrorListener(new ThrowingErrorListener());
+                SQLParser parser = new SQLParser(new CommonTokenStream(lexer));
+                parser.removeErrorListeners();
+                parser.addErrorListener(new ThrowingErrorListener());
                 SQLParser.Sql_stmtContext stmt = parser.sql_stmt();
                 SQLVisitorStmt visitor = new SQLVisitorStmt(dbName, output);
                 stmt.accept(visitor);

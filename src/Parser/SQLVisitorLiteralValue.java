@@ -23,7 +23,7 @@ public class SQLVisitorLiteralValue extends SQLBaseVisitor<DataTypes> {
         else
         {
             String data = ctx.STRING_LITERAL().getText();
-            data = data.substring(1,data.length());
+            data = data.substring(1,data.length()-1);
             return new DataTypes(data);
         }
     }
