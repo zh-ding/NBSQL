@@ -101,7 +101,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             if(t != null) {
                 ArrayList<String> column_names = t.getColumnName();
                 ArrayList<Integer> column_types = t.getColumnType();
-                for (int i = 0; i < column_names.size(); i++) {
+                for (int i = 1; i < column_names.size(); i++) {
                     output.append(column_names.get(i)).append("\t");
                     switch (column_types.get(i))
                     {
@@ -153,7 +153,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     public Void visitDrop_database_stmt(SQLParser.Drop_database_stmtContext ctx)
     {
         String name = ctx.database_name().getText().toUpperCase();
-        if(name.equals(this.dbName))
+        if(name.equals(this.dbName.toString()))
         {
             this.output.append("Database is being used");
             return null;
@@ -236,10 +236,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     public Void visitInsert_stmt(SQLParser.Insert_stmtContext ctx){
         String tableName = ctx.table_name().getText().toUpperCase();
         Table t = this.db.getTable(tableName);
-        ArrayList<String> colomns= new ArrayList<String>();
+        ArrayList<String> columns= new ArrayList<String>();
         for(int i = 0; i < ctx.column_name().size(); i++)
         {
-            colomns.add(ctx.column_name(i).getText().toUpperCase());
+            columns.add(ctx.column_name(i).getText().toUpperCase());
         }
 
         ArrayList data = new ArrayList();
@@ -275,7 +275,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         ArrayList<String> col_name = t.getColumnName();
         ArrayList row = new ArrayList();
-        if(colomns.size() == 0){
+        if(columns.size() == 0){
             int k = 0;
             for(int i = 0; i<col_name.size(); ++i){
                 if(col_name.get(i).toString().compareTo("id")==0){
@@ -294,8 +294,8 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                 if(col_name.get(i).toString().compareTo("id")==0){
                     continue;
                 }
-                for(int j = 0; j<colomns.size(); ++j){
-                    if(col_name.get(i) == colomns.get(j)){
+                for(int j = 0; j<columns.size(); ++j){
+                    if(col_name.get(i) == columns.get(j)){
                         row.add(data.get(j));
                         continue;
                     }
@@ -307,7 +307,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             t.InsertRow(row);
         }
         catch (Exception a){
-
+            System.out.println(a.getMessage());
         }
         return null;
     }
