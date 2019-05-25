@@ -48,7 +48,7 @@ public class Table {
         this.column_name = new ArrayList<>();
         this.column_type = new ArrayList<>();
         this.column_isNotNull = new ArrayList<>();
-        this.column_name.add("id");
+        this.column_name.add("auto_id");
         this.column_type.add(-1);
         this.column_isNotNull.add(true);
 
@@ -130,6 +130,12 @@ public class Table {
             for(int j = 0; j < this.index_key.get(i).size(); ++j)
                 key.add(row.get(this.index_key.get(i).get(j)));
             index_forest.get(i).insert(key, offset);
+        }
+    }
+
+    public void DeleteRows(ArrayList<ArrayList<ArrayList>> conditions) throws IOException, BPlusTreeException{
+        for(ArrayList row: SelectRows(conditions, this.column_name)){
+            this.DeleteRow(row);
         }
     }
 
@@ -547,7 +553,6 @@ public class Table {
             if(tmp.size() == 0)
                 return i;
         }
-
         return -1;
 
     }
