@@ -2,14 +2,11 @@ package Database;
 
 import BPlusTree.BPlusTreeLeafNode;
 import Exceptions.BPlusTreeException;
-import Utils.FileManager;
 import Table.Table;
-import javafx.scene.control.Tab;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.DoubleBinaryOperator;
 
 public class Database {
     public ArrayList<Table> tables;
@@ -137,13 +134,311 @@ public class Database {
     ]
     or null
      */
-    // 先做两个无条件的join
-    public ArrayList<ArrayList> joinTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList<ArrayList>>> conditions) throws IOException, BPlusTreeException{
-        ArrayList result = new ArrayList();
+    public Set<ArrayList> joinTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList<ArrayList>>> conditions) throws IOException, BPlusTreeException{
         ArrayList tmp = new ArrayList();
         tmp.add(tabs.get(0));
         tmp.add(tabs.get(1));
-        joinTwoTables(tmp, conditions.get(0));
+        Set<ArrayList> tmpRes = joinTwoTables(tmp, conditions.get(0));
+        for(int i = 2; i<tabs.size(); i++){
+            tmpRes = joinTable(tmpRes, tabs.get(i), i, tabs, conditions.get(i-1));
+        }
+        return tmpRes;
+    }
+    /*
+    前num-1个tables与第num个table之间的common
+    */
+    private ArrayList<ArrayList> getCommonIndex(ArrayList<Table> tabs, int num){
+        ArrayList<ArrayList> res = new ArrayList<>();
+        ArrayList<ArrayList> table_name = new ArrayList<>();
+        for(int i = 0; i<=num; i++){
+            table_name.add(tabs.get(i).getColumnName());
+        }
+        for(int i = 1; i<table_name.get(num).size(); i++){
+            for(int j = 1; j<num; j++){
+                int flag = 0;
+                for(int k = 1; k<table_name.get(j).size(); ++k){
+                    if(table_name.get(j).get(k).toString().compareTo(table_name.get(num).get(i).toString()) == 0){
+                        ArrayList tmp = new ArrayList();
+                        tmp.add(j);
+                        tmp.add(k);
+                        tmp.add(i);
+                        res.add(tmp);
+                        flag = 1;
+                        break;
+                    }
+                }
+                if(flag == 1){
+                    break;
+                }
+            }
+        }
+        return res;
+    }
+
+    private Map<Integer, ArrayList<ArrayList>> getHashMapFromSet(ArrayList<Table> tabs, Set<ArrayList> tmpRes, ArrayList<ArrayList> index)
+        throws IOException{
+        if(index.size() == 0){
+            return null;
+        }
+        Map<Integer, ArrayList<ArrayList>> res = new HashMap<>();
+        for (ArrayList tmp : tmpRes) {
+            String  key = "";
+            for(int i = 0; i<index.size(); ++i){
+                if(tabs.get((int)index.get(i).get(0)).file.readData((int)tmp.get((int)index.get(i).get(0))).get((int)index.get(i).get(1)) != null)
+                    key += tabs.get((int)index.get(i).get(0)).file.readData((int)tmp.get((int)index.get(i).get(0))).get((int)index.get(i).get(1));
+            }
+            int finalkey = key.hashCode();
+            ArrayList<ArrayList> tmpHash;
+            if(!res.containsKey(finalkey)){
+                tmpHash = new ArrayList<>();
+            }
+            else{
+                tmpHash = (ArrayList<ArrayList>) res.get(finalkey);
+            }
+            tmpHash.add(tmp);
+            res.put(finalkey, tmpHash);
+        }
+        return res;
+    }
+
+    private ArrayList<ArrayList> getValues(ArrayList<Table> tabs, ArrayList tmp) throws IOException{
+        ArrayList<ArrayList> res = new ArrayList<>();
+        for(int i = 0; i<tmp.size(); ++i){
+            res.add(tabs.get(i).file.readData((int)tmp.get(i)));
+        }
+        return res;
+    }
+
+    private ArrayList<ArrayList> makeSimpleCrossFromSet(Set<ArrayList> tmpRes, Table table) throws IOException{
+        ArrayList<ArrayList> res = new ArrayList<>();
+        BPlusTreeLeafNode node = table.index_forest.get(0).getMostLeftLeafNode();
+        ArrayList tmp1 = new ArrayList();
+        while(node != null) {
+            for (int i = 0; i < node.keyNum; ++i) {
+                int offset = node.pointers.get(i);
+                tmp1.add(offset);
+            }
+            node = (BPlusTreeLeafNode) table.file.readNode(node.rightSibling,0);
+        }
+        for (ArrayList tmp : tmpRes) {
+            for(int i = 0; i<tmp1.size(); ++i){
+                ArrayList t = new ArrayList();
+                t.addAll(tmp);
+                t.add(tmp1.get(i));
+                res.add(t);
+            }
+
+        }
+        return res;
+    }
+
+    private Set<ArrayList> joinTable(Set<ArrayList> tmpRes, Table table, int num, ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList>> conditions)
+        throws IOException, BPlusTreeException{
+        Set<ArrayList> result = new HashSet<>();
+        if(conditions == null){
+            ArrayList<ArrayList> index = getCommonIndex(tabs, num);
+            ArrayList<ArrayList> tmp1 = new ArrayList();
+            ArrayList tmp2 = new ArrayList();
+            for(int i = 0; i<index.size(); ++i){
+                ArrayList tmp = new ArrayList();
+                tmp.add(index.get(i).get(0));
+                tmp.add(index.get(i).get(1));
+                tmp1.add(tmp);
+                tmp2.add(index.get(i).get(2));
+            }
+            Map<Integer, ArrayList<ArrayList>> hashtmp1 = getHashMapFromSet(tabs, tmpRes, tmp1);
+            Map<Integer, ArrayList> hashtmp2 = makeHashMap(tabs.get(num), tmp2);
+            for(Integer key : hashtmp1.keySet()){
+                if(hashtmp2.containsKey(key)){
+                    for(int i = 0; i<(hashtmp1.get(key).size()); ++i){
+                        for(int j = 0; j<hashtmp2.get(key).size(); ++j){
+                            ArrayList<ArrayList> value1 = getValues(tabs, (ArrayList)hashtmp1.get(key).get(i));
+                            ArrayList value2 = tabs.get(num).file.readData((int)hashtmp2.get(key).get(j));
+                            boolean flag = true;
+                            for(int k = 0; k<index.size(); ++k){
+                                if(value1.get((int)index.get(k).get(0)).get((int)index.get(k).get(1)).toString().compareTo(value2.get((int)index.get(k).get(2)).toString())!=0){
+                                    flag = false;
+                                }
+                            }
+                            if(flag){
+                                ArrayList tmpitem = new ArrayList();
+                                tmpitem.addAll(hashtmp1.get(key).get(i));
+                                tmpitem.add(hashtmp2.get(key).get(j));
+                                result.add(tmpitem);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        else{
+            for(int i = 0; i<conditions.size(); ++i){
+                ArrayList<ArrayList> tmpCond = new ArrayList<>();
+                ArrayList<ArrayList> tmp1 = new ArrayList<>();
+                ArrayList<Integer> tmp2 = new ArrayList<>();
+                Map<Integer, ArrayList<ArrayList>> hashtmp1 = new HashMap<>();
+                Map<Integer, ArrayList> hashtmp2 = new HashMap<>();
+                for(int j = 0; j<conditions.get(i).size(); ++j){
+                    if(((boolean)conditions.get(i).get(j).get(5)==false) && ((int)conditions.get(i).get(j).get(2)==0) &&
+                            (conditions.get(i).get(j).get(0).toString().compareTo(conditions.get(i).get(j).get(3).toString())!=0)
+                            && ((conditions.get(i).get(j).get(0).toString().compareTo(table.table_name) == 0) || (conditions.get(i).get(j).get(3).toString().compareTo(table.table_name) == 0))
+                            ){
+                        for(int k = 0; k<num; ++k){
+                            ArrayList tmp = new ArrayList();
+                            if(tabs.get(k).table_name.compareTo(conditions.get(i).get(j).get(0).toString()) == 0){
+                                tmp.add(k);
+                                tmp.add(tabs.get(k).getColumnName().indexOf(conditions.get(i).get(j).get(1).toString()));
+                                tmp1.add(tmp);
+                                tmp2.add(tabs.get(num).getColumnName().indexOf(conditions.get(i).get(j).get(4).toString()));
+                                break;
+                            }
+                            if(tabs.get(k).table_name.compareTo(conditions.get(i).get(j).get(3).toString()) == 0){
+                                tmp.add(k);
+                                tmp.add(tabs.get(k).getColumnName().indexOf(conditions.get(i).get(j).get(4).toString()));
+                                tmp1.add(tmp);
+                                tmp2.add(tabs.get(num).getColumnName().indexOf(conditions.get(i).get(j).get(1).toString()));
+                                break;
+                            }
+                        }
+                    }
+                    else{
+                        tmpCond.add(conditions.get(i).get(j));
+                    }
+                }
+                if(tmp1.size() != 0){
+                    hashtmp1 = getHashMapFromSet(tabs, tmpRes, tmp1);
+                    hashtmp2 = makeHashMap(table, tmp2);
+                    for(Integer key : hashtmp1.keySet()){
+                        if(hashtmp2.containsKey(key)){
+                            for(int l = 0; l<(hashtmp1.get(key).size()); ++l){
+                                for(int j = 0; j<hashtmp2.get(key).size(); ++j){
+                                    ArrayList<ArrayList> tmp1value = getValues(tabs,hashtmp1.get(key).get(l));
+                                    ArrayList tmp2value = tabs.get(num).file.readData((int)hashtmp2.get(key).get(j));
+                                    boolean flag = true;
+                                    for(int k = 0; k<tmp1.size(); ++k){
+                                        if(tmp1value.get((int)tmp1.get(k).get(0)).get((int)tmp1.get(k).get(1)).toString().compareTo(tmp2value.get((int)tmp2.get(k)).toString())!=0){
+                                            flag = false;
+                                        }
+                                    }
+                                    if(flag) {
+                                        for (int k = 0; k < tmpCond.size(); ++k) {
+                                            if ((boolean) tmpCond.get(k).get(5)) {
+                                                ArrayList tmpC = new ArrayList();
+                                                tmpC.add(tmpCond.get(k));
+                                                for (int t = 0; t <= num; t++) {
+                                                    if (tabs.get(t).table_name.compareTo(tmpCond.get(k).get(0).toString()) == 0) {
+                                                        if(t != num){
+                                                            if (!isObeyConditions(tmpC, tabs.get(t), tabs.get(num), tmp1value.get(t), tmp2value)) {
+                                                                flag = false;
+                                                                break;
+                                                            }
+                                                        }
+                                                        else{
+                                                            if (!isObeyConditions(tmpC, tabs.get(t), tabs.get(num), tmp2value, tmp2value)) {
+                                                                flag = false;
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                if(!flag){
+                                                    break;
+                                                }
+                                            }
+                                            else {
+                                                ArrayList tmpC = new ArrayList();
+                                                tmpC.add(tmpCond.get(k));
+                                                int t1 = -1;
+                                                int t2 = -1;
+                                                for (int t = 0; t < num; t++) {
+                                                    if (tabs.get(t).table_name.compareTo(tmpCond.get(k).get(0).toString()) == 0) {
+                                                        t1 = t;
+                                                    }
+                                                    if (tabs.get(t).table_name.compareTo(tmpCond.get(k).get(3).toString()) == 0) {
+                                                        t2 = t;
+                                                    }
+                                                }
+                                                if(t1 == -1 && t2 != -1){
+                                                    if (!isObeyConditions(tmpC, tabs.get(t2), tabs.get(num), tmp1value.get(t2), tmp2value)) {
+                                                        flag = false;
+                                                        break;
+                                                    }
+                                                }else if(t1 != -1 && t2 == -1){
+                                                    if (!isObeyConditions(tmpC, tabs.get(t1), tabs.get(num), tmp1value.get(t1), tmp2value)) {
+                                                        flag = false;
+                                                        break;
+                                                    }
+                                                }else if(t1 != -1 && t2 != -1){
+                                                    if (!isObeyConditions(tmpC, tabs.get(t1), tabs.get(t2), tmp1value.get(t1), tmp1value.get(t2))) {
+                                                        flag = false;
+                                                        break;
+                                                    }
+                                                }else{
+                                                    if (!isObeyConditions(tmpC, tabs.get(num), tabs.get(num), tmp1value.get(num), tmp1value.get(num))) {
+                                                        flag = false;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if(flag){
+                                        ArrayList tmpitem = new ArrayList();
+                                        tmpitem.addAll(hashtmp1.get(key).get(l));
+                                        tmpitem.add(hashtmp2.get(key).get(j));
+                                        result.add(tmpitem);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                else {
+                    ArrayList<ArrayList> tmp = makeSimpleCrossFromSet(tmpRes, table);
+                    for(int j = 0; j<tmp.size(); j++){
+                        ArrayList<ArrayList> tmpvalue = getValues(tabs, tmp.get(j));
+                        boolean flag = true;
+                        for (int l = 0; l < conditions.get(i).size(); ++l) {
+                            if ((boolean) conditions.get(i).get(l).get(5)) {
+                                ArrayList tmpC = new ArrayList();
+                                tmpC.add(conditions.get(i).get(l));
+                                for (int t = 0; t <= num; t++) {
+                                    if (tabs.get(t).table_name.compareTo(conditions.get(i).get(l).get(0).toString()) == 0) {
+                                        if (!isObeyConditions(tmpC, tabs.get(t), tabs.get(num), tmpvalue.get(t), tmpvalue.get(num))) {
+                                            flag = false;
+                                            break;
+                                        }
+                                    }
+                                }
+                                if(!flag){
+                                    break;
+                                }
+                            }
+                            else{
+                                ArrayList tmpC = new ArrayList();
+                                tmpC.add(conditions.get(i).get(l));
+                                int t1 = 0, t2 = 0;
+                                for (int t = 0; t <= num; t++) {
+                                    if (tabs.get(t).table_name.compareTo(conditions.get(i).get(l).get(0).toString()) == 0) {
+                                        t1 = t;
+                                    }
+                                    if (tabs.get(t).table_name.compareTo(conditions.get(i).get(l).get(3).toString()) == 0) {
+                                        t2 = t;
+                                    }
+                                }
+                                if (!isObeyConditions(tmpC, tabs.get(t1), tabs.get(t2), tmpvalue.get(t1), tmpvalue.get(t2))) {
+                                    flag = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if(flag == true){
+                            result.add(tmp.get(j));
+                        }
+                    }
+                }
+            }
+        }
         return result;
     }
 
@@ -195,11 +490,11 @@ public class Database {
         return res;
     }
 
-    private Map<String, ArrayList> makeHashMap(Table a, ArrayList<Integer> index) throws IOException{
+    private Map<Integer, ArrayList> makeHashMap(Table a, ArrayList<Integer> index) throws IOException{
         if(index == null){
             return null;
         }
-        Map<String, ArrayList> res = new HashMap<String, ArrayList>();
+        Map<Integer, ArrayList> res = new HashMap<Integer, ArrayList>();
         BPlusTreeLeafNode node = a.index_forest.get(0).getMostLeftLeafNode();
         while(node != null){
             for(int i = 0; i<node.keyNum; ++i){
@@ -211,16 +506,17 @@ public class Database {
                         key += tmp.get(index.get(j)).toString();
                     }
                 }
-                key.hashCode();
-                if(!res.containsKey(key)){
+                int finalkey = key.hashCode();
+
+                if(!res.containsKey(finalkey)){
                     ArrayList tmpHash = new ArrayList();
                     tmpHash.add(offset);
-                    res.put(key, tmpHash);
+                    res.put(finalkey, tmpHash);
                 }
                 else{
-                    ArrayList tmpHash = (ArrayList) res.get(key);
+                    ArrayList tmpHash = (ArrayList) res.get(finalkey);
                     tmpHash.add(offset);
-                    res.put(key, tmpHash);
+                    res.put(finalkey, tmpHash);
                 }
             }
             node = (BPlusTreeLeafNode) a.file.readNode(node.rightSibling,0);
@@ -457,24 +753,24 @@ public class Database {
             else{
                 if(condition.get(i).get(0).toString().compareTo(tab1.table_name) == 0){
                     if(condition.get(i).get(3).toString().compareTo(tab1.table_name) == 0){
-                        if(!isObey(tmp1.get(tab1.getColumnName().indexOf(condition.get(i).get(1))), (int)condition.get(i).get(2), tmp1.get(tab1.getColumnName().indexOf(condition.get(i).get(3))))){
+                        if(!isObey(tmp1.get(tab1.getColumnName().indexOf(condition.get(i).get(1))), (int)condition.get(i).get(2), tmp1.get(tab1.getColumnName().indexOf(condition.get(i).get(4))))){
                             return false;
                         }
                     }
                     else{
-                        if(!isObey(tmp1.get(tab1.getColumnName().indexOf(condition.get(i).get(1))), (int)condition.get(i).get(2), tmp2.get(tab2.getColumnName().indexOf(condition.get(i).get(3))))){
+                        if(!isObey(tmp1.get(tab1.getColumnName().indexOf(condition.get(i).get(1))), (int)condition.get(i).get(2), tmp2.get(tab2.getColumnName().indexOf(condition.get(i).get(4))))){
                             return false;
                         }
                     }
                 }
                 else{
                     if(condition.get(i).get(3).toString().compareTo(tab1.table_name) == 0){
-                        if(!isObey(tmp2.get(tab2.getColumnName().indexOf(condition.get(i).get(1))), (int)condition.get(i).get(2), tmp1.get(tab1.getColumnName().indexOf(condition.get(i).get(3))))){
+                        if(!isObey(tmp2.get(tab2.getColumnName().indexOf(condition.get(i).get(1))), (int)condition.get(i).get(2), tmp1.get(tab1.getColumnName().indexOf(condition.get(i).get(4))))){
                             return false;
                         }
                     }
                     else{
-                        if(!isObey(tmp2.get(tab2.getColumnName().indexOf(condition.get(i).get(1))), (int)condition.get(i).get(2), tmp2.get(tab2.getColumnName().indexOf(condition.get(i).get(3))))){
+                        if(!isObey(tmp2.get(tab2.getColumnName().indexOf(condition.get(i).get(1))), (int)condition.get(i).get(2), tmp2.get(tab2.getColumnName().indexOf(condition.get(i).get(4))))){
                             return false;
                         }
                     }
@@ -484,12 +780,11 @@ public class Database {
         return true;
     }
 
-
     public Set<ArrayList> joinTwoTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList>> conditions) throws IOException, BPlusTreeException{
         Set<ArrayList> result = new HashSet<>();
         if(conditions == null){
             ArrayList<ArrayList> index = getCommonColIndex(tabs.get(0), tabs.get(1));
-            Map<String, ArrayList> hash[] = new HashMap[2];
+            Map<Integer, ArrayList> hash[] = new HashMap[2];
             for(int i = 0; i<2; i++){
                 ArrayList tmp = new ArrayList();
                 for(int j = 0; j<index.size(); ++j){
@@ -497,7 +792,7 @@ public class Database {
                 }
                 hash[i] = makeHashMap(tabs.get(i), tmp);
             }
-            for(String key : hash[0].keySet()){
+            for(Integer key : hash[0].keySet()){
                 if(hash[1].containsKey(key)){
                     for(int i = 0; i<(hash[0].get(key).size()); ++i){
                         for(int j = 0; j<hash[1].get(key).size(); ++j){
@@ -525,7 +820,7 @@ public class Database {
                 ArrayList<ArrayList> tmpCond = new ArrayList<>();
                 ArrayList<Integer> tmp1 = new ArrayList<>();
                 ArrayList<Integer> tmp2 = new ArrayList<>();
-                Map<String, ArrayList> hash[] = new HashMap[2];
+                Map<Integer, ArrayList> hash[] = new HashMap[2];
                 for(int j = 0; j<conditions.get(i).size(); ++j){
                     if(((boolean)conditions.get(i).get(j).get(5)==false) && ((int)conditions.get(i).get(j).get(2)==0) &&
                             (conditions.get(i).get(j).get(0).toString().compareTo(conditions.get(i).get(j).get(3).toString())!=0)){
@@ -545,7 +840,7 @@ public class Database {
                 if(tmp1.size() != 0){
                     hash[0] = makeHashMap(tabs.get(0), tmp1);
                     hash[1] = makeHashMap(tabs.get(1), tmp2);
-                    for(String key : hash[0].keySet()){
+                    for(Integer key : hash[0].keySet()){
                         if(hash[1].containsKey(key)){
                             for(int l = 0; l<(hash[0].get(key).size()); ++l){
                                 for(int j = 0; j<hash[1].get(key).size(); ++j){
@@ -572,12 +867,10 @@ public class Database {
                     // to do brute-force
                     ArrayList<ArrayList> tmp = makeSimpleCross(tabs.get(0), tabs.get(1));
                     for(int j = 0; j<tmp.size(); j++){
-                        for(int k = 0; k<conditions.get(i).size(); ++k){
-                            ArrayList tmp1value = tabs.get(0).file.readData((int)tmp.get(j).get(0));
-                            ArrayList tmp2value = tabs.get(1).file.readData((int)tmp.get(j).get(1));
-                            if(isObeyConditions(conditions.get(i), tabs.get(0), tabs.get(1), tmp1value, tmp2value)){
-                                result.add(tmp.get(j));
-                            }
+                        ArrayList tmp1value = tabs.get(0).file.readData((int)tmp.get(j).get(0));
+                        ArrayList tmp2value = tabs.get(1).file.readData((int)tmp.get(j).get(1));
+                        if(isObeyConditions(conditions.get(i), tabs.get(0), tabs.get(1), tmp1value, tmp2value)){
+                            result.add(tmp.get(j));
                         }
                     }
                 }
