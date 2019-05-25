@@ -134,7 +134,7 @@ public class Table {
     }
 
     public void DeleteRows(ArrayList<ArrayList<ArrayList>> conditions) throws IOException, BPlusTreeException{
-        for(ArrayList row: SelectRows(conditions, this.column_name)){
+        for(ArrayList row: SelectRows(conditions, null)){
             this.DeleteRow(row);
         }
     }

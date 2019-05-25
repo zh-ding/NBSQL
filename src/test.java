@@ -10,7 +10,7 @@ import java.util.Set;
 
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException {
-        int num = 100; // data
+        int num = 4; // data
         int table_num = 10;
 
         Database db = new Database("test", 0);
@@ -61,7 +61,6 @@ public class test {
         }
 
         System.out.println("----------------------start testing Persistent storage-----------------");
-
         db.useDB("test_for_use");
         db.useDB("test");
 
@@ -84,7 +83,7 @@ public class test {
         ArrayList test = new ArrayList();
         test.add("m_id");
         test.add(0);
-        test.add(65);
+        test.add(1);
         test.add(true);
         ArrayList<ArrayList> test_test = new ArrayList();
         test_test.add(test);
@@ -99,56 +98,78 @@ public class test {
                 number++;
             }
             if(number == num/2){
-                System.out.println("table " + Integer.toString(i) + " reload success");
+                System.out.println("table " + Integer.toString(i) + " delete success");
             }
             else {
-                System.out.println("table " + Integer.toString(i) + " reload fail");
+                System.out.println("table " + Integer.toString(i) + " delete fail");
             }
         }
 
-//        table = db.tables.get(0);
-//        table1 = db.tables.get(1);
-//        table2 = db.tables.get(2);
-//
-//
-//        ArrayList test = new ArrayList();
-//        ArrayList test1 = new ArrayList();
-//        ArrayList test2 = new ArrayList();
-//        ArrayList test_test = new ArrayList();
-//        ArrayList test_test1 = new ArrayList();
-//        ArrayList test_test_test = new ArrayList();
-//        ArrayList test_test_test1 = new ArrayList();
-//        ArrayList test_test_test_test = new ArrayList();
-//        test.add("test");
-//        test.add("m_id");
-//        test.add(0);
-//        test.add("test1");
-//        test.add("m_id");
-//        test.add(false);
-//        test1.add("test");
-//        test1.add("m_id");
-//        test1.add(0);
-//        test1.add(2);
-//        test1.add(null);
-//        test1.add(true);
-//        test_test.add(test);
-//        test_test.add(test1);
-//
-//        test_test_test.add(test_test);
-//        test_test_test_test.add(test_test_test);
-//        test2.add("test");
-//        test2.add("m_id");
-//        test2.add(0);
-//        test2.add("test2");
-//        test2.add("m_id");
-//        test2.add(false);
-//        test_test1.add(test2);
-//        test_test_test1.add(test_test1);
-//        test_test_test_test.add(test_test_test1);
-//        ArrayList<Table> tmp = new ArrayList<Table>();
-//        tmp.add(table);
-//        tmp.add(table1);
-//        tmp.add(table2);
+        System.out.println("----------------------start testing update-----------------");
+        ArrayList col_name = new ArrayList();
+        col_name.add("m_id");
+        ArrayList new_row = new ArrayList();
+        new_row.add(num/2);
+        ArrayList test1 = new ArrayList();
+        test1.add("m_id");
+        test1.add(1);
+        test1.add(num/2);
+        test1.add(true);
+        ArrayList<ArrayList> test_test1 = new ArrayList();
+        test_test1.add(test1);
+        ArrayList<ArrayList<ArrayList>> test_test_test1 = new ArrayList();
+        test_test_test1.add(test_test1);
+        ArrayList test2 = new ArrayList();
+        test2.add("m_id");
+        test2.add(0);
+        test2.add(num/2);
+        test2.add(true);
+        ArrayList<ArrayList> test_test2 = new ArrayList();
+        test_test2.add(test2);
+        ArrayList<ArrayList<ArrayList>> test_test_test2 = new ArrayList();
+        test_test_test2.add(test_test2);
+        for(int i = 0; i<table_num; ++i){
+            Table table = db.tables.get(i);
+            table.UpdateRow(test_test_test1, col_name, new_row);
+            Generator<ArrayList> tmp =  table.SelectRows(test_test_test2, null);
+            int number = 0;
+            for(ArrayList tmpres: tmp){
+                number++;
+            }
+            if(number == num/2){
+                System.out.println("table " + Integer.toString(i) + " update success");
+            }
+            else {
+                System.out.println("table " + Integer.toString(i) + " update fail");
+            }
+        }
+
+        for(int i = 0; i<table_num; i++){
+            db.dropTable("test_"+Integer.toString(i));
+        }
+        db.dropDB("test");
+        db.dropDB("test_for_use");
+
+        System.out.println("----------------------start testing join-----------------");
+        db.newDB("test");
+        db.useDB("test");
+        for(int i =0; i<table_num; ++i){
+            s[1] = Integer.toString(i)+"_name";
+            db.createTable(s, a, p, "test_"+Integer.toString(i), isNotNull);
+        }
+
+        for(int i = 0; i<table_num; ++i){
+            Table table = db.tables.get(i);
+            for(int j = 0; j<num; j++){
+                ArrayList arr = new ArrayList<>();
+                arr.add(j);
+                arr.add(Integer.toString(j));
+                table.InsertRow(arr);
+            }
+        }
+
+
+
 //        Set<ArrayList> res = db.joinTables(tmp, test_test_test_test);
 //        System.out.print(res);
 //        System.out.println();
@@ -158,11 +179,5 @@ public class test {
 //            System.out.print(table2.file.readData((int)tmpres.get(2)));
 //            System.out.println();
 //        }
-
-        for(int i = 0; i<table_num; i++){
-            db.dropTable("test_"+Integer.toString(i));
-        }
-        db.dropDB("test");
-        db.dropDB("test_for_use");
     }
 }
