@@ -6,11 +6,10 @@ import generator.Generator;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Set;
 
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException {
-        int num = 100; // data
+        int num = 4; // data
         int table_num = 10;
 
         Database db = new Database("test", 0);
@@ -48,6 +47,7 @@ public class test {
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
             Generator<ArrayList> tmp =  table.SelectRows(null, null);
+            //ArrayList<ArrayList> tmp =  table.SelectRows(null, null);
             int number = 0;
             for(ArrayList tmpres: tmp){
                 number++;
@@ -68,6 +68,7 @@ public class test {
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
             Generator<ArrayList> tmp =  table.SelectRows(null, null);
+            //ArrayList<ArrayList> tmp =  table.SelectRows(null, null);
             int number = 0;
             for(ArrayList tmpres: tmp){
                 number++;
@@ -83,8 +84,8 @@ public class test {
         System.out.println("----------------------start testing delete-----------------");
         ArrayList test = new ArrayList();
         test.add("m_id");
-        test.add(0);
-        test.add(65);
+        test.add(4);
+        test.add(num/2);
         test.add(true);
         ArrayList<ArrayList> test_test = new ArrayList();
         test_test.add(test);
@@ -92,8 +93,10 @@ public class test {
         test_test_test.add(test_test);
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
+            table.index_forest.get(0).printBPlusTree();
             table.DeleteRows(test_test_test);
             Generator<ArrayList> tmp =  table.SelectRows(null, null);
+            //ArrayList<ArrayList> tmp =  table.SelectRows(null, null);
             int number = 0;
             for(ArrayList tmpres: tmp){
                 number++;

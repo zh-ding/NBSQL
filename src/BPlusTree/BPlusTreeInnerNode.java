@@ -136,9 +136,7 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
         leftChild.fusionWithSibling(fm, sinkKey, rightChild);
 
         this.deleteAt(index);
-        BPlusTreeNode node1 = fm.readNode(this.location, this.id);
         fm.updateNode(this);
-        BPlusTreeNode node2 = fm.readNode(this.location, this.id);
 
         if (this.keyNum < Math.ceil(BPlusTree.ORDER / 2.0)) {
             if (this.parent == -1) {
