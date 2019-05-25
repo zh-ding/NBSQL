@@ -1,14 +1,20 @@
 package Parser;
 
+import org.antlr.v4.runtime.misc.ParseCancellationException;
+
 import java.util.ArrayList;
 
 public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<ArrayList>>> {
     ArrayList<ArrayList<ArrayList>> curExp;
     int orPos;
-    public SQLVisitorWhereClause(ArrayList<ArrayList<ArrayList>> curExp, int orPos)
+    ArrayList<String> columnNames;
+    ArrayList<Integer> columnTypes;
+    public SQLVisitorWhereClause(ArrayList<ArrayList<ArrayList>> curExp, int orPos, ArrayList<String> columnNames, ArrayList<Integer> columnTypes)
     {
         this.curExp = curExp;
         this.orPos = orPos;
+        this.columnNames = columnNames;
+        this.columnTypes = columnTypes;
     }
 
     @Override
@@ -16,13 +22,13 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
         if(ctx.K_OR() != null)
         {
             this.curExp.add(new ArrayList<ArrayList>());
-            ctx.expr(0).accept(new SQLVisitorWhereClause(this.curExp, this.orPos+1));
-            ctx.expr(1).accept(new SQLVisitorWhereClause(this.curExp, this.orPos));
+            ctx.expr(0).accept(new SQLVisitorWhereClause(this.curExp, this.orPos+1, columnNames, columnTypes));
+            ctx.expr(1).accept(new SQLVisitorWhereClause(this.curExp, this.orPos, columnNames, columnTypes));
         }
         else if(ctx.K_AND() != null)
         {
-            ctx.expr(0).accept(new SQLVisitorWhereClause(this.curExp, this.orPos));
-            ctx.expr(1).accept(new SQLVisitorWhereClause(this.curExp, this.orPos));
+            ctx.expr(0).accept(new SQLVisitorWhereClause(this.curExp, this.orPos, columnNames, columnTypes));
+            ctx.expr(1).accept(new SQLVisitorWhereClause(this.curExp, this.orPos, columnNames, columnTypes));
         }
         else
         {
@@ -31,15 +37,15 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
             String column_name2 = "";
             DataTypes data = null;
             ArrayList condition = new ArrayList();
+            if(ctx.expr(0).column_name() == null && ctx.expr(1).column_name() == null)
+            {
+                throw new ParseCancellationException("Invalid Expression");
+            }
             if(ctx.expr(0).column_name() != null)
             {
                 if(ctx.expr(0).table_name() != null)
                     column_name1.concat(ctx.expr(0).table_name().accept(new SQLVisitorNames())).concat(".");
                 column_name1 = column_name1.concat(ctx.expr(0).column_name().accept(new SQLVisitorNames()));
-            }
-            else
-            {
-                data = ctx.expr(0).literal_value().accept(new SQLVisitorLiteralValue());
             }
             if(ctx.expr(1).column_name() != null)
             {
@@ -47,9 +53,15 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
                     column_name2.concat(ctx.expr(1).table_name().accept(new SQLVisitorNames())).concat(".");
                 column_name2 = column_name2.concat(ctx.expr(1).column_name().accept(new SQLVisitorNames()));
             }
+            if(ctx.expr(0).literal_value() != null)
+            {
+                int dataType = columnTypes.get(columnNames.indexOf(column_name2));
+                data = ctx.expr(0).literal_value().accept(new SQLVisitorLiteralValue(dataType));
+            }
             else
             {
-                data = ctx.expr(1).literal_value().accept(new SQLVisitorLiteralValue());
+                int dataType = columnTypes.get(columnNames.indexOf(column_name1));
+                data = ctx.expr(1).literal_value().accept(new SQLVisitorLiteralValue(dataType));
             }
             if(!column_name1.equals("") && !column_name2.equals(""))
             {

@@ -1,10 +1,7 @@
 // Generated from /Users/zzh/Documents/GitHub/NBSQL/src/Parser/SQL.g4 by ANTLR 4.7.2
 package Parser;
-import Exceptions.BPlusTreeException;
-import Exceptions.TableException;
+import Exceptions.ParserException;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
-
-import java.io.IOException;
 
 /**
  * This interface defines a complete generic visitor for a parse tree produced
@@ -50,6 +47,12 @@ public interface SQLVisitor<T> extends ParseTreeVisitor<T> {
 	 * @return the visitor result
 	 */
 	T visitInsert_stmt(SQLParser.Insert_stmtContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link SQLParser#insert_values}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitInsert_values(SQLParser.Insert_valuesContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SQLParser#select_stmt}.
 	 * @param ctx the parse tree
