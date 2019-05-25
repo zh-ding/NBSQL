@@ -143,7 +143,7 @@ public class BPlusTreeLeafNode extends BPlusTreeNode {
             while(this.keys.size() < j + i + 1)
                 this.keys.add(new ArrayList());
             while(this.pointers.size() < j + i + 1)
-                this.pointers.add(0);
+                this.pointers.add(-1);
             this.keys.set(j + i, siblingLeaf.keys.get(i));
             this.pointers.set(j + i, siblingLeaf.pointers.get(i));
         }

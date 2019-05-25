@@ -1,4 +1,5 @@
 package Parser;
+
 import Database.Database;
 import Table.Table;
 import generator.Generator;
@@ -388,6 +389,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         else
             conditions = null;
         Generator<ArrayList> result;
+        //ArrayList<ArrayList> result;
         try {
             result = this.db.getTable(tableName).SelectRows(conditions, column_queries);
             for(String c:column_names)
@@ -469,6 +471,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         else
             conditions = null;
         Generator<ArrayList> result;
+        //ArrayList<ArrayList> result;
         try {
             result = this.db.getTable(tableName).SelectRows(conditions,tableColumnNames);
             for(ArrayList row:result)

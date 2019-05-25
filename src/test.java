@@ -6,11 +6,10 @@ import generator.Generator;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Set;
 
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException {
-        int num = 4; // data
+        int num = 1000; // data
         int table_num = 10;
 
         Database db = new Database("test", 0);
@@ -28,7 +27,7 @@ public class test {
         isNotNull[1] = false;
 
         for(int i =0; i<table_num; ++i){
-            s[1] = Integer.toString(i)+"_name";
+            s[1] = "name";
             db.createTable(s, a, p, "test_"+Integer.toString(i), isNotNull);
         }
 
@@ -48,6 +47,7 @@ public class test {
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
             Generator<ArrayList> tmp =  table.SelectRows(null, null);
+            //ArrayList<ArrayList> tmp =  table.SelectRows(null, null);
             int number = 0;
             for(ArrayList tmpres: tmp){
                 number++;
@@ -67,6 +67,7 @@ public class test {
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
             Generator<ArrayList> tmp =  table.SelectRows(null, null);
+            //ArrayList<ArrayList> tmp =  table.SelectRows(null, null);
             int number = 0;
             for(ArrayList tmpres: tmp){
                 number++;
@@ -82,8 +83,8 @@ public class test {
         System.out.println("----------------------start testing delete-----------------");
         ArrayList test = new ArrayList();
         test.add("m_id");
-        test.add(0);
-        test.add(1);
+        test.add(4);
+        test.add(num/2);
         test.add(true);
         ArrayList<ArrayList> test_test = new ArrayList();
         test_test.add(test);
@@ -91,6 +92,7 @@ public class test {
         test_test_test.add(test_test);
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
+            table.index_forest.get(0).printBPlusTree();
             table.DeleteRows(test_test_test);
             Generator<ArrayList> tmp =  table.SelectRows(null, null);
             int number = 0;
@@ -107,9 +109,9 @@ public class test {
 
         System.out.println("----------------------start testing update-----------------");
         ArrayList col_name = new ArrayList();
-        col_name.add("m_id");
+        col_name.add("name");
         ArrayList new_row = new ArrayList();
-        new_row.add(num/2);
+        new_row.add("test");
         ArrayList test1 = new ArrayList();
         test1.add("m_id");
         test1.add(1);
@@ -120,9 +122,9 @@ public class test {
         ArrayList<ArrayList<ArrayList>> test_test_test1 = new ArrayList();
         test_test_test1.add(test_test1);
         ArrayList test2 = new ArrayList();
-        test2.add("m_id");
+        test2.add("name");
         test2.add(0);
-        test2.add(num/2);
+        test2.add("test                ");
         test2.add(true);
         ArrayList<ArrayList> test_test2 = new ArrayList();
         test_test2.add(test2);
@@ -136,6 +138,7 @@ public class test {
             for(ArrayList tmpres: tmp){
                 number++;
             }
+            System.out.println(number);
             if(number == num/2){
                 System.out.println("table " + Integer.toString(i) + " update success");
             }
@@ -150,23 +153,30 @@ public class test {
         db.dropDB("test");
         db.dropDB("test_for_use");
 
-        System.out.println("----------------------start testing join-----------------");
-        db.newDB("test");
-        db.useDB("test");
-        for(int i =0; i<table_num; ++i){
-            s[1] = Integer.toString(i)+"_name";
-            db.createTable(s, a, p, "test_"+Integer.toString(i), isNotNull);
-        }
+//        System.out.println("----------------------start testing join-----------------");
+//        db.newDB("test");
+//        db.useDB("test");
+//        for(int i =0; i<table_num; ++i){
+//            s[1] = Integer.toString(i)+"_name";
+//            db.createTable(s, a, p, "test_"+Integer.toString(i), isNotNull);
+//        }
+//
+//        for(int i = 0; i<table_num; ++i){
+//            Table table = db.tables.get(i);
+//            for(int j = 0; j<num; j++){
+//                ArrayList arr = new ArrayList<>();
+//                arr.add(j);
+//                arr.add(Integer.toString(j));
+//                table.InsertRow(arr);
+//            }
+//        }
+//
+//        ArrayList conditions = new ArrayList();
+//        for(int i = 0; i<table_num-1; i++){
+//            conditions.add(null);
+//        }
 
-        for(int i = 0; i<table_num; ++i){
-            Table table = db.tables.get(i);
-            for(int j = 0; j<num; j++){
-                ArrayList arr = new ArrayList<>();
-                arr.add(j);
-                arr.add(Integer.toString(j));
-                table.InsertRow(arr);
-            }
-        }
+
 
 
 
