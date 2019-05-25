@@ -346,14 +346,16 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     private Void simple_Select(SQLParser.Select_stmtContext ctx) {
         String tableName = ctx.table_name().getText().toUpperCase();
         ArrayList<String> tableColumnNames = this.db.getTable(tableName).getColumnName();
-        ArrayList<Integer> columnTypes = this.db.getTable(tableName).getColumnType();
+        tableColumnNames = new ArrayList<String>(tableColumnNames.subList(1,tableColumnNames.size()));
+        ArrayList<Integer> tableColumnTypes = this.db.getTable(tableName).getColumnType();
+        tableColumnTypes = new ArrayList<Integer>(tableColumnTypes.subList(1,tableColumnTypes.size()));
         //获得每一列名称
         ArrayList<String> column_names = new ArrayList<String>();
         for(int i = 0; i < ctx.result_column().size(); i++)
         {
             if(ctx.result_column(i).STAR() != null)
             {
-                column_names.addAll(tableColumnNames.subList(1,tableColumnNames.size()));
+                column_names.addAll(tableColumnNames);
             }
             else if(ctx.result_column(i).column_alias() != null)
                 column_names.add(ctx.result_column(i).column_alias().getText().toUpperCase());
@@ -376,13 +378,15 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         ArrayList<Integer> column_types_queries = new ArrayList<>();
         for(String c:column_queries)
         {
-            column_types_queries.add(columnTypes.get(tableColumnNames.indexOf(c)));
+            column_types_queries.add(tableColumnTypes.get(tableColumnNames.indexOf(c)));
         }
         //condition
         ArrayList<ArrayList<ArrayList>> conditions = new ArrayList<ArrayList<ArrayList>>();
         conditions.add(new ArrayList<ArrayList>());
         if(ctx.K_WHERE() != null)
-            ctx.expr().accept(new SQLVisitorWhereClause(conditions,0));
+            ctx.expr().accept(new SQLVisitorWhereClause(conditions,0, tableColumnNames, tableColumnTypes));
+        else
+            conditions = null;
         Generator<ArrayList> result;
         try {
             result = this.db.getTable(tableName).SelectRows(conditions, column_queries);
@@ -405,7 +409,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                     }
                     else
                     {
-                        DataTypes data = ctx.expr().accept(new SQLVisitorEvalValue(column_queries,column_types_queries,r));
+                        DataTypes data = ctx.result_column(i).expr().accept(new SQLVisitorEvalValue(column_queries,column_types_queries,r));
                         if(data == null)
                         {
                             result_output.add(null);
@@ -445,6 +449,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             }
         } catch (Exception e)
         {
+
             output.append("select fail");
         }
         return null;
@@ -452,13 +457,20 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     @Override
     public Void visitDelete_stmt(SQLParser.Delete_stmtContext ctx) {
         String tableName = ctx.table_name().getText().toUpperCase();
+        ArrayList<String> tableColumnNames = this.db.getTable(tableName).getColumnName();
+        tableColumnNames = new ArrayList<String>(tableColumnNames.subList(1,tableColumnNames.size()));
+        ArrayList<Integer> tableColumnTypes = this.db.getTable(tableName).getColumnType();
+        tableColumnTypes = new ArrayList<Integer>(tableColumnTypes.subList(1,tableColumnTypes.size()));
+
         ArrayList<ArrayList<ArrayList>> conditions = new ArrayList<ArrayList<ArrayList>>();
         conditions.add(new ArrayList<ArrayList>());
         if(ctx.K_WHERE() != null)
-            ctx.expr().accept(new SQLVisitorWhereClause(conditions,0));
+            ctx.expr().accept(new SQLVisitorWhereClause(conditions,0,tableColumnNames, tableColumnTypes));
+        else
+            conditions = null;
         Generator<ArrayList> result;
         try {
-            result = this.db.getTable(tableName).SelectRows(conditions,db.getTable(tableName).getColumnName());
+            result = this.db.getTable(tableName).SelectRows(conditions,tableColumnNames);
             for(ArrayList row:result)
             {
                 this.db.getTable(tableName).DeleteRow(row);
@@ -474,43 +486,55 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     @Override
     public Void visitUpdate_stmt(SQLParser.Update_stmtContext ctx) {
         String tableName = ctx.table_name().getText().toUpperCase();
+        ArrayList<String> tableColumnNames = this.db.getTable(tableName).getColumnName();
+        tableColumnNames = new ArrayList<String>(tableColumnNames.subList(1,tableColumnNames.size()));
+        ArrayList<Integer> tableColumnTypes = this.db.getTable(tableName).getColumnType();
+        tableColumnTypes = new ArrayList<Integer>(tableColumnTypes.subList(1,tableColumnTypes.size()));
+
         ArrayList<String> column_names = new ArrayList<>();
         ArrayList data = new ArrayList();
         ArrayList<ArrayList<ArrayList>> conditions = new ArrayList<ArrayList<ArrayList>>();
         conditions.add(new ArrayList<ArrayList>());
-        if(ctx.K_WHERE() != null)
+
+        if(ctx.K_WHERE() != null) {
+            ctx.expr().get(ctx.expr().size() - 1).accept(new SQLVisitorWhereClause(conditions, 0, tableColumnNames, tableColumnTypes));
+        }
+        else
         {
-            ctx.expr().get(ctx.expr().size()-1).accept(new SQLVisitorWhereClause(conditions,0));
-            for(int i = 0; i < ctx.expr().size()-1; i++)
+            conditions = null;
+        }
+
+        for(int i = 0; i < ctx.column_name().size(); i++)
+        {
+            String columnName = ctx.column_name(i).getText().toUpperCase();
+            int columnType = tableColumnTypes.get(tableColumnNames.indexOf(columnName));
+            column_names.add(columnName);
+            DataTypes dataTmp = ctx.expr(i).accept(new SQLVisitorLiteralValue(columnType));
+            if(dataTmp != null)
             {
-                column_names.add(ctx.expr(i).expr(0).getText().toUpperCase());
-                DataTypes dataTmp = ctx.expr(i).expr(0).accept(new SQLVisitorLiteralValue());
-                if(dataTmp != null)
-                {
-                    switch (dataTmp.type){
-                        case 0:
-                            data.add(dataTmp.int_data);
-                            break;
-                        case 1:
-                            data.add(dataTmp.long_data);
-                            break;
-                        case 2:
-                            data.add(dataTmp.float_data);
-                            break;
-                        case 3:
-                            data.add(dataTmp.double_data);
-                            break;
-                        case 4:
-                            data.add(dataTmp.string_data);
-                            break;
-                        default:
-                            break;
-                    }
+                switch (dataTmp.type){
+                    case 0:
+                        data.add(dataTmp.int_data);
+                        break;
+                    case 1:
+                        data.add(dataTmp.long_data);
+                        break;
+                    case 2:
+                        data.add(dataTmp.float_data);
+                        break;
+                    case 3:
+                        data.add(dataTmp.double_data);
+                        break;
+                    case 4:
+                        data.add(dataTmp.string_data);
+                        break;
+                    default:
+                        break;
                 }
-                else
-                {
-                    data.add(null);
-                }
+            }
+            else
+            {
+                data.add(null);
             }
         }
         try {
