@@ -9,7 +9,7 @@ import java.util.ArrayList;
 
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException {
-        int num = 1000; // data
+        int num = 6; // data
         int table_num = 10;
 
         Database db = new Database("test", 0);
