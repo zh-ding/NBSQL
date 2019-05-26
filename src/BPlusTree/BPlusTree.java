@@ -38,7 +38,7 @@ public class BPlusTree {
             BPlusTreeNode node = leaf.dealOverflow(fm);
             if(node != null){
                 this.root = node;
-                this.fm.updateRoot(ID, this.root.location);
+                this.fm.updateRoot(this.ID, this.root.location);
             }
         }else{
             fm.updateNode(leaf);
@@ -53,16 +53,18 @@ public class BPlusTree {
         BPlusTreeLeafNode leaf = this.findLeafNodeToInsert(key);
 
 
-        if (leaf.delete(this.fm, key) && leaf.keyNum < Math.ceil(this.ORDER / 2.0)) {
+        if (leaf.delete(this.fm, key) && leaf.keyNum < Math.floor(this.ORDER / 2.0) - 1) {
             BPlusTreeNode n = leaf.dealUnderflow(fm);
             if (n != null) {
                 this.root = n;
-                fm.updateRoot(this.ID, this.root.location);
+                this.fm.updateRoot(this.ID, this.root.location);
             }
+        }else{
+            fm.updateNode(leaf);
         }
 
+
         this.root = fm.readNode(this.root.location, this.ID);
-        System.out.println(this.root);
     }
 
     //return leaf offset
@@ -77,6 +79,7 @@ public class BPlusTree {
             throws IOException{
 
         printBPlusTree(this.root);
+        System.out.println();
     }
 
     public BPlusTreeLeafNode getMostLeftLeafNode()
@@ -90,8 +93,8 @@ public class BPlusTree {
         node.print();
         if(node.isLeafNode)
             return;
-        for(Integer offset:node.pointers){
-            BPlusTreeNode n = fm.readNode(offset, this.ID);
+        for(int i = 0; i < node.keyNum + 1; ++i){
+            BPlusTreeNode n = fm.readNode(node.pointers.get(i), this.ID);
             printBPlusTree(n);
         }
     }
