@@ -2,7 +2,6 @@ package Parser;
 
 import Database.Database;
 import Table.Table;
-import generator.Generator;
 
 import java.io.File;
 import java.io.IOException;
@@ -388,8 +387,8 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             ctx.expr().accept(new SQLVisitorWhereClause(conditions,0, tableColumnNames, tableColumnTypes));
         else
             conditions = null;
-        Generator<ArrayList> result;
-        //ArrayList<ArrayList> result;
+        //Generator<ArrayList> result;
+        ArrayList<ArrayList> result;
         try {
             result = this.db.getTable(tableName).SelectRows(conditions, column_queries);
             for(String c:column_names)
@@ -470,14 +469,15 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             ctx.expr().accept(new SQLVisitorWhereClause(conditions,0,tableColumnNames, tableColumnTypes));
         else
             conditions = null;
-        Generator<ArrayList> result;
-        //ArrayList<ArrayList> result;
+        //Generator<ArrayList> result;
+        ArrayList<ArrayList> result;
         try {
-            result = this.db.getTable(tableName).SelectRows(conditions,tableColumnNames);
-            for(ArrayList row:result)
-            {
-                this.db.getTable(tableName).DeleteRow(row);
-            }
+            this.db.getTable(tableName).DeleteRows(conditions);
+//            result = this.db.getTable(tableName).SelectRows(conditions,tableColumnNames);
+//            for(ArrayList row:result)
+//            {
+//                this.db.getTable(tableName).DeleteRow(row);
+//            }
             this.output.append("delete rows success");
         } catch (Exception e)
         {
