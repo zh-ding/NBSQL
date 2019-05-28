@@ -115,7 +115,6 @@ public class BPlusTree {
         while (!node.isLeafNode) {
             node = fm.readNode(node.pointers.get(node.search(key)), this.ID);
         }
-
         return (BPlusTreeLeafNode)node;
     }
 
