@@ -4,48 +4,34 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.util.ArrayList;
 
-public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<ArrayList>>> {
-
+public class SQLVisitorWhereClauseOld extends SQLBaseVisitor<ArrayList<ArrayList<ArrayList>>> {
+    ArrayList<ArrayList<ArrayList>> curExp;
+    int orPos;
     ArrayList<String> columnNames;
     ArrayList<Integer> columnTypes;
-    public SQLVisitorWhereClause(ArrayList<String> columnNames, ArrayList<Integer> columnTypes)
+    public SQLVisitorWhereClauseOld(ArrayList<ArrayList<ArrayList>> curExp, int orPos, ArrayList<String> columnNames, ArrayList<Integer> columnTypes)
     {
+        this.curExp = curExp;
+        this.orPos = orPos;
         this.columnNames = columnNames;
         this.columnTypes = columnTypes;
     }
 
     @Override
     public ArrayList<ArrayList<ArrayList>> visitExpr(SQLParser.ExprContext ctx) {
-        if(ctx.OPEN_PAR() != null && ctx.CLOSE_PAR() != null)
-            return ctx.expr(0).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
         if(ctx.K_OR() != null)
         {
-            ArrayList<ArrayList<ArrayList>> l = ctx.expr(0).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
-            ArrayList<ArrayList<ArrayList>> r = ctx.expr(1).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
-            l.addAll(r);
-            return l;
+            this.curExp.add(new ArrayList<ArrayList>());
+            ctx.expr(0).accept(new SQLVisitorWhereClauseOld(this.curExp, this.orPos+1, columnNames, columnTypes));
+            ctx.expr(1).accept(new SQLVisitorWhereClauseOld(this.curExp, this.orPos, columnNames, columnTypes));
         }
         else if(ctx.K_AND() != null)
         {
-            ArrayList<ArrayList<ArrayList>> l = ctx.expr(0).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
-            ArrayList<ArrayList<ArrayList>> r = ctx.expr(1).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
-            ArrayList<ArrayList<ArrayList>> mix = new ArrayList<>();
-            for(int i = 0; i < l.size(); i++)
-            {
-                for(int j = 0; j < r.size(); j++)
-                {
-                    ArrayList<ArrayList> temp = new ArrayList<>();
-                    temp.addAll(l.get(i));
-                    temp.addAll(r.get(j));
-                    mix.add(temp);
-                }
-            }
-            return mix;
+            ctx.expr(0).accept(new SQLVisitorWhereClauseOld(this.curExp, this.orPos, columnNames, columnTypes));
+            ctx.expr(1).accept(new SQLVisitorWhereClauseOld(this.curExp, this.orPos, columnNames, columnTypes));
         }
         else
         {
-            ArrayList<ArrayList<ArrayList>> singleCondition = new ArrayList<ArrayList<ArrayList>>();
-            singleCondition.add(new ArrayList<ArrayList>());
             int type = resolveType(ctx);
             String column_name1 = "";
             String column_name2 = "";
@@ -123,9 +109,9 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
                 }
                 condition.add(true);
             }
-            singleCondition.get(0).add(condition);
-            return singleCondition;
+            this.curExp.get(this.orPos).add(condition);
         }
+        return this.curExp;
     }
 
     private int resolveType(SQLParser.ExprContext ctx)
@@ -164,5 +150,4 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
         }
         return -1;
     }
-
 }

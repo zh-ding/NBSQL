@@ -171,7 +171,7 @@ public class SQLBaseVisitor<T> extends AbstractParseTreeVisitor<T> implements SQ
 	 * <p>The default implementation returns the result of calling
 	 * {@link #visitChildren} on {@code ctx}.</p>
 	 */
-	@Override public T visitJoin_operator(SQLParser.Join_operatorContext ctx) { return visitChildren(ctx); }
+	@Override public T visitJoin_def(SQLParser.Join_defContext ctx) { return visitChildren(ctx); }
 	/**
 	 * {@inheritDoc}
 	 *

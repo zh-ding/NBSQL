@@ -1,6 +1,5 @@
 // Generated from /Users/zzh/Documents/GitHub/NBSQL/src/Parser/SQL.g4 by ANTLR 4.7.2
 package Parser;
-import Exceptions.ParserException;
 import org.antlr.v4.runtime.tree.ParseTreeVisitor;
 
 /**
@@ -144,11 +143,11 @@ public interface SQLVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitJoin_clause(SQLParser.Join_clauseContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link SQLParser#join_operator}.
+	 * Visit a parse tree produced by {@link SQLParser#join_def}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitJoin_operator(SQLParser.Join_operatorContext ctx);
+	T visitJoin_def(SQLParser.Join_defContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link SQLParser#signed_number}.
 	 * @param ctx the parse tree

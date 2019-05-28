@@ -228,15 +228,15 @@ public interface SQLListener extends ParseTreeListener {
 	 */
 	void exitJoin_clause(SQLParser.Join_clauseContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link SQLParser#join_operator}.
+	 * Enter a parse tree produced by {@link SQLParser#join_def}.
 	 * @param ctx the parse tree
 	 */
-	void enterJoin_operator(SQLParser.Join_operatorContext ctx);
+	void enterJoin_def(SQLParser.Join_defContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link SQLParser#join_operator}.
+	 * Exit a parse tree produced by {@link SQLParser#join_def}.
 	 * @param ctx the parse tree
 	 */
-	void exitJoin_operator(SQLParser.Join_operatorContext ctx);
+	void exitJoin_def(SQLParser.Join_defContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link SQLParser#signed_number}.
 	 * @param ctx the parse tree

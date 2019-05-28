@@ -160,11 +160,11 @@ result_column
 
 
 join_clause
- : table_name ( join_operator table_name K_ON expr )*
+ : table_name ( join_def )*
  ;
 
-join_operator
- : K_OUTER? K_JOIN
+join_def
+ : K_NATURAL? (K_OUTER|K_INNER)? K_JOIN table_name (K_ON expr)?
  ;
 
 

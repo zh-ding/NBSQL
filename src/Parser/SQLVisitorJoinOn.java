@@ -4,12 +4,17 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.util.ArrayList;
 
-public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<ArrayList>>> {
+public class SQLVisitorJoinOn extends SQLBaseVisitor<ArrayList<ArrayList<ArrayList>>> {
 
-    ArrayList<String> columnNames;
-    ArrayList<Integer> columnTypes;
-    public SQLVisitorWhereClause(ArrayList<String> columnNames, ArrayList<Integer> columnTypes)
+    ArrayList<String> tableNames;
+    ArrayList<ArrayList<String>> columnNames;
+    ArrayList<ArrayList<Integer>> columnTypes;
+    
+    public SQLVisitorJoinOn(ArrayList<String> tableNames,
+            ArrayList<ArrayList<String>> columnNames,
+            ArrayList<ArrayList<Integer>> columnTypes)
     {
+        this.tableNames = tableNames;
         this.columnNames = columnNames;
         this.columnTypes = columnTypes;
     }
@@ -17,18 +22,18 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
     @Override
     public ArrayList<ArrayList<ArrayList>> visitExpr(SQLParser.ExprContext ctx) {
         if(ctx.OPEN_PAR() != null && ctx.CLOSE_PAR() != null)
-            return ctx.expr(0).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
+            return ctx.expr(0).accept(new SQLVisitorJoinOn(tableNames,columnNames,columnTypes));
         if(ctx.K_OR() != null)
         {
-            ArrayList<ArrayList<ArrayList>> l = ctx.expr(0).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
-            ArrayList<ArrayList<ArrayList>> r = ctx.expr(1).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
+            ArrayList<ArrayList<ArrayList>> l = ctx.expr(0).accept(new SQLVisitorJoinOn(tableNames,columnNames,columnTypes));
+            ArrayList<ArrayList<ArrayList>> r = ctx.expr(1).accept(new SQLVisitorJoinOn(tableNames,columnNames,columnTypes));
             l.addAll(r);
             return l;
         }
         else if(ctx.K_AND() != null)
         {
-            ArrayList<ArrayList<ArrayList>> l = ctx.expr(0).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
-            ArrayList<ArrayList<ArrayList>> r = ctx.expr(1).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
+            ArrayList<ArrayList<ArrayList>> l = ctx.expr(0).accept(new SQLVisitorJoinOn(tableNames,columnNames,columnTypes));
+            ArrayList<ArrayList<ArrayList>> r = ctx.expr(1).accept(new SQLVisitorJoinOn(tableNames,columnNames,columnTypes));
             ArrayList<ArrayList<ArrayList>> mix = new ArrayList<>();
             for(int i = 0; i < l.size(); i++)
             {
@@ -48,7 +53,9 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
             singleCondition.add(new ArrayList<ArrayList>());
             int type = resolveType(ctx);
             String column_name1 = "";
+            String table_name1 = "";
             String column_name2 = "";
+            String table_name2 = "";
             DataTypes data = null;
             ArrayList condition = new ArrayList();
             if(ctx.expr(0).column_name() == null && ctx.expr(1).column_name() == null)
@@ -58,29 +65,33 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
             if(ctx.expr(0).column_name() != null)
             {
                 if(ctx.expr(0).table_name() != null)
-                    column_name1.concat(ctx.expr(0).table_name().accept(new SQLVisitorNames())).concat(".");
+                    table_name1 = ctx.expr(0).table_name().getText().toUpperCase();
                 column_name1 = column_name1.concat(ctx.expr(0).column_name().accept(new SQLVisitorNames()));
             }
             if(ctx.expr(1).column_name() != null)
             {
                 if(ctx.expr(1).table_name() != null)
-                    column_name2.concat(ctx.expr(1).table_name().accept(new SQLVisitorNames())).concat(".");
+                    table_name2 = ctx.expr(1).table_name().getText().toUpperCase();
                 column_name2 = column_name2.concat(ctx.expr(1).column_name().accept(new SQLVisitorNames()));
             }
             if(ctx.expr(0).literal_value() != null)
             {
-                int dataType = columnTypes.get(columnNames.indexOf(column_name2));
+                int index = tableNames.indexOf(table_name2);
+                int dataType = columnTypes.get(index).get(columnNames.get(index).indexOf(column_name2));
                 data = ctx.expr(0).literal_value().accept(new SQLVisitorLiteralValue(dataType));
             }
             else
             {
-                int dataType = columnTypes.get(columnNames.indexOf(column_name1));
+                int index = tableNames.indexOf(table_name1);
+                int dataType = columnTypes.get(index).get(columnNames.get(index).indexOf(column_name1));
                 data = ctx.expr(1).literal_value().accept(new SQLVisitorLiteralValue(dataType));
             }
             if(!column_name1.equals("") && !column_name2.equals(""))
             {
+                condition.add(table_name1);
                 condition.add(column_name1);
                 condition.add(type);
+                condition.add(table_name2);
                 condition.add(column_name2);
                 condition.add(false);
             }
@@ -88,14 +99,17 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
             {
                 if(column_name2.equals(""))
                 {
+                    condition.add(table_name1);
                     condition.add(column_name1);
                     condition.add(type);
                 }
                 else
                 {
+                    condition.add(table_name2);
                     condition.add(column_name2);
                     condition.add(switchType(type));
                 }
+
                 if(data != null)
                 {
                     switch (data.type)
@@ -121,6 +135,7 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
                 {
                     condition.add(null);
                 }
+                condition.add(null);
                 condition.add(true);
             }
             singleCondition.get(0).add(condition);
@@ -164,5 +179,4 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
         }
         return -1;
     }
-
 }

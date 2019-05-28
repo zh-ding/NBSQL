@@ -280,13 +280,13 @@ public class SQLBaseListener implements SQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterJoin_operator(SQLParser.Join_operatorContext ctx) { }
+	@Override public void enterJoin_def(SQLParser.Join_defContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitJoin_operator(SQLParser.Join_operatorContext ctx) { }
+	@Override public void exitJoin_def(SQLParser.Join_defContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

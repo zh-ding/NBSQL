@@ -1,6 +1,7 @@
 package Parser;
 
 import Exceptions.ParserException;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.util.ArrayList;
 
@@ -18,7 +19,7 @@ public class SQLVisitorEvalValue extends SQLBaseVisitor<DataTypes>{
     }
 
     @Override
-    public DataTypes visitExpr(SQLParser.ExprContext ctx) {
+    public DataTypes visitExpr(SQLParser.ExprContext ctx) throws ParseCancellationException {
         //字面值
         if(ctx.literal_value() != null)
         {
@@ -109,7 +110,7 @@ public class SQLVisitorEvalValue extends SQLBaseVisitor<DataTypes>{
 
         }catch (ParserException e)
         {
-            System.out.println(e.getMessage());
+            throw new ParseCancellationException(e.getMessage());
         }
         return null;
     }

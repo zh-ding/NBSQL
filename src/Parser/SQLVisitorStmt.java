@@ -65,11 +65,11 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             }
             try {
                 this.db.createTable(names.toArray(new String[names.size()]), types, primary_key.toArray(new String[primary_key.size()]), tableName, not_null);
-                output.append("create table success");
+                output.append("create table " + tableName + "success");
             }
             catch (IOException e)
             {
-                output.append("create table fail");
+                output.append("create table"  + tableName + "fail:" + e.getMessage());
             }
         }
         else
@@ -138,12 +138,11 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         String name = ctx.database_name().getText().toUpperCase();
         try {
             Database temp = new Database(name,0);
-            this.output.append("create database success");
+            this.output.append("create database" + name + "success");
         }
         catch (IOException e)
         {
-            System.out.println(e.toString());
-            this.output.append("create database fail");
+            this.output.append("create database" + name + "fail: " + e.getMessage());
         }
         return null;
     }
@@ -159,12 +158,11 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         try {
             Database temp = new Database(name,2);
-            this.output.append("drop database success");
+            this.output.append("drop database" + name + "success");
         }
         catch (IOException e)
         {
-            System.out.println(e.toString());
-            this.output.append("drop database fail");
+            this.output.append("drop database" + name +  "fail: " + e.getMessage());
         }
         return null;
     }
@@ -181,8 +179,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         catch (IOException e)
         {
-            System.out.println(e.toString());
-            this.output.append("use database ").append(name).append(" fail");
+            this.output.append("use database ").append(name).append(" fail: " + e.getMessage());
         }
         return null;
     }
@@ -204,8 +201,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         catch (IOException e)
         {
-            System.out.println(e.toString());
-            this.output.append("show database fail");
+            this.output.append("show database" + name + "fail: " + e.getMessage());
         }
         return null;
     }
@@ -249,7 +245,6 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         {
             columns.addAll(column_names);
         }
-
         ArrayList<ArrayList> dataAll = new ArrayList<ArrayList>();
         for(int i = 0; i < ctx.insert_values().size(); i++)
         {
@@ -283,29 +278,9 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             }
             dataAll.add(data);
         }
-//        ArrayList<String> col_name = t.getColumnName();
-//        ArrayList row = new ArrayList();
-//        if(columns.size() == 0){
-//            int k = 0;
-//            for(int i = 0; i<column_names.size(); ++i){
-////                if(col_name.get(i).toString().compareTo("id")==0){
-////                    continue;
-////                }
-//                if(k < data.size()){
-//                    row.add(data.get(k));
-//                    k++;
-//                    continue;
-//                }
-//                row.add(null);
-//            }
-//        }
-//        else{
         for(ArrayList data:dataAll) {
             ArrayList row = new ArrayList();
             for (int i = 0; i < column_names.size(); ++i) {
-//                if(col_name.get(i).toString().compareTo("id")==0){
-//                    continue;
-//                }
                 int index = columns.indexOf(column_names.get(i));
                 if(index >= 0)
                 {
@@ -315,13 +290,6 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                 {
                     row.add(null);
                 }
-//                for (int j = 0; j < columns.size(); ++j) {
-//                    if (column_names.get(i).equals(columns.get(j))) {
-//                        row.add(data.get(j));
-//                        continue;
-//                    }
-//                }
-//                row.add(null);
             }
             try {
                 t.InsertRow(row);
@@ -339,6 +307,23 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         if(ctx.join_clause() == null)
         {
             simple_Select(ctx);
+        }
+        else
+        {
+            SQLVisitorJoinConditions condition = ctx.join_clause().accept(new SQLVisitorJoin(this.db));
+            ArrayList<Table> tables = new ArrayList<Table>();
+            for(String n:condition.tableNames)
+            {
+                tables.add(this.db.getTable(n));
+            }
+            try {
+                Set<ArrayList> result = this.db.joinTables(tables, condition.conditions);
+                
+            }
+            catch (Exception e)
+            {
+                output.append(e.getMessage());
+            }
         }
         return null;
     }
@@ -382,9 +367,8 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         //condition
         ArrayList<ArrayList<ArrayList>> conditions = new ArrayList<ArrayList<ArrayList>>();
-        conditions.add(new ArrayList<ArrayList>());
         if(ctx.K_WHERE() != null)
-            ctx.expr().accept(new SQLVisitorWhereClause(conditions,0, tableColumnNames, tableColumnTypes));
+            conditions = ctx.expr().accept(new SQLVisitorWhereClause(tableColumnNames, tableColumnTypes));
         else
             conditions = null;
         //Generator<ArrayList> result;
@@ -466,18 +450,13 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         ArrayList<ArrayList<ArrayList>> conditions = new ArrayList<ArrayList<ArrayList>>();
         conditions.add(new ArrayList<ArrayList>());
         if(ctx.K_WHERE() != null)
-            ctx.expr().accept(new SQLVisitorWhereClause(conditions,0,tableColumnNames, tableColumnTypes));
+            ctx.expr().accept(new SQLVisitorWhereClause(tableColumnNames, tableColumnTypes));
         else
             conditions = null;
         //Generator<ArrayList> result;
         ArrayList<ArrayList> result;
         try {
             this.db.getTable(tableName).DeleteRows(conditions);
-//            result = this.db.getTable(tableName).SelectRows(conditions,tableColumnNames);
-//            for(ArrayList row:result)
-//            {
-//                this.db.getTable(tableName).DeleteRow(row);
-//            }
             this.output.append("delete rows success");
         } catch (Exception e)
         {
@@ -500,7 +479,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         conditions.add(new ArrayList<ArrayList>());
 
         if(ctx.K_WHERE() != null) {
-            ctx.expr().get(ctx.expr().size() - 1).accept(new SQLVisitorWhereClause(conditions, 0, tableColumnNames, tableColumnTypes));
+            ctx.expr().get(ctx.expr().size() - 1).accept(new SQLVisitorWhereClause(tableColumnNames, tableColumnTypes));
         }
         else
         {

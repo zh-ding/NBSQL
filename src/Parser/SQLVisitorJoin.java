@@ -1,22 +1,51 @@
 package Parser;
 
+import Database.Database;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
+
 import java.util.ArrayList;
 
-public class SQLVisitorJoin extends SQLBaseVisitor{
+public class SQLVisitorJoin extends SQLBaseVisitor<SQLVisitorJoinConditions>{
+
+    Database db;
+
+    public SQLVisitorJoin(Database db)
+    {
+        this.db = db;
+    }
 
     @Override
-    public Object visitJoin_clause(SQLParser.Join_clauseContext ctx) {
+    public SQLVisitorJoinConditions visitJoin_clause(SQLParser.Join_clauseContext ctx) throws ParseCancellationException {
         ArrayList<String> tableNames = new ArrayList<String>();
-        for(int i = 0; i < ctx.table_name().size(); i++)
-            tableNames.add(ctx.table_name(i).getText());
-        ArrayList<Integer> joinTypes = new ArrayList<>();
-        for(int i = 0; i < ctx.join_operator().size(); i++)
+        tableNames.add(ctx.table_name().getText().toUpperCase());
+        ArrayList<ArrayList<String>> columnNames = new ArrayList<>();
+        ArrayList<ArrayList<Integer>> columnTypes = new ArrayList<>();
+        columnNames.add(db.getTable(tableNames.get(0)).getColumnName());
+        columnTypes.add(db.getTable(tableNames.get(0)).getColumnType());
+        ArrayList<Boolean> joinTypes = new ArrayList<>();
+        ArrayList<ArrayList<ArrayList<ArrayList>>> conditions = new ArrayList<>();
+        for(SQLParser.Join_defContext c:ctx.join_def())
         {
-            if(ctx.join_operator(i).K_OUTER() != null)
-                joinTypes.add(1);
+            String name = c.table_name().getText().toUpperCase();
+            tableNames.add(name);
+            columnNames.add(db.getTable(name).getColumnName());
+            columnTypes.add(db.getTable(name).getColumnType());
+            if(c.K_OUTER() != null)
+                joinTypes.add(true);
             else
-                joinTypes.add(0);
+                joinTypes.add(false);
+            if((c.K_NATURAL() != null && c.K_ON() != null) || (c.K_NATURAL() == null && c.K_ON() == null))
+            {
+                throw new ParseCancellationException("Join clause invalid");
+            }
+            if(c.K_NATURAL() != null)
+            {
+                conditions.add(null);
+                continue;
+            }
+            ArrayList<ArrayList<ArrayList>> condition = c.expr().accept(new SQLVisitorJoinOn(tableNames,columnNames,columnTypes));
+            conditions.add(condition);
         }
-        return null;
+        return new SQLVisitorJoinConditions(tableNames,joinTypes,conditions);
     }
 }
