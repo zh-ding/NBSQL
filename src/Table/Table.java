@@ -6,6 +6,7 @@ import BPlusTree.BPlusTreeNode;
 import Exceptions.BPlusTreeException;
 import Exceptions.TableException;
 import Utils.FileManager;
+import generator.Generator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -187,7 +188,7 @@ public class Table {
       ],
     ]
     */
-    /*
+
     public Generator<ArrayList> SelectRows(ArrayList<ArrayList<ArrayList>> conditions, ArrayList<String> column_names)
             throws BPlusTreeException, IOException{
         Table table = this;
@@ -372,10 +373,10 @@ public class Table {
         };
 
         return simpleGenerator;
-    }*/
+    }
 
 
-
+    /*
     public ArrayList<ArrayList> SelectRows(ArrayList<ArrayList<ArrayList>> conditions, ArrayList<String> column_names)
             throws BPlusTreeException, IOException{
         Table table = this;
@@ -540,7 +541,7 @@ public class Table {
                 }
 
         return re;
-    }
+    }*/
 
 
     void addResult(BPlusTreeNode node, ArrayList<ArrayList> arr, Set<Integer> result, int index)

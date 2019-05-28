@@ -1,15 +1,16 @@
+import Database.Database;
 import Exceptions.BPlusTreeException;
 import Parser.SQLLexer;
 import Parser.SQLParser;
 import Parser.SQLVisitorStmt;
 import Parser.ThrowingErrorListener;
-import org.antlr.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.TokenStream;
-import Database.Database;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 public class TestParser {
     public static void main(String[] args) throws BPlusTreeException, IOException {

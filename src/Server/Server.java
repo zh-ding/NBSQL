@@ -1,10 +1,15 @@
 
 package Server;
 
-import java.io.BufferedInputStream;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import Database.Database;
+import Parser.SQLLexer;
+import Parser.SQLParser;
+import Parser.SQLVisitorStmt;
+import Parser.ThrowingErrorListener;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.concurrent.ExecutorService;
@@ -36,18 +41,35 @@ public class Server {
                 DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
+                Database db = new Database("TEST", 0);
+                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                StringBuffer output = new StringBuffer();
+                StringBuffer dbName = new StringBuffer("TEST");
+
                 String line = "";
-                while (!line.equals("Over")) {
+                while (!line.equals("quit")) {
                     try {
                         line = in.readUTF();
-                        System.out.println(line);
+                        System.out.println(socket + line);
 
-                        out.writeUTF("Received: " + line);
+                        SQLLexer lexer = new SQLLexer(CharStreams.fromString(line));
+                        lexer.removeErrorListeners();
+                        lexer.addErrorListener(new ThrowingErrorListener());
+                        SQLParser parser = new SQLParser(new CommonTokenStream(lexer));
+                        parser.removeErrorListeners();
+                        parser.addErrorListener(new ThrowingErrorListener());
+                        SQLParser.Sql_stmtContext stmt = parser.sql_stmt();
+                        output = new StringBuffer();
+                        SQLVisitorStmt visitor = new SQLVisitorStmt(dbName, output);
+                        stmt.accept(visitor);
+                        out.writeUTF(output.toString());
+                        out.writeUTF("over");
 
                     } catch (IOException i) {
                         System.out.println(i);
                         break;
                     }
+
                 }
                 socket.close();
             }catch (IOException e){

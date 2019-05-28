@@ -121,7 +121,7 @@ public class Database {
     3: <=
     4: >=
     5: <>
-    conditions
+    on conditions
     [
         [
             [
@@ -132,8 +132,87 @@ public class Database {
             ]
         ]
     ]
+    where conditions
+    [
+        [
+            [table_name, col_name, 0, value, null, True],
+            [table_name, col_name, 0, table_name, col_name, False]
+        ],
+        [
+        ]
+    ]
     or null
      */
+    // without outer join
+    public ArrayList<ArrayList> selectFromTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList<ArrayList>>> onConditions, ArrayList<ArrayList<ArrayList>> whereConditions, ArrayList colNames)
+            throws IOException, BPlusTreeException {
+        ArrayList<ArrayList> finalRes = new ArrayList<>();
+        Set<ArrayList> res = new HashSet<>();
+        Set<ArrayList> joinRes = this.joinTables(tabs, onConditions);
+        for(int i = 0; i<whereConditions.size(); ++i){
+
+            for(ArrayList tmp : joinRes){
+                ArrayList<ArrayList> tmpvalue = getValues(tabs, tmp);
+                boolean flag = true;
+                for (int l = 0; l < whereConditions.get(i).size(); ++l) {
+                    if ((boolean) whereConditions.get(i).get(l).get(5)) {
+                        ArrayList tmpC = new ArrayList();
+                        tmpC.add(whereConditions.get(i).get(l));
+                        for (int t = 0; t < tabs.size(); t++) {
+                            if (tabs.get(t).table_name.compareTo(whereConditions.get(i).get(l).get(0).toString()) == 0) {
+                                if (!isObeyConditions(tmpC, tabs.get(t), tabs.get(tabs.size()-1), tmpvalue.get(t), tmpvalue.get(tabs.size()-1))) {
+                                    flag = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if(!flag){
+                            break;
+                        }
+                    }
+                    else{
+                        ArrayList tmpC = new ArrayList();
+                        tmpC.add(whereConditions.get(i).get(l));
+                        int t1 = 0, t2 = 0;
+                        for (int t = 0; t < tabs.size(); t++) {
+                            if (tabs.get(t).table_name.compareTo(whereConditions.get(i).get(l).get(0).toString()) == 0) {
+                                t1 = t;
+                            }
+                            if (tabs.get(t).table_name.compareTo(whereConditions.get(i).get(l).get(3).toString()) == 0) {
+                                t2 = t;
+                            }
+                        }
+                        if (!isObeyConditions(tmpC, tabs.get(t1), tabs.get(t2), tmpvalue.get(t1), tmpvalue.get(t2))) {
+                            flag = false;
+                            break;
+                        }
+                    }
+                }
+                if(flag == true){
+                    res.add(tmp);
+                }
+            }
+        }
+        /*
+        show res with schema
+         */
+        ArrayList<String> schema = new ArrayList<>();
+        ArrayList<Integer> schema_type = new ArrayList<>();
+
+        for(int j = 0; j<tabs.size(); ++j){
+            for(int i = 1; i<tabs.get(j).getColumnName().size(); ++i){
+                schema.add(tabs.get(j).table_name+"."+tabs.get(j).getColumnName().get(i));
+                schema_type.add(tabs.get(j).getColumnType().get(i));
+            }
+        }
+        finalRes.add(schema);
+        finalRes.add(schema_type);
+        for(ArrayList tmpres: res){
+            finalRes.add(getValuesWithoutAuto(tabs, tmpres));
+        }
+        return finalRes;
+    }
+
     public Set<ArrayList> joinTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList<ArrayList>>> conditions) throws IOException, BPlusTreeException{
         ArrayList tmp = new ArrayList();
         tmp.add(tabs.get(0));
@@ -205,6 +284,17 @@ public class Database {
         ArrayList<ArrayList> res = new ArrayList<>();
         for(int i = 0; i<tmp.size(); ++i){
             res.add(tabs.get(i).file.readData((int)tmp.get(i)));
+        }
+        return res;
+    }
+
+    private ArrayList getValuesWithoutAuto(ArrayList<Table> tabs, ArrayList tmp) throws IOException{
+        ArrayList res = new ArrayList<>();
+        for(int i = 0; i<tmp.size(); ++i){
+            ArrayList tmpData = tabs.get(i).file.readData((int)tmp.get(i));
+            for(int j = 1; j<tmpData.size(); ++j){
+                res.add(tmpData.get(j));
+            }
         }
         return res;
     }
