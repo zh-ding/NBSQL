@@ -198,11 +198,14 @@ public class test {
         wheretest_test.add(wheretest);
         ArrayList wheretest_test_test = new ArrayList();
         wheretest_test_test.add(wheretest_test);
-        res = db.selectFromTables(db.tables, conditions, wheretest_test_test, null);
+        ArrayList<ArrayList> finalres = new ArrayList<>();
+        finalres = db.selectFromTables(db.tables, conditions, wheretest_test_test, null);
         number = 0;
-        for(ArrayList tmpres: res){
+        for(ArrayList tmpres: finalres){
+            System.out.println(tmpres);
             number ++;
         }
+        number -= 2;
         if(number == num/2){
             System.out.println(Integer.toString(table_num)+" tables select join success");
         }
