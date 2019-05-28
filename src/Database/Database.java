@@ -121,7 +121,7 @@ public class Database {
     3: <=
     4: >=
     5: <>
-    conditions
+    on conditions
     [
         [
             [
@@ -132,8 +132,69 @@ public class Database {
             ]
         ]
     ]
+    where conditions
+    [
+        [
+            [table_name, col_name, 0, value, null, True],
+            [table_name, col_name, 0, table_name, col_name, False]
+        ],
+        [
+        ]
+    ]
     or null
      */
+    // without outer join
+    public Set<ArrayList> selectFromTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList<ArrayList>>> onConditions, ArrayList<ArrayList<ArrayList>> whereConditions, ArrayList colNames)
+            throws IOException, BPlusTreeException {
+        Set<ArrayList> res = new HashSet<>();
+        Set<ArrayList> joinRes = this.joinTables(tabs, onConditions);
+        for(int i = 0; i<whereConditions.size(); ++i){
+
+            for(ArrayList tmp : joinRes){
+                ArrayList<ArrayList> tmpvalue = getValues(tabs, tmp);
+                boolean flag = true;
+                for (int l = 0; l < whereConditions.get(i).size(); ++l) {
+                    if ((boolean) whereConditions.get(i).get(l).get(5)) {
+                        ArrayList tmpC = new ArrayList();
+                        tmpC.add(whereConditions.get(i).get(l));
+                        for (int t = 0; t < tabs.size(); t++) {
+                            if (tabs.get(t).table_name.compareTo(whereConditions.get(i).get(l).get(0).toString()) == 0) {
+                                if (!isObeyConditions(tmpC, tabs.get(t), tabs.get(tabs.size()-1), tmpvalue.get(t), tmpvalue.get(tabs.size()-1))) {
+                                    flag = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if(!flag){
+                            break;
+                        }
+                    }
+                    else{
+                        ArrayList tmpC = new ArrayList();
+                        tmpC.add(whereConditions.get(i).get(l));
+                        int t1 = 0, t2 = 0;
+                        for (int t = 0; t < tabs.size(); t++) {
+                            if (tabs.get(t).table_name.compareTo(whereConditions.get(i).get(l).get(0).toString()) == 0) {
+                                t1 = t;
+                            }
+                            if (tabs.get(t).table_name.compareTo(whereConditions.get(i).get(l).get(3).toString()) == 0) {
+                                t2 = t;
+                            }
+                        }
+                        if (!isObeyConditions(tmpC, tabs.get(t1), tabs.get(t2), tmpvalue.get(t1), tmpvalue.get(t2))) {
+                            flag = false;
+                            break;
+                        }
+                    }
+                }
+                if(flag == true){
+                    res.add(tmp);
+                }
+            }
+        }
+        return res;
+    }
+
     public Set<ArrayList> joinTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList<ArrayList>>> conditions) throws IOException, BPlusTreeException{
         ArrayList tmp = new ArrayList();
         tmp.add(tabs.get(0));

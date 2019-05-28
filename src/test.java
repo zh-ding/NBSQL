@@ -5,10 +5,11 @@ import Table.Table;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Set;
 
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException {
-        int num = 1000; // data
+        int num = 10; // data
         int table_num = 10;
 
         Database db = new Database("test", 0);
@@ -151,37 +152,66 @@ public class test {
         db.dropDB("test");
         db.dropDB("test_for_use");
 
-//        System.out.println("----------------------start testing join-----------------");
-//        db.newDB("test");
-//        db.useDB("test");
-//        for(int i =0; i<table_num; ++i){
-//            s[1] = Integer.toString(i)+"_name";
-//            db.createTable(s, a, p, "test_"+Integer.toString(i), isNotNull);
-//        }
-//
-//        for(int i = 0; i<table_num; ++i){
-//            Table table = db.tables.get(i);
-//            for(int j = 0; j<num; j++){
-//                ArrayList arr = new ArrayList<>();
-//                arr.add(j);
-//                arr.add(Integer.toString(j));
-//                table.InsertRow(arr);
-//            }
-//        }
-//
-//        ArrayList conditions = new ArrayList();
-//        for(int i = 0; i<table_num-1; i++){
-//            conditions.add(null);
-//        }
+        System.out.println("----------------------start testing join-----------------");
+        db.newDB("test");
+        db.useDB("test");
+        for(int i =0; i<table_num; ++i){
+            s[1] = Integer.toString(i)+"_name";
+            db.createTable(s, a, p, "test_"+Integer.toString(i), isNotNull);
+        }
 
-//        Set<ArrayList> res = db.joinTables(tmp, test_test_test_test);
-//        System.out.print(res);
-//        System.out.println();
-//        for (ArrayList tmpres : res) {
-//            System.out.print(table.file.readData((int)tmpres.get(0)));
-//            System.out.print(table1.file.readData((int)tmpres.get(1)));
-//            System.out.print(table2.file.readData((int)tmpres.get(2)));
-//            System.out.println();
-//        }
+        for(int i = 0; i<table_num; ++i){
+            Table table = db.tables.get(i);
+            for(int j = 0; j<num; j++){
+                ArrayList arr = new ArrayList<>();
+                arr.add(j);
+                arr.add(Integer.toString(j));
+                table.InsertRow(arr);
+            }
+        }
+
+        ArrayList conditions = new ArrayList();
+        for(int i = 0; i<table_num-1; i++){
+            conditions.add(null);
+        }
+
+        Set<ArrayList> res = db.joinTables(db.tables, conditions);
+        int number = 0;
+        for(ArrayList tmpres: res){
+            number++;
+        }
+        if(number == num){
+            System.out.println(Integer.toString(table_num)+" tables natural join success");
+        }
+        else{
+            System.out.println(Integer.toString(table_num)+" tables natural join fail");
+        }
+        System.out.println("----------------------start testing select from join-----------------");
+        ArrayList wheretest = new ArrayList();
+        wheretest.add("test_1");
+        wheretest.add("m_id");
+        wheretest.add(4);
+        wheretest.add(num/2);
+        wheretest.add(null);
+        wheretest.add(true);
+        ArrayList wheretest_test = new ArrayList();
+        wheretest_test.add(wheretest);
+        ArrayList wheretest_test_test = new ArrayList();
+        wheretest_test_test.add(wheretest_test);
+        res = db.selectFromTables(db.tables, conditions, wheretest_test_test, null);
+        number = 0;
+        for(ArrayList tmpres: res){
+            number ++;
+        }
+        if(number == num/2){
+            System.out.println(Integer.toString(table_num)+" tables select join success");
+        }
+        else{
+            System.out.println(Integer.toString(table_num)+" tables select join fail");
+        }
+        for(int i = 0; i<table_num; i++){
+            db.dropTable("test_"+Integer.toString(i));
+        }
+        db.dropDB("test");
     }
 }
