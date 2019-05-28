@@ -2,6 +2,7 @@ import Database.Database;
 import Exceptions.BPlusTreeException;
 import Exceptions.TableException;
 import Table.Table;
+import generator.Generator;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -45,8 +46,8 @@ public class test {
         System.out.println("----------------------start testing insert-----------------");
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
-            //Generator<ArrayList> tmp =  table.SelectRows(null, null);
-            ArrayList<ArrayList> tmp =  table.SelectRows(null, null);
+            Generator<ArrayList> tmp =  table.SelectRows(null, null);
+            //ArrayList<ArrayList> tmp =  table.SelectRows(null, null);
             int number = 0;
             for(ArrayList tmpres: tmp){
                 number++;
@@ -65,8 +66,8 @@ public class test {
 
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
-            //Generator<ArrayList> tmp =  table.SelectRows(null, null);
-            ArrayList<ArrayList> tmp =  table.SelectRows(null, null);
+            Generator<ArrayList> tmp =  table.SelectRows(null, null);
+            //ArrayList<ArrayList> tmp =  table.SelectRows(null, null);
             int number = 0;
             for(ArrayList tmpres: tmp){
                 number++;
@@ -92,8 +93,8 @@ public class test {
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
             table.DeleteRows(test_test_test);
-            //Generator<ArrayList> tmp =  table.SelectRows(null, null);
-            ArrayList<ArrayList> tmp =  table.SelectRows(null, null);
+            Generator<ArrayList> tmp =  table.SelectRows(null, null);
+            //ArrayList<ArrayList> tmp =  table.SelectRows(null, null);
             int number = 0;
             for(ArrayList tmpres: tmp){
                 number++;
@@ -132,7 +133,7 @@ public class test {
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
             table.UpdateRow(test_test_test1, col_name, new_row);
-            ArrayList<ArrayList> tmp =  table.SelectRows(test_test_test2, null);
+            Generator<ArrayList> tmp =  table.SelectRows(test_test_test2, null);
             int number = 0;
             for(ArrayList tmpres: tmp){
                 number++;

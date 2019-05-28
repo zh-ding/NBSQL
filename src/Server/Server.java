@@ -37,12 +37,12 @@ public class Server {
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
                 String line = "";
-                while (!line.equals("Over")) {
+                while (!line.equals("quit")) {
                     try {
                         line = in.readUTF();
-                        System.out.println(line);
+                        System.out.println(socket + line);
 
-                        out.writeUTF("Received: " + line);
+                        out.writeUTF(line);
 
                     } catch (IOException i) {
                         System.out.println(i);
