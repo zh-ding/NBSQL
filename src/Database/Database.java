@@ -144,8 +144,9 @@ public class Database {
     or null
      */
     // without outer join
-    public Set<ArrayList> selectFromTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList<ArrayList>>> onConditions, ArrayList<ArrayList<ArrayList>> whereConditions, ArrayList colNames)
+    public ArrayList<ArrayList> selectFromTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList<ArrayList>>> onConditions, ArrayList<ArrayList<ArrayList>> whereConditions, ArrayList colNames)
             throws IOException, BPlusTreeException {
+        ArrayList<ArrayList> finalRes = new ArrayList<>();
         Set<ArrayList> res = new HashSet<>();
         Set<ArrayList> joinRes = this.joinTables(tabs, onConditions);
         for(int i = 0; i<whereConditions.size(); ++i){
@@ -192,7 +193,24 @@ public class Database {
                 }
             }
         }
-        return res;
+        /*
+        show res with schema
+         */
+        ArrayList<String> schema = new ArrayList<>();
+        ArrayList<Integer> schema_type = new ArrayList<>();
+
+        for(int j = 0; j<tabs.size(); ++j){
+            for(int i = 1; i<tabs.get(j).getColumnName().size(); ++i){
+                schema.add(tabs.get(j).table_name+"."+tabs.get(j).getColumnName().get(i));
+                schema_type.add(tabs.get(j).getColumnType().get(i));
+            }
+        }
+        finalRes.add(schema);
+        finalRes.add(schema_type);
+        for(ArrayList tmpres: res){
+            finalRes.add(getValuesWithoutAuto(tabs, tmpres));
+        }
+        return finalRes;
     }
 
     public Set<ArrayList> joinTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList<ArrayList>>> conditions) throws IOException, BPlusTreeException{
@@ -266,6 +284,17 @@ public class Database {
         ArrayList<ArrayList> res = new ArrayList<>();
         for(int i = 0; i<tmp.size(); ++i){
             res.add(tabs.get(i).file.readData((int)tmp.get(i)));
+        }
+        return res;
+    }
+
+    private ArrayList getValuesWithoutAuto(ArrayList<Table> tabs, ArrayList tmp) throws IOException{
+        ArrayList res = new ArrayList<>();
+        for(int i = 0; i<tmp.size(); ++i){
+            ArrayList tmpData = tabs.get(i).file.readData((int)tmp.get(i));
+            for(int j = 1; j<tmpData.size(); ++j){
+                res.add(tmpData.get(j));
+            }
         }
         return res;
     }
