@@ -389,7 +389,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             conditions = null;
 
         try {
-            ArrayList<ArrayList> result = this.db.selectFromTables(tables,joinCondition.conditions,conditions,column_queries);
+            ArrayList<ArrayList> result = this.db.selectFromTables(tables,joinCondition.joinTypes,joinCondition.conditions,conditions,column_queries);
             for(String c:column_names)
             {
                 output.append(c).append("\t");
