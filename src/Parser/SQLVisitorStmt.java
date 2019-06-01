@@ -150,7 +150,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     public Void visitCreate_database_stmt(SQLParser.Create_database_stmtContext ctx) {
         String name = ctx.database_name().getText().toUpperCase();
         try {
-            Database temp = new Database(name,0);
+            Database temp = new Database(name);
             this.writeStr("create database" + name + "success");
         }
         catch (IOException e)
@@ -170,7 +170,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
 //            return null;
 //        }
         try {
-            Database temp = new Database(name,2);
+            Database temp = new Database(name);
             this.writeStr("drop database" + name + "success");
         }
         catch (IOException e)
@@ -185,7 +185,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     {
         String name = ctx.database_name().getText().toUpperCase();
         try {
-            this.db = new Database(name,1);
+            this.db = new Database(name);
             this.writeStr("use database " + name + " success");
         }
         catch (IOException e)
@@ -203,7 +203,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             if(name.equals(this.db.toString()))
                 temp = this.db;
             else
-                temp = new Database(name,0);
+                temp = new Database(name);
             for(int i = 0; i < temp.tables.size(); i++)
             {
                 writeStr(temp.tables.get(i).table_name);

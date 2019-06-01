@@ -41,7 +41,7 @@ public class Server {
                 DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
-                Database db = new Database("TEST", 0);
+                Database db = new Database("TEST");
                 BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
                 StringBuffer output = new StringBuffer();
                 StringBuffer dbName = new StringBuffer("TEST");

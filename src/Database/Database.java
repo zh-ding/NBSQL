@@ -2,6 +2,7 @@ package Database;
 
 import BPlusTree.BPlusTreeLeafNode;
 import Exceptions.BPlusTreeException;
+import Exceptions.DatabaseException;
 import Table.Table;
 
 import java.io.File;
@@ -19,7 +20,6 @@ public class Database {
      */
 
     public void newDB(String db_name){
-        this.db_name = db_name;
         db_name = this.path + db_name;
         File db = new File(db_name);
         db.mkdir();
@@ -75,7 +75,10 @@ public class Database {
         return null;
     }
 
-    public void dropDB(String db_name){
+    public void dropDB(String db_name) throws DatabaseException {
+        if(this.db_name == db_name){
+            throw new DatabaseException("can't drop the database which is being used");
+        }
         this.db_name = db_name;
         db_name = this.path + db_name;
         File db = new File(db_name);
@@ -96,19 +99,10 @@ public class Database {
         }
     }
 
-    public Database(String db_name, int operation) throws IOException{ ;
+    public Database(String db_name) throws IOException{
         this.tables = new ArrayList<Table>();
-        switch (operation){
-            case 0:
-                newDB(db_name);
-                break;
-            case 1:
-                useDB(db_name);
-                break;
-            case 2:
-                dropDB(db_name);
-                break;
-        }
+        this.newDB(db_name);
+        this.useDB(db_name);
     }
 
     public Table createTable (String[] names, int[] types, String[] primary_key, String table_name, boolean[] isNotNull)
@@ -185,7 +179,6 @@ public class Database {
         Set<ArrayList> res = new HashSet<>();
         Set<ArrayList> joinRes = this.joinTables(tabs, onConditions, isOuterOrNot);
         for(int i = 0; i<whereConditions.size(); ++i){
-
             for(ArrayList tmp : joinRes){
                 ArrayList<ArrayList> tmpvalue = getValues(tabs, tmp);
                 boolean flag = true;
