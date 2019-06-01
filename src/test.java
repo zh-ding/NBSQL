@@ -175,8 +175,11 @@ public class test {
         for(int i = 0; i<table_num-1; i++){
             conditions.add(null);
         }
-
-        Set<ArrayList> res = db.joinTables(db.tables, conditions);
+        ArrayList isOuterOrNot = new ArrayList();
+        for(int i = 0; i<table_num-1; i++){
+            isOuterOrNot.add(0);
+        }
+        Set<ArrayList> res = db.joinTables(db.tables, conditions, isOuterOrNot);
         int number = 0;
         for(ArrayList tmpres: res){
             number++;
@@ -200,7 +203,7 @@ public class test {
         ArrayList wheretest_test_test = new ArrayList();
         wheretest_test_test.add(wheretest_test);
         ArrayList<ArrayList> finalres = new ArrayList<>();
-        finalres = db.selectFromTables(db.tables, conditions, wheretest_test_test, null);
+        finalres = db.selectFromTables(db.tables, isOuterOrNot, conditions, wheretest_test_test, null);
         number = 0;
         for(ArrayList tmpres: finalres){
             System.out.println(tmpres);

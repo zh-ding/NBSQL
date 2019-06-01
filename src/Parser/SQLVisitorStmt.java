@@ -305,27 +305,27 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
 
     @Override
     public Void visitSelect_stmt(SQLParser.Select_stmtContext ctx) {
-        if(ctx.join_clause() == null)
-        {
-            simple_Select(ctx);
-        }
-        else
-        {
-            SQLVisitorJoinConditions condition = ctx.join_clause().accept(new SQLVisitorJoin(this.db));
-            ArrayList<Table> tables = new ArrayList<Table>();
-            for(String n:condition.tableNames)
-            {
-                tables.add(this.db.getTable(n));
-            }
-            try {
-                Set<ArrayList> result = this.db.joinTables(tables, condition.conditions);
-                
-            }
-            catch (Exception e)
-            {
-                output.append(e.getMessage());
-            }
-        }
+//        if(ctx.join_clause() == null)
+//        {
+//            simple_Select(ctx);
+//        }
+//        else
+//        {
+//            SQLVisitorJoinConditions condition = ctx.join_clause().accept(new SQLVisitorJoin(this.db));
+//            ArrayList<Table> tables = new ArrayList<Table>();
+//            for(String n:condition.tableNames)
+//            {
+//                tables.add(this.db.getTable(n));
+//            }
+//            try {
+//                Set<ArrayList> result = this.db.joinTables(tables, condition.conditions);
+//
+//            }
+//            catch (Exception e)
+//            {
+//                output.append(e.getMessage());
+//            }
+//        }
         return null;
     }
 
