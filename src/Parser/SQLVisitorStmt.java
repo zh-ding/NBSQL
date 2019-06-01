@@ -4,6 +4,7 @@ import Database.Database;
 import Exceptions.DatabaseException;
 import Table.Table;
 import generator.Generator;
+import sun.plugin2.gluegen.runtime.StructAccessor;
 
 import java.io.DataOutputStream;
 import java.io.File;
@@ -194,21 +195,19 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     @Override
     public Void visitShow_database_stmt(SQLParser.Show_database_stmtContext ctx) {
         String name = ctx.database_name().getText().toUpperCase();
-        Database temp;
-        try {
-            if(name.equals(this.db.toString()))
-                temp = this.db;
-            else
-                temp = new Database(name);
-            for(int i = 0; i < temp.tables.size(); i++)
+        ArrayList<String> tables = this.db.showDbTable(name);
+        if(tables != null)
+        {
+            for(String n:tables)
             {
-                writeStr(temp.tables.get(i).table_name);
+                writeStr(n.toUpperCase());
                 writeStr("\t");
             }
+            writeStr("\n");
         }
-        catch (IOException e)
+        else
         {
-            this.writeStr("show database" + name + "fail: " + e.getMessage());
+            writeStr("Database" + name + "not exists");
         }
         return null;
     }
@@ -216,21 +215,12 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     @Override
     public Void visitShow_databases_stmt(SQLParser.Show_databases_stmtContext ctx)
     {
-        String path = "./dat/";
-        File dir = new File(path);
-        if(dir.exists()) {
-            File[] dirList = dir.listFiles();
-            for (File f : dirList) {
-                if (f.isDirectory()) {
-                    this.writeStr(f.getName().toUpperCase() + "\t");
-                }
-                this.writeStr("\n");
-            }
-        }
-        else
+        ArrayList<String> dbs = this.db.showDbs();
+        for(String s:dbs)
         {
-            this.writeStr("Data directory not exists");
+            this.writeStr(s.toUpperCase() + "\t");
         }
+        this.writeStr("\n");
         return null;
     }
 
