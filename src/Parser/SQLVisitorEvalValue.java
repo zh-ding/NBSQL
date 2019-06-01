@@ -35,7 +35,7 @@ public class SQLVisitorEvalValue extends SQLBaseVisitor<DataTypes>{
         {
             String column_name = ctx.column_name().getText().toUpperCase();
             if(ctx.table_name() != null)
-                column_name = ctx.table_name().getText().toUpperCase();
+                column_name = ctx.table_name().getText().toUpperCase() + "." + column_name;
             int index = columns.indexOf(column_name);
             int type = types.get(index);
             DataTypes column_data;

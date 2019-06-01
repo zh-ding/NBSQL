@@ -5,13 +5,25 @@ import org.antlr.v4.runtime.misc.ParseCancellationException;
 import java.util.ArrayList;
 
 public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<ArrayList>>> {
-
+    boolean isMulti;
     ArrayList<String> columnNames;
     ArrayList<Integer> columnTypes;
+    ArrayList<String> tableNames;
+    ArrayList<ArrayList<String>> columnNamesMulti;
+    ArrayList<ArrayList<Integer>> columnTypesMulti;
+
     public SQLVisitorWhereClause(ArrayList<String> columnNames, ArrayList<Integer> columnTypes)
     {
+        this.isMulti = false;
         this.columnNames = columnNames;
         this.columnTypes = columnTypes;
+    }
+
+    public SQLVisitorWhereClause(ArrayList<ArrayList<String>> columnNames, ArrayList<ArrayList<Integer>> columnTypes, boolean isMulti)
+    {
+        this.isMulti = isMulti;
+        this.columnNamesMulti = columnNames;
+        this.columnTypesMulti = columnTypes;
     }
 
     @Override
@@ -20,15 +32,31 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
             return ctx.expr(0).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
         if(ctx.K_OR() != null)
         {
-            ArrayList<ArrayList<ArrayList>> l = ctx.expr(0).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
-            ArrayList<ArrayList<ArrayList>> r = ctx.expr(1).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
+            ArrayList<ArrayList<ArrayList>> l, r;
+            if(isMulti)
+            {
+                l = ctx.expr(0).accept(new SQLVisitorWhereClause(columnNamesMulti, columnTypesMulti,true));
+                r = ctx.expr(1).accept(new SQLVisitorWhereClause(columnNamesMulti, columnTypesMulti, true));
+            }
+            else {
+                l = ctx.expr(0).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
+                r = ctx.expr(1).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
+            }
             l.addAll(r);
             return l;
         }
         else if(ctx.K_AND() != null)
         {
-            ArrayList<ArrayList<ArrayList>> l = ctx.expr(0).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
-            ArrayList<ArrayList<ArrayList>> r = ctx.expr(1).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
+            ArrayList<ArrayList<ArrayList>> l, r;
+            if(isMulti)
+            {
+                l = ctx.expr(0).accept(new SQLVisitorWhereClause(columnNamesMulti, columnTypesMulti,true));
+                r = ctx.expr(1).accept(new SQLVisitorWhereClause(columnNamesMulti, columnTypesMulti, true));
+            }
+            else {
+                l = ctx.expr(0).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
+                r = ctx.expr(1).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
+            }
             ArrayList<ArrayList<ArrayList>> mix = new ArrayList<>();
             for(int i = 0; i < l.size(); i++)
             {
@@ -47,55 +75,101 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
             ArrayList<ArrayList<ArrayList>> singleCondition = new ArrayList<ArrayList<ArrayList>>();
             singleCondition.add(new ArrayList<ArrayList>());
             int type = resolveType(ctx);
+            String table_name1 = "";
+            String table_name2 = "";
             String column_name1 = "";
             String column_name2 = "";
             DataTypes data = null;
             ArrayList condition = new ArrayList();
             if(ctx.expr(0).column_name() == null && ctx.expr(1).column_name() == null)
             {
-                throw new ParseCancellationException("Invalid Expression");
+                throw new ParseCancellationException("Invalid where clause");
+            }
+            if(isMulti && ctx.expr(0).table_name() == null && ctx.expr(1).table_name() == null)
+            {
+                throw new ParseCancellationException("Invalid where clause");
             }
             if(ctx.expr(0).column_name() != null)
             {
                 if(ctx.expr(0).table_name() != null)
-                    column_name1.concat(ctx.expr(0).table_name().accept(new SQLVisitorNames())).concat(".");
-                column_name1 = column_name1.concat(ctx.expr(0).column_name().accept(new SQLVisitorNames()));
+                    table_name1 = ctx.expr(0).table_name().accept(new SQLVisitorNames());
+                column_name1 = ctx.expr(0).column_name().accept(new SQLVisitorNames());
             }
             if(ctx.expr(1).column_name() != null)
             {
                 if(ctx.expr(1).table_name() != null)
-                    column_name2.concat(ctx.expr(1).table_name().accept(new SQLVisitorNames())).concat(".");
-                column_name2 = column_name2.concat(ctx.expr(1).column_name().accept(new SQLVisitorNames()));
+                    table_name2 = ctx.expr(1).table_name().accept(new SQLVisitorNames());
+                column_name2 = ctx.expr(1).column_name().accept(new SQLVisitorNames());
             }
             if(ctx.expr(0).literal_value() != null)
             {
-                int dataType = columnTypes.get(columnNames.indexOf(column_name2));
+                int dataType;
+                if(isMulti)
+                {
+                    ArrayList<Integer> t = columnTypesMulti.get(tableNames.indexOf(table_name2));
+                    ArrayList<String> n = columnNamesMulti.get(tableNames.indexOf(table_name2));
+                    dataType = t.get(n.indexOf(column_name2));
+                }
+                else {
+                    dataType = columnTypes.get(columnNames.indexOf(column_name2));
+                }
                 data = ctx.expr(0).literal_value().accept(new SQLVisitorLiteralValue(dataType));
             }
             else
             {
-                int dataType = columnTypes.get(columnNames.indexOf(column_name1));
+                int dataType;
+                if(isMulti)
+                {
+                    ArrayList<Integer> t = columnTypesMulti.get(tableNames.indexOf(table_name1));
+                    ArrayList<String> n = columnNamesMulti.get(tableNames.indexOf(table_name1));
+                    dataType = t.get(n.indexOf(column_name1));
+                }
+                else {
+                    dataType = columnTypes.get(columnNames.indexOf(column_name1));
+                }
                 data = ctx.expr(1).literal_value().accept(new SQLVisitorLiteralValue(dataType));
             }
             if(!column_name1.equals("") && !column_name2.equals(""))
             {
-                condition.add(column_name1);
-                condition.add(type);
-                condition.add(column_name2);
-                condition.add(false);
+                if(isMulti)
+                {
+                    condition.add(table_name1);
+                    condition.add(column_name1);
+                    condition.add(type);
+                    condition.add(table_name2);
+                    condition.add(column_name2);
+                    condition.add(false);
+                }
+                else
+                {
+                    condition.add(column_name1);
+                    condition.add(type);
+                    condition.add(column_name2);
+                    condition.add(false);
+                }
             }
             else
             {
                 if(column_name2.equals(""))
                 {
+                    if(isMulti)
+                    {
+                        condition.add(table_name1);
+                    }
                     condition.add(column_name1);
                     condition.add(type);
                 }
                 else
                 {
+                    if(isMulti)
+                    {
+                        condition.add(table_name2);
+                    }
                     condition.add(column_name2);
                     condition.add(switchType(type));
                 }
+                if(isMulti)
+                    condition.add(null);
                 if(data != null)
                 {
                     switch (data.type)
