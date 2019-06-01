@@ -1,9 +1,12 @@
 package Parser;
 
 import Database.Database;
+import Exceptions.DatabaseException;
 import Table.Table;
 import generator.Generator;
+import sun.plugin2.gluegen.runtime.StructAccessor;
 
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -12,13 +15,24 @@ import java.util.Set;
 
 public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     Database db = null;
-    StringBuffer dbName;
-    StringBuffer output;
-    public SQLVisitorStmt(StringBuffer dbName, StringBuffer output) throws IOException
+    DataOutputStream output;
+
+    public SQLVisitorStmt(Database db, DataOutputStream output)
     {
-        this.dbName = dbName;
         this.output = output;
-        this.db = new Database(this.dbName.toString());
+        this.db = db;
+    }
+
+    private Void writeStr(String s)
+    {
+        try {
+            output.writeUTF(s);
+        }
+        catch (IOException e)
+        {
+            System.out.println("Datastream write fail: " + e.getMessage());
+        }
+        return null;
     }
 
     @Override
@@ -66,16 +80,16 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             }
             try {
                 this.db.createTable(names.toArray(new String[names.size()]), types, primary_key.toArray(new String[primary_key.size()]), tableName, not_null);
-                output.append("create table " + tableName + "success");
+                writeStr("create table " + tableName + "success");
             }
-            catch (IOException e)
+            catch (Exception e)
             {
-                output.append("create table"  + tableName + "fail:" + e.getMessage());
+                writeStr("create table"  + tableName + "fail:" + e.getMessage());
             }
         }
         else
         {
-            output.append("create table fail");
+            writeStr("create table fail");
         }
         return null;
     }
@@ -86,7 +100,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         {
             String tableName = ctx.table_name().getText().toUpperCase();
             this.db.dropTable(tableName);
-            output.append("drop table success");
+            writeStr("drop table success");
         }
         return null;
     }
@@ -102,31 +116,31 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                 ArrayList<String> column_names = t.getColumnName();
                 ArrayList<Integer> column_types = t.getColumnType();
                 for (int i = 1; i < column_names.size(); i++) {
-                    output.append(column_names.get(i)).append("\t");
+                    writeStr(column_names.get(i) + "\t");
                     switch (column_types.get(i))
                     {
                         case -1:
-                            output.append("INT");
+                            writeStr("INT");
                             break;
                         case -2:
-                            output.append("LONG");
+                            writeStr("LONG");
                             break;
                         case -3:
-                            output.append("FLOAT");
+                            writeStr("FLOAT");
                             break;
                         case -4:
-                            output.append("DOUBLE");
+                            writeStr("DOUBLE");
                             break;
                         default:
-                            output.append("STRING(").append(column_types.get(i)).append(")");
+                            writeStr("STRING(" + column_types.get(i) + ")");
                             break;
                     }
-                    output.append("\n");
+                    writeStr("\n");
                 }
             }
             else
             {
-                output.append("Table does not exist");
+                writeStr("Table does not exist");
             }
         }
         return null;
@@ -138,12 +152,12 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     public Void visitCreate_database_stmt(SQLParser.Create_database_stmtContext ctx) {
         String name = ctx.database_name().getText().toUpperCase();
         try {
-            Database temp = new Database(name);
-            this.output.append("create database" + name + "success");
+            this.db.newDB(name);
+            this.writeStr("create database" + name + "success");
         }
-        catch (IOException e)
+        catch (Exception e)
         {
-            this.output.append("create database" + name + "fail: " + e.getMessage());
+            this.writeStr("create database" + name + "fail: " + e.getMessage());
         }
         return null;
     }
@@ -152,18 +166,13 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     public Void visitDrop_database_stmt(SQLParser.Drop_database_stmtContext ctx)
     {
         String name = ctx.database_name().getText().toUpperCase();
-        if(name.equals(this.dbName.toString()))
-        {
-            this.output.append("Database is being used");
-            return null;
-        }
         try {
-            Database temp = new Database(name);
-            this.output.append("drop database" + name + "success");
+            db.dropDB(name);
+            this.writeStr("drop database" + name + "success");
         }
-        catch (IOException e)
+        catch (Exception e)
         {
-            this.output.append("drop database" + name +  "fail: " + e.getMessage());
+            this.writeStr("drop database" + name +  "fail: " + e.getMessage());
         }
         return null;
     }
@@ -173,14 +182,12 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     {
         String name = ctx.database_name().getText().toUpperCase();
         try {
-            this.db = new Database(name);
-            this.dbName.setLength(0);
-            this.dbName.append(name);
-            this.output.append("use database ").append(name).append(" success");
+            this.db.useDB(name);
+            this.writeStr("use database " + name + " success");
         }
-        catch (IOException e)
+        catch (Exception e)
         {
-            this.output.append("use database ").append(name).append(" fail: " + e.getMessage());
+            this.writeStr("use database " + name + " fail: " + e.getMessage());
         }
         return null;
     }
@@ -188,21 +195,19 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     @Override
     public Void visitShow_database_stmt(SQLParser.Show_database_stmtContext ctx) {
         String name = ctx.database_name().getText().toUpperCase();
-        Database temp;
-        try {
-            if(name.equals(this.dbName.toString()))
-                temp = this.db;
-            else
-                temp = new Database(name);
-            for(int i = 0; i < temp.tables.size(); i++)
-            {
-                output.append(temp.tables.get(i).table_name);
-                output.append("\t");
-            }
-        }
-        catch (IOException e)
+        ArrayList<String> tables = this.db.showDbTable(name);
+        if(tables != null)
         {
-            this.output.append("show database" + name + "fail: " + e.getMessage());
+            for(String n:tables)
+            {
+                writeStr(n.toUpperCase());
+                writeStr("\t");
+            }
+            writeStr("\n");
+        }
+        else
+        {
+            writeStr("Database" + name + "not exists");
         }
         return null;
     }
@@ -210,21 +215,12 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     @Override
     public Void visitShow_databases_stmt(SQLParser.Show_databases_stmtContext ctx)
     {
-        String path = "./dat/";
-        File dir = new File(path);
-        if(dir.exists()) {
-            File[] dirList = dir.listFiles();
-            for (File f : dirList) {
-                if (f.isDirectory()) {
-                    this.output.append(f.getName().toUpperCase()).append("\t");
-                }
-                this.output.append("\n");
-            }
-        }
-        else
+        ArrayList<String> dbs = this.db.showDbs();
+        for(String s:dbs)
         {
-            this.output.append("Data directory not exists");
+            this.writeStr(s.toUpperCase() + "\t");
         }
+        this.writeStr("\n");
         return null;
     }
 
@@ -295,11 +291,11 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             try {
                 t.InsertRow(row);
             } catch (Exception a) {
-                output.append(a.getMessage());
+                writeStr(a.getMessage());
                 return null;
             }
         }
-        output.append("insert success");
+        writeStr("insert success");
         return null;
     }
 
@@ -392,9 +388,9 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             Generator<ArrayList> result = this.db.selectFromTables(tables,joinCondition.joinTypes,joinCondition.conditions,conditions,column_queries);
             for(String c:column_names)
             {
-                output.append(c).append("\t");
+                writeStr(c + "\t");
             }
-            output.append("\n");
+            writeStr("\n");
             for(ArrayList r:result) {
                 ArrayList result_output = new ArrayList();
                 for (int i = 0; i < ctx.result_column().size(); i++) {
@@ -434,16 +430,16 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                 }
                 for (Object o : result_output) {
                     if (o != null)
-                        output.append(o.toString()).append("\t");
+                        writeStr(o.toString() + "\t");
                     else
-                        output.append("NULL").append("\t");
+                        writeStr("NULL" + "\t");
                 }
-                output.append("\n");
+                writeStr("\n");
             }
         }
         catch (Exception e)
         {
-            output.append("select fail: " + e.getMessage());
+            writeStr("select fail: " + e.getMessage());
         }
         return null;
     }
@@ -496,9 +492,9 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             result = this.db.getTable(tableName).SelectRows(conditions, column_queries);
             for(String c:column_names)
             {
-                output.append(c).append("\t");
+                writeStr(c + "\t");
             }
-            output.append("\n");
+            writeStr("\n");
             for(ArrayList r:result)
             {
                 ArrayList result_output = new ArrayList();
@@ -545,16 +541,16 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                 for(Object o:result_output)
                 {
                     if(o != null)
-                        output.append(o.toString()).append("\t");
+                        writeStr(o.toString() + "\t");
                     else
-                        output.append("NULL").append("\t");
+                        writeStr("NULL" + "\t");
                 }
-                output.append("\n");
+                writeStr("\n");
             }
         } catch (Exception e)
         {
 
-            output.append("select fail");
+            writeStr("select fail");
         }
         return null;
     }
@@ -576,10 +572,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         ArrayList<ArrayList> result;
         try {
             this.db.getTable(tableName).DeleteRows(conditions);
-            this.output.append("delete rows success");
+            this.writeStr("delete rows success");
         } catch (Exception e)
         {
-            this.output.append("delete rows fail");
+            this.writeStr("delete rows fail");
         }
         return null;
     }
@@ -640,10 +636,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         try {
             this.db.getTable(tableName).UpdateRow(conditions,column_names,data);
-            this.output.append("update rows success");
+            this.writeStr("update rows success");
         } catch (Exception e)
         {
-            this.output.append("update rows fail");
+            this.writeStr("update rows fail");
         }
         return null;
 

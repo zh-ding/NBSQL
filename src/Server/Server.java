@@ -60,7 +60,7 @@ public class Server {
                         parser.addErrorListener(new ThrowingErrorListener());
                         SQLParser.Sql_stmtContext stmt = parser.sql_stmt();
                         output = new StringBuffer();
-                        SQLVisitorStmt visitor = new SQLVisitorStmt(dbName, output);
+                        SQLVisitorStmt visitor = new SQLVisitorStmt(db, out);
                         stmt.accept(visitor);
                         out.writeUTF(output.toString());
                         out.writeUTF("over");
