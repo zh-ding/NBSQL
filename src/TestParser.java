@@ -1,5 +1,6 @@
 import Database.Database;
 import Exceptions.BPlusTreeException;
+import Exceptions.DatabaseException;
 import Parser.SQLLexer;
 import Parser.SQLParser;
 import Parser.SQLVisitorStmt;
@@ -13,14 +14,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class TestParser {
-    public static void main(String[] args) throws BPlusTreeException, IOException {
+    public static void main(String[] args) throws BPlusTreeException, IOException, DatabaseException {
         File dat = new File("./dat/");
         if(!dat.exists())
         {
             dat.mkdir();
         }
         StringBuffer dbName = new StringBuffer("TEST");
-        Database db = new Database("TEST", 0);
+        Database db = new Database("TEST");
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         while(true) {
             String sql = "quit";

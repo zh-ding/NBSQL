@@ -1,5 +1,6 @@
 import Database.Database;
 import Exceptions.BPlusTreeException;
+import Exceptions.DatabaseException;
 import Exceptions.TableException;
 import Table.Table;
 import generator.Generator;
@@ -9,11 +10,11 @@ import java.util.ArrayList;
 import java.util.Set;
 
 public class test {
-    public static void main(String[] args) throws BPlusTreeException,IOException, TableException {
+    public static void main(String[] args) throws BPlusTreeException,IOException, TableException, DatabaseException {
         int num = 10; // data
         int table_num = 10;
 
-        Database db = new Database("test", 0);
+        Database db = new Database("test");
         db.newDB("test_for_use");
         db.useDB("test");
         int[] a = new int[2];
@@ -150,12 +151,12 @@ public class test {
         for(int i = 0; i<table_num; i++){
             db.dropTable("test_"+Integer.toString(i));
         }
-        db.dropDB("test");
+//        db.dropDB("test");
         db.dropDB("test_for_use");
 
         System.out.println("----------------------start testing join-----------------");
-        db.newDB("test");
-        db.useDB("test");
+        db.newDB("testnew");
+        db.useDB("testnew");
         for(int i =0; i<table_num; ++i){
             s[1] = Integer.toString(i)+"_name";
             db.createTable(s, a, p, "test_"+Integer.toString(i), isNotNull);
