@@ -203,8 +203,8 @@ public class test {
         wheretest_test.add(wheretest);
         ArrayList wheretest_test_test = new ArrayList();
         wheretest_test_test.add(wheretest_test);
-        ArrayList<ArrayList> finalres = new ArrayList<>();
-        finalres = db.selectFromTables(db.tables, isOuterOrNot, conditions, wheretest_test_test, null);
+
+        Generator<ArrayList> finalres = db.selectFromTables(db.tables, isOuterOrNot, conditions, wheretest_test_test, null);
         number = 0;
         for(ArrayList tmpres: finalres){
             System.out.println(tmpres);

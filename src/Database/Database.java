@@ -4,6 +4,7 @@ import BPlusTree.BPlusTreeLeafNode;
 import Exceptions.BPlusTreeException;
 import Exceptions.DatabaseException;
 import Table.Table;
+import generator.Generator;
 
 import java.io.File;
 import java.io.IOException;
@@ -139,6 +140,7 @@ public class Database {
         }
         this.tables = tmp;
     }
+
     /*
     0: =
     1: <
@@ -173,71 +175,115 @@ public class Database {
     2 left
     3 right
      */
-    public ArrayList<ArrayList> selectFromTables(ArrayList<Table> tabs, ArrayList<Integer> isOuterOrNot, ArrayList<ArrayList<ArrayList<ArrayList>>> onConditions, ArrayList<ArrayList<ArrayList>> whereConditions, ArrayList colNames)
+    public Generator<ArrayList> selectFromTables(ArrayList<Table> tabs, ArrayList<Integer> isOuterOrNot, ArrayList<ArrayList<ArrayList<ArrayList>>> onConditions, ArrayList<ArrayList<ArrayList>> whereConditions, ArrayList colNames)
             throws IOException, BPlusTreeException {
-        ArrayList<ArrayList> finalRes = new ArrayList<>();
-        Set<ArrayList> res = new HashSet<>();
-        Set<ArrayList> joinRes = this.joinTables(tabs, onConditions, isOuterOrNot);
-        for(int i = 0; i<whereConditions.size(); ++i){
-            for(ArrayList tmp : joinRes){
-                ArrayList<ArrayList> tmpvalue = getValues(tabs, tmp);
-                boolean flag = true;
-                for (int l = 0; l < whereConditions.get(i).size(); ++l) {
-                    if ((boolean) whereConditions.get(i).get(l).get(5)) {
-                        ArrayList tmpC = new ArrayList();
-                        tmpC.add(whereConditions.get(i).get(l));
-                        for (int t = 0; t < tabs.size(); t++) {
-                            if (tabs.get(t).table_name.compareTo(whereConditions.get(i).get(l).get(0).toString()) == 0) {
-                                if (!isObeyConditions(tmpC, tabs.get(t), tabs.get(tabs.size()-1), tmpvalue.get(t), tmpvalue.get(tabs.size()-1))) {
-                                    flag = false;
+        Database m_db = this;
+        Generator<ArrayList> finalRes = new Generator<ArrayList>() {
+            @Override
+            protected void run() throws InterruptedException{
+                /*
+                    show res with schema
+                */
+                ArrayList<String> schema = new ArrayList<>();
+                ArrayList<Integer> schema_type = new ArrayList<>();
+
+                for (int j = 0; j < tabs.size(); ++j) {
+                    for (int i = 1; i < tabs.get(j).getColumnName().size(); ++i) {
+                        schema.add(tabs.get(j).table_name + "." + tabs.get(j).getColumnName().get(i));
+                        schema_type.add(tabs.get(j).getColumnType().get(i));
+                    }
+                }
+                yield(schema);
+                yield(schema_type);
+
+                Set<ArrayList> res = new HashSet<>();
+                Set<ArrayList> joinRes;
+                try {
+                    joinRes = m_db.joinTables(tabs, onConditions, isOuterOrNot);
+                }
+                catch (IOException e ){
+                    System.out.print(e);
+                    throw new InterruptedException();
+                }
+                catch (BPlusTreeException e){
+                    System.out.print(e);
+                    throw new InterruptedException();
+                }
+
+                for (int i = 0; i < whereConditions.size(); ++i) {
+                    for (ArrayList tmp : joinRes) {
+                        ArrayList<ArrayList> tmpvalue;
+                        try {
+                            tmpvalue = getValues(tabs, tmp);
+                        }
+                        catch (IOException e){
+                            System.out.print(e);
+                            throw new InterruptedException();
+                        }
+                        boolean flag = true;
+                        for (int l = 0; l < whereConditions.get(i).size(); ++l) {
+                            if ((boolean) whereConditions.get(i).get(l).get(5)) {
+                                ArrayList tmpC = new ArrayList();
+                                tmpC.add(whereConditions.get(i).get(l));
+                                for (int t = 0; t < tabs.size(); t++) {
+                                    if (tabs.get(t).table_name.compareTo(whereConditions.get(i).get(l).get(0).toString()) == 0) {
+                                        try {
+                                            if (!isObeyConditions(tmpC, tabs.get(t), tabs.get(tabs.size() - 1), tmpvalue.get(t), tmpvalue.get(tabs.size() - 1))) {
+                                                flag = false;
+                                                break;
+                                            }
+                                        }
+                                        catch (BPlusTreeException e){
+                                            System.out.print(e);
+                                            throw new InterruptedException();
+                                        }
+
+                                    }
+                                }
+                                if (!flag) {
                                     break;
+                                }
+                            } else {
+                                ArrayList tmpC = new ArrayList();
+                                tmpC.add(whereConditions.get(i).get(l));
+                                int t1 = 0, t2 = 0;
+                                for (int t = 0; t < tabs.size(); t++) {
+                                    if (tabs.get(t).table_name.compareTo(whereConditions.get(i).get(l).get(0).toString()) == 0) {
+                                        t1 = t;
+                                    }
+                                    if (tabs.get(t).table_name.compareTo(whereConditions.get(i).get(l).get(3).toString()) == 0) {
+                                        t2 = t;
+                                    }
+                                }
+                                try {
+                                    if (!isObeyConditions(tmpC, tabs.get(t1), tabs.get(t2), tmpvalue.get(t1), tmpvalue.get(t2))) {
+                                        flag = false;
+                                        break;
+                                    }
+                                }
+                                catch (BPlusTreeException e){
+                                    System.out.print(e);
+                                    throw new InterruptedException();
                                 }
                             }
                         }
-                        if(!flag){
-                            break;
-                        }
-                    }
-                    else{
-                        ArrayList tmpC = new ArrayList();
-                        tmpC.add(whereConditions.get(i).get(l));
-                        int t1 = 0, t2 = 0;
-                        for (int t = 0; t < tabs.size(); t++) {
-                            if (tabs.get(t).table_name.compareTo(whereConditions.get(i).get(l).get(0).toString()) == 0) {
-                                t1 = t;
-                            }
-                            if (tabs.get(t).table_name.compareTo(whereConditions.get(i).get(l).get(3).toString()) == 0) {
-                                t2 = t;
-                            }
-                        }
-                        if (!isObeyConditions(tmpC, tabs.get(t1), tabs.get(t2), tmpvalue.get(t1), tmpvalue.get(t2))) {
-                            flag = false;
-                            break;
+                        if (flag == true) {
+                            res.add(tmp);
                         }
                     }
                 }
-                if(flag == true){
-                    res.add(tmp);
+                try {
+                    for (ArrayList tmpres : res) {
+                        yield(getValuesWithoutAuto(tabs, tmpres));
+                    }
+                }
+                catch (IOException e){
+                    System.out.print(e);
+                    throw new InterruptedException();
                 }
             }
-        }
-        /*
-        show res with schema
-         */
-        ArrayList<String> schema = new ArrayList<>();
-        ArrayList<Integer> schema_type = new ArrayList<>();
+        };
 
-        for(int j = 0; j<tabs.size(); ++j){
-            for(int i = 1; i<tabs.get(j).getColumnName().size(); ++i){
-                schema.add(tabs.get(j).table_name+"."+tabs.get(j).getColumnName().get(i));
-                schema_type.add(tabs.get(j).getColumnType().get(i));
-            }
-        }
-        finalRes.add(schema);
-        finalRes.add(schema_type);
-        for(ArrayList tmpres: res){
-            finalRes.add(getValuesWithoutAuto(tabs, tmpres));
-        }
         return finalRes;
     }
 
