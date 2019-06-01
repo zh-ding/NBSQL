@@ -151,7 +151,6 @@ public class test {
         for(int i = 0; i<table_num; i++){
             db.dropTable("test_"+Integer.toString(i));
         }
-//        db.dropDB("test");
         db.dropDB("test_for_use");
 
         System.out.println("----------------------start testing join-----------------");
@@ -193,7 +192,7 @@ public class test {
         }
         System.out.println("----------------------start testing select from join-----------------");
         ArrayList wheretest = new ArrayList();
-        wheretest.add("test_1");
+        wheretest.add("test_0");
         wheretest.add("m_id");
         wheretest.add(4);
         wheretest.add(num/2);
@@ -205,6 +204,7 @@ public class test {
         wheretest_test_test.add(wheretest_test);
 
         Generator<ArrayList> finalres = db.selectFromTables(db.tables, isOuterOrNot, conditions, wheretest_test_test, null);
+//        ArrayList<ArrayList> finalres = db.selectFromTables(db.tables, isOuterOrNot, conditions, wheretest_test_test, null);
         number = 0;
         for(ArrayList tmpres: finalres){
             System.out.println(tmpres);
@@ -216,6 +216,59 @@ public class test {
         }
         else{
             System.out.println(Integer.toString(table_num)+" tables select join fail");
+        }
+
+        System.out.println("----------------------start testing select from outer join-----------------");
+
+        ArrayList jointest = new ArrayList();
+        jointest.add("m_id");
+        jointest.add(0);
+        jointest.add(num/2+1);
+        jointest.add(true);
+        ArrayList join_jointest = new ArrayList();
+        join_jointest.add(jointest);
+        ArrayList join_join_jointest = new ArrayList();
+        join_join_jointest.add(join_jointest);
+        db.tables.get(table_num-1).DeleteRows(join_join_jointest);
+        ArrayList<ArrayList> jointest_test = new ArrayList();
+        test_test.add(jointest);
+        ArrayList<ArrayList<ArrayList>> jointest_test_test = new ArrayList();
+        jointest_test_test.add(jointest_test);
+        Table table = db.tables.get(table_num-1);
+        table.DeleteRows(jointest_test_test);
+        ArrayList onconditions = new ArrayList();
+        for(int i = 0; i<table_num-2; i++){
+            onconditions.add(null);
+        }
+        ArrayList tmp1 = new ArrayList();
+        tmp1.add("test_1");
+        tmp1.add("m_id");
+        tmp1.add(0);
+        tmp1.add("test_9");
+        tmp1.add("m_id");
+        tmp1.add(false);
+        ArrayList tmp_tmp1 = new ArrayList();
+        tmp_tmp1.add(tmp1);
+        ArrayList tmp_tmp_tmp1 = new ArrayList();
+        tmp_tmp_tmp1.add(tmp_tmp1);
+        onconditions.add(tmp_tmp_tmp1);
+        ArrayList outer = new ArrayList();
+        for(int i = 0; i<table_num-2; i++){
+            outer.add(0);
+        }
+        outer.add(1);
+        finalres = db.selectFromTables(db.tables, outer, onconditions, wheretest_test_test, null);
+        number = 0;
+        for(ArrayList tmpres: finalres){
+            System.out.println(tmpres);
+            number ++;
+        }
+        number -= 2;
+        if(number == num/2){
+            System.out.println(Integer.toString(table_num)+" tables select outer join success");
+        }
+        else{
+            System.out.println(Integer.toString(table_num)+" tables select outer join fail");
         }
 
         for(int i = 0; i<table_num; i++){
