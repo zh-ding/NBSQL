@@ -44,6 +44,37 @@ public class Database {
         }
     }
 
+    public ArrayList showDbs(){
+        ArrayList res = new ArrayList();
+        File db = new File(this.path);
+        File[] tmplist = db.listFiles();
+        if(tmplist != null)
+        {
+            for(File f:tmplist){
+                String tmp = f.getName();
+                res.add(tmp);
+            }
+            return res;
+        }
+        return res;
+    }
+
+    public ArrayList showDbTable(String db_name){
+        ArrayList res = new ArrayList();
+        db_name = this.path + db_name;
+        File db = new File(db_name);
+        File[] tmplist = db.listFiles();
+        if(tmplist != null)
+        {
+            for(File f:tmplist){
+                String tmp = f.getName();
+                res.add(tmp.substring(0, tmp.lastIndexOf(".")));
+            }
+            return res;
+        }
+        return null;
+    }
+
     public void dropDB(String db_name){
         this.db_name = db_name;
         db_name = this.path + db_name;
@@ -143,7 +174,6 @@ public class Database {
     ]
     or null
      */
-    // without outer join
     public ArrayList<ArrayList> selectFromTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList<ArrayList>>> onConditions, ArrayList<ArrayList<ArrayList>> whereConditions, ArrayList colNames)
             throws IOException, BPlusTreeException {
         ArrayList<ArrayList> finalRes = new ArrayList<>();

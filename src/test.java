@@ -213,6 +213,7 @@ public class test {
         else{
             System.out.println(Integer.toString(table_num)+" tables select join fail");
         }
+
         for(int i = 0; i<table_num; i++){
             db.dropTable("test_"+Integer.toString(i));
         }
