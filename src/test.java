@@ -126,7 +126,7 @@ public class test {
         ArrayList test2 = new ArrayList();
         test2.add("name");
         test2.add(0);
-        test2.add("test                ");
+        test2.add("test");
         test2.add(true);
         ArrayList<ArrayList> test_test2 = new ArrayList();
         test_test2.add(test2);
