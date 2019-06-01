@@ -44,6 +44,37 @@ public class Database {
         }
     }
 
+    public ArrayList showDbs(){
+        ArrayList res = new ArrayList();
+        File db = new File(this.path);
+        File[] tmplist = db.listFiles();
+        if(tmplist != null)
+        {
+            for(File f:tmplist){
+                String tmp = f.getName();
+                res.add(tmp);
+            }
+            return res;
+        }
+        return res;
+    }
+
+    public ArrayList showDbTable(String db_name){
+        ArrayList res = new ArrayList();
+        db_name = this.path + db_name;
+        File db = new File(db_name);
+        File[] tmplist = db.listFiles();
+        if(tmplist != null)
+        {
+            for(File f:tmplist){
+                String tmp = f.getName();
+                res.add(tmp.substring(0, tmp.lastIndexOf(".")));
+            }
+            return res;
+        }
+        return null;
+    }
+
     public void dropDB(String db_name){
         this.db_name = db_name;
         db_name = this.path + db_name;
@@ -142,13 +173,17 @@ public class Database {
         ]
     ]
     or null
+    isOuterJoin
+    0 not
+    1 full
+    2 left
+    3 right
      */
-    // without outer join
-    public ArrayList<ArrayList> selectFromTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList<ArrayList>>> onConditions, ArrayList<ArrayList<ArrayList>> whereConditions, ArrayList colNames)
+    public ArrayList<ArrayList> selectFromTables(ArrayList<Table> tabs, ArrayList<Integer> isOuterOrNot, ArrayList<ArrayList<ArrayList<ArrayList>>> onConditions, ArrayList<ArrayList<ArrayList>> whereConditions, ArrayList colNames)
             throws IOException, BPlusTreeException {
         ArrayList<ArrayList> finalRes = new ArrayList<>();
         Set<ArrayList> res = new HashSet<>();
-        Set<ArrayList> joinRes = this.joinTables(tabs, onConditions);
+        Set<ArrayList> joinRes = this.joinTables(tabs, onConditions, isOuterOrNot);
         for(int i = 0; i<whereConditions.size(); ++i){
 
             for(ArrayList tmp : joinRes){
@@ -213,13 +248,13 @@ public class Database {
         return finalRes;
     }
 
-    public Set<ArrayList> joinTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList<ArrayList>>> conditions) throws IOException, BPlusTreeException{
+    public Set<ArrayList> joinTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList<ArrayList>>> conditions, ArrayList<Integer> isOuterOrNot) throws IOException, BPlusTreeException{
         ArrayList tmp = new ArrayList();
         tmp.add(tabs.get(0));
         tmp.add(tabs.get(1));
-        Set<ArrayList> tmpRes = joinTwoTables(tmp, conditions.get(0));
+        Set<ArrayList> tmpRes = joinTwoTables(tmp, conditions.get(0), isOuterOrNot.get(0));
         for(int i = 2; i<tabs.size(); i++){
-            tmpRes = joinTable(tmpRes, tabs.get(i), i, tabs, conditions.get(i-1));
+            tmpRes = joinTable(tmpRes, tabs.get(i), i, tabs, conditions.get(i-1), isOuterOrNot.get(i-1));
         }
         return tmpRes;
     }
@@ -283,7 +318,16 @@ public class Database {
     private ArrayList<ArrayList> getValues(ArrayList<Table> tabs, ArrayList tmp) throws IOException{
         ArrayList<ArrayList> res = new ArrayList<>();
         for(int i = 0; i<tmp.size(); ++i){
-            res.add(tabs.get(i).file.readData((int)tmp.get(i)));
+            if((int)(tmp.get(i)) == -1){
+                ArrayList tmpRes = new ArrayList();
+                for(int j = 0; j<tabs.get(i).getColumnType().size(); j++){
+                    tmpRes.add(null);
+                }
+                res.add(tmpRes);
+            }
+            else{
+                res.add(tabs.get(i).file.readData((int)tmp.get(i)));
+            }
         }
         return res;
     }
@@ -291,9 +335,16 @@ public class Database {
     private ArrayList getValuesWithoutAuto(ArrayList<Table> tabs, ArrayList tmp) throws IOException{
         ArrayList res = new ArrayList<>();
         for(int i = 0; i<tmp.size(); ++i){
-            ArrayList tmpData = tabs.get(i).file.readData((int)tmp.get(i));
-            for(int j = 1; j<tmpData.size(); ++j){
-                res.add(tmpData.get(j));
+            if((int)(tmp.get(i)) == -1){
+                for(int j = 1; j<tabs.get(i).getColumnType().size(); j++){
+                    res.add(null);
+                }
+            }
+            else{
+                ArrayList tmpData = tabs.get(i).file.readData((int)tmp.get(i));
+                for(int j = 1; j<tmpData.size(); ++j){
+                    res.add(tmpData.get(j));
+                }
             }
         }
         return res;
@@ -322,7 +373,7 @@ public class Database {
         return res;
     }
 
-    private Set<ArrayList> joinTable(Set<ArrayList> tmpRes, Table table, int num, ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList>> conditions)
+    private Set<ArrayList> joinTable(Set<ArrayList> tmpRes, Table table, int num, ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList>> conditions, Integer isOuterOrNot)
         throws IOException, BPlusTreeException{
         Set<ArrayList> result = new HashSet<>();
         if(conditions == null){
@@ -481,6 +532,171 @@ public class Database {
                                 }
                             }
                         }
+                        else if(isOuterOrNot == 1 || isOuterOrNot == 2){
+                            for(int l = 0; l<(hashtmp1.get(key).size()); ++l){
+
+                                ArrayList<ArrayList> tmp1value = getValues(tabs,hashtmp1.get(key).get(l));
+                                ArrayList tmp2value = new ArrayList();
+                                for(int s = 0; s<tabs.get(num).getColumnName().size(); s++){
+                                    tmp2value.add(null);
+                                }
+                                boolean flag = true;
+                                if(flag) {
+                                    for (int k = 0; k < tmpCond.size(); ++k) {
+                                        if ((boolean) tmpCond.get(k).get(5)) {
+                                            ArrayList tmpC = new ArrayList();
+                                            tmpC.add(tmpCond.get(k));
+                                            for (int t = 0; t <= num; t++) {
+                                                if (tabs.get(t).table_name.compareTo(tmpCond.get(k).get(0).toString()) == 0) {
+                                                    if(t != num){
+                                                        if (!isObeyConditions(tmpC, tabs.get(t), tabs.get(num), tmp1value.get(t), tmp2value)) {
+                                                            flag = false;
+                                                            break;
+                                                        }
+                                                    }
+                                                    else{
+                                                        if (!isObeyConditions(tmpC, tabs.get(t), tabs.get(num), tmp2value, tmp2value)) {
+                                                            flag = false;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                            if(!flag){
+                                                break;
+                                            }
+                                        }
+                                        else {
+                                            ArrayList tmpC = new ArrayList();
+                                            tmpC.add(tmpCond.get(k));
+                                            int t1 = -1;
+                                            int t2 = -1;
+                                            for (int t = 0; t < num; t++) {
+                                                if (tabs.get(t).table_name.compareTo(tmpCond.get(k).get(0).toString()) == 0) {
+                                                    t1 = t;
+                                                }
+                                                if (tabs.get(t).table_name.compareTo(tmpCond.get(k).get(3).toString()) == 0) {
+                                                    t2 = t;
+                                                }
+                                            }
+                                            if(t1 == -1 && t2 != -1){
+                                                if (!isObeyConditions(tmpC, tabs.get(t2), tabs.get(num), tmp1value.get(t2), tmp2value)) {
+                                                    flag = false;
+                                                    break;
+                                                }
+                                            }else if(t1 != -1 && t2 == -1){
+                                                if (!isObeyConditions(tmpC, tabs.get(t1), tabs.get(num), tmp1value.get(t1), tmp2value)) {
+                                                    flag = false;
+                                                    break;
+                                                }
+                                            }else if(t1 != -1 && t2 != -1){
+                                                if (!isObeyConditions(tmpC, tabs.get(t1), tabs.get(t2), tmp1value.get(t1), tmp1value.get(t2))) {
+                                                    flag = false;
+                                                    break;
+                                                }
+                                            }else{
+                                                if (!isObeyConditions(tmpC, tabs.get(num), tabs.get(num), tmp1value.get(num), tmp1value.get(num))) {
+                                                    flag = false;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                if(flag){
+                                    ArrayList tmpitem = new ArrayList();
+                                    tmpitem.addAll(hashtmp1.get(key).get(l));
+                                    tmpitem.add(-1);
+                                    result.add(tmpitem);
+                                }
+
+                            }
+                        }
+                    }
+                    if(isOuterOrNot == 1 || isOuterOrNot == 3){
+                        for(Integer key : hashtmp2.keySet()){
+                            if(!hashtmp1.containsKey(key)){
+                                for(int l = 0; l<(hashtmp2.get(key).size()); ++l){
+                                    ArrayList tmpkeylist = new ArrayList();
+                                    for(int s = 0; s<tabs.size(); i++){
+                                        tmpkeylist.add(-1);
+                                    }
+                                    ArrayList<ArrayList> tmp1value = getValues(tabs, tmpkeylist);
+                                    ArrayList tmp2value = tabs.get(num).file.readData((int)hashtmp2.get(key).get(l));
+                                    boolean flag = true;
+                                    if(flag) {
+                                        for (int k = 0; k < tmpCond.size(); ++k) {
+                                            if ((boolean) tmpCond.get(k).get(5)) {
+                                                ArrayList tmpC = new ArrayList();
+                                                tmpC.add(tmpCond.get(k));
+                                                for (int t = 0; t <= num; t++) {
+                                                    if (tabs.get(t).table_name.compareTo(tmpCond.get(k).get(0).toString()) == 0) {
+                                                        if(t != num){
+                                                            if (!isObeyConditions(tmpC, tabs.get(t), tabs.get(num), tmp1value.get(t), tmp2value)) {
+                                                                flag = false;
+                                                                break;
+                                                            }
+                                                        }
+                                                        else{
+                                                            if (!isObeyConditions(tmpC, tabs.get(t), tabs.get(num), tmp2value, tmp2value)) {
+                                                                flag = false;
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                if(!flag){
+                                                    break;
+                                                }
+                                            }
+                                            else {
+                                                ArrayList tmpC = new ArrayList();
+                                                tmpC.add(tmpCond.get(k));
+                                                int t1 = -1;
+                                                int t2 = -1;
+                                                for (int t = 0; t < num; t++) {
+                                                    if (tabs.get(t).table_name.compareTo(tmpCond.get(k).get(0).toString()) == 0) {
+                                                        t1 = t;
+                                                    }
+                                                    if (tabs.get(t).table_name.compareTo(tmpCond.get(k).get(3).toString()) == 0) {
+                                                        t2 = t;
+                                                    }
+                                                }
+                                                if(t1 == -1 && t2 != -1){
+                                                    if (!isObeyConditions(tmpC, tabs.get(t2), tabs.get(num), tmp1value.get(t2), tmp2value)) {
+                                                        flag = false;
+                                                        break;
+                                                    }
+                                                }else if(t1 != -1 && t2 == -1){
+                                                    if (!isObeyConditions(tmpC, tabs.get(t1), tabs.get(num), tmp1value.get(t1), tmp2value)) {
+                                                        flag = false;
+                                                        break;
+                                                    }
+                                                }else if(t1 != -1 && t2 != -1){
+                                                    if (!isObeyConditions(tmpC, tabs.get(t1), tabs.get(t2), tmp1value.get(t1), tmp1value.get(t2))) {
+                                                        flag = false;
+                                                        break;
+                                                    }
+                                                }else{
+                                                    if (!isObeyConditions(tmpC, tabs.get(num), tabs.get(num), tmp1value.get(num), tmp1value.get(num))) {
+                                                        flag = false;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if(flag){
+                                        ArrayList tmpitem = new ArrayList();
+                                        for(int s = 0; s<num; s++){
+                                            tmpitem.add(-1);
+                                        }
+                                        tmpitem.add(hashtmp2.get(key).get(l));
+                                        result.add(tmpitem);
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
                 else {
@@ -615,6 +831,9 @@ public class Database {
     }
 
     private boolean isObey(Object value1, int operation, Object value2) throws BPlusTreeException{
+        if(value1 == null || value2 == null){
+            return false;
+        }
         if(value1 instanceof Integer && value2 instanceof Integer){
             Integer tmpvalue1 = (Integer)value1;
             Integer tmpvalue2 = (Integer)value2;
@@ -870,7 +1089,7 @@ public class Database {
         return true;
     }
 
-    public Set<ArrayList> joinTwoTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList>> conditions) throws IOException, BPlusTreeException{
+    public Set<ArrayList> joinTwoTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList>> conditions, Integer isOuterOrNot) throws IOException, BPlusTreeException{
         Set<ArrayList> result = new HashSet<>();
         if(conditions == null){
             ArrayList<ArrayList> index = getCommonColIndex(tabs.get(0), tabs.get(1));
@@ -930,6 +1149,7 @@ public class Database {
                 if(tmp1.size() != 0){
                     hash[0] = makeHashMap(tabs.get(0), tmp1);
                     hash[1] = makeHashMap(tabs.get(1), tmp2);
+
                     for(Integer key : hash[0].keySet()){
                         if(hash[1].containsKey(key)){
                             for(int l = 0; l<(hash[0].get(key).size()); ++l){
@@ -951,7 +1171,44 @@ public class Database {
                                 }
                             }
                         }
+                        else if(isOuterOrNot == 1 || isOuterOrNot == 2){
+                            for(int l = 0; l<(hash[0].get(key).size()); ++l){
+                                ArrayList tmp1value = tabs.get(0).file.readData((int)hash[0].get(key).get(l));
+                                ArrayList tmp2value = new ArrayList();
+                                for(int s = 0; s < tabs.get(1).getColumnName().size(); s++){
+                                    tmp2value.add(null);
+                                }
+                                boolean flag = true;
+                                if(flag && isObeyConditions(tmpCond, tabs.get(0), tabs.get(1), tmp1value, tmp2value)){
+                                    ArrayList tmpitem = new ArrayList();
+                                    tmpitem.add(hash[0].get(key).get(l));
+                                    tmpitem.add(-1);
+                                    result.add(tmpitem);
+                                }
+                            }
+                        }
                     }
+                    if(isOuterOrNot == 1 || isOuterOrNot == 3){
+                        for(Integer key : hash[1].keySet()){
+                            if(!hash[0].containsKey(key)){
+                                for(int l = 0; l<(hash[1].get(key).size()); ++l){
+                                    ArrayList tmp2value = tabs.get(1).file.readData((int)hash[1].get(key).get(l));
+                                    ArrayList tmp1value = new ArrayList();
+                                    for(int s = 0; s< tabs.get(0).getColumnName().size(); s++){
+                                        tmp1value.add(null);
+                                    }
+                                    boolean flag = true;
+                                    if(flag && isObeyConditions(tmpCond, tabs.get(0), tabs.get(1), tmp1value, tmp2value)){
+                                        ArrayList tmpitem = new ArrayList();
+                                        tmpitem.add(-1);
+                                        tmpitem.add(hash[1].get(key).get(l));
+                                        result.add(tmpitem);
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                 }
                 else {
                     // to do brute-force
