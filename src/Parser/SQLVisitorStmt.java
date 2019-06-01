@@ -305,27 +305,146 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
 
     @Override
     public Void visitSelect_stmt(SQLParser.Select_stmtContext ctx) {
-//        if(ctx.join_clause() == null)
-//        {
-//            simple_Select(ctx);
-//        }
-//        else
-//        {
-//            SQLVisitorJoinConditions condition = ctx.join_clause().accept(new SQLVisitorJoin(this.db));
-//            ArrayList<Table> tables = new ArrayList<Table>();
-//            for(String n:condition.tableNames)
-//            {
-//                tables.add(this.db.getTable(n));
-//            }
-//            try {
-//                Set<ArrayList> result = this.db.joinTables(tables, condition.conditions);
-//
-//            }
-//            catch (Exception e)
-//            {
-//                output.append(e.getMessage());
-//            }
-//        }
+        if(ctx.join_clause() == null)
+        {
+            simple_Select(ctx);
+        }
+        else
+        {
+            select_with_join(ctx);
+        }
+        return null;
+    }
+
+    private Void select_with_join(SQLParser.Select_stmtContext ctx)
+    {
+        SQLVisitorJoinConditions joinCondition = ctx.join_clause().accept(new SQLVisitorJoin(this.db));
+        ArrayList<ArrayList<ArrayList>> conditions;
+        ArrayList<Table> tables = new ArrayList<Table>();
+        ArrayList<ArrayList<String>> tableColumnNames = new ArrayList<>();
+        ArrayList<ArrayList<Integer>> tableColumnTypes = new ArrayList<>();
+        for(String n:joinCondition.tableNames)
+        {
+            Table t = this.db.getTable(n);
+            tables.add(t);
+            tableColumnNames.add(t.getColumnName());
+            tableColumnTypes.add(t.getColumnType());
+        }
+
+        //获得每一列名称
+        ArrayList<String> column_names = new ArrayList<String>();
+        for(int i = 0; i < ctx.result_column().size(); i++)
+        {
+            if(ctx.result_column(i).STAR() != null)
+            {
+                String t = ctx.result_column(i).table_name().accept(new SQLVisitorNames());
+                ArrayList<String> name_temp = tableColumnNames.get(joinCondition.tableNames.indexOf(t));
+                for(String c:name_temp)
+                {
+                    c = t + "." + c;
+                    column_names.add(c);
+                }
+            }
+            else if(ctx.result_column(i).column_alias() != null)
+                column_names.add(ctx.result_column(i).column_alias().getText().toUpperCase());
+            else
+                column_names.add(ctx.result_column(i).expr().getText().toUpperCase());
+        }
+
+        //获得所有要查询的列
+        ArrayList<String> column_queries = new ArrayList<>();
+        for(int i = 0; i < ctx.result_column().size(); i++) {
+            if (ctx.result_column(i).STAR() != null)
+            {
+                String t = ctx.result_column(i).table_name().accept(new SQLVisitorNames());
+                ArrayList<String> name_temp = tableColumnNames.get(joinCondition.tableNames.indexOf(t));
+                for(String c:name_temp)
+                {
+                    c = t + "." + c;
+                    column_names.add(c);
+                }
+            }
+            else {
+                ArrayList<String> temp = new ArrayList<>();
+                ctx.result_column(i).expr().accept(new SQLVisitorEvalColumns(temp));
+                column_queries.addAll(temp);
+            }
+        }
+        Set<String> column_queries_set = new HashSet<String>(column_queries);
+        column_queries = new ArrayList<>(column_queries_set);
+        ArrayList<Integer> column_types_queries = new ArrayList<>();
+        for(String c:column_queries)
+        {
+            String[] temp = c.split("\\.");
+            int index = joinCondition.tableNames.indexOf(temp[0]);
+            ArrayList<String> name_temp = tableColumnNames.get(index);
+            ArrayList<Integer> type_temp = tableColumnTypes.get(index);
+            column_types_queries.add(type_temp.get(name_temp.indexOf(temp[1])));
+        }
+
+        //condition
+        if(ctx.K_WHERE() != null)
+            conditions = ctx.expr().accept(new SQLVisitorWhereClause(tableColumnNames, tableColumnTypes, true));
+        else
+            conditions = null;
+
+        try {
+            ArrayList<ArrayList> result = this.db.selectFromTables(tables,joinCondition.joinTypes,joinCondition.conditions,conditions,column_queries);
+            for(String c:column_names)
+            {
+                output.append(c).append("\t");
+            }
+            output.append("\n");
+            for(ArrayList r:result) {
+                ArrayList result_output = new ArrayList();
+                for (int i = 0; i < ctx.result_column().size(); i++) {
+                    if (ctx.result_column(i).STAR() != null) {
+                        String t = ctx.result_column(i).table_name().accept(new SQLVisitorNames());
+                        ArrayList<String> name_temp = tableColumnNames.get(joinCondition.tableNames.indexOf(t));
+                        for (String c : name_temp) {
+                            result_output.add(r.get(column_queries.indexOf(c)));
+                        }
+                    } else {
+                        DataTypes data = ctx.result_column(i).expr().accept(new SQLVisitorEvalValue(column_queries, column_types_queries, r));
+                        if (data == null) {
+                            result_output.add(null);
+                            continue;
+                        }
+                        switch (data.type) {
+                            case 0:
+                                result_output.add(data.int_data);
+                                break;
+                            case 1:
+                                result_output.add(data.long_data);
+                                break;
+                            case 2:
+                                result_output.add(data.float_data);
+                                break;
+                            case 3:
+                                result_output.add(data.double_data);
+                                break;
+                            case 4:
+                                result_output.add(data.string_data);
+                                break;
+                            case 5:
+                                result_output.add(data.bool_data ? "TRUE" : "FALSE");
+                                break;
+                        }
+                    }
+                }
+                for (Object o : result_output) {
+                    if (o != null)
+                        output.append(o.toString()).append("\t");
+                    else
+                        output.append("NULL").append("\t");
+                }
+                output.append("\n");
+            }
+        }
+        catch (Exception e)
+        {
+            output.append("select fail: " + e.getMessage());
+        }
         return null;
     }
 
@@ -367,13 +486,12 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             column_types_queries.add(tableColumnTypes.get(tableColumnNames.indexOf(c)));
         }
         //condition
-        ArrayList<ArrayList<ArrayList>> conditions = new ArrayList<ArrayList<ArrayList>>();
+        ArrayList<ArrayList<ArrayList>> conditions;
         if(ctx.K_WHERE() != null)
             conditions = ctx.expr().accept(new SQLVisitorWhereClause(tableColumnNames, tableColumnTypes));
         else
             conditions = null;
         Generator<ArrayList> result;
-        //ArrayList<ArrayList> result;
         try {
             result = this.db.getTable(tableName).SelectRows(conditions, column_queries);
             for(String c:column_names)

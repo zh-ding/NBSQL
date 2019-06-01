@@ -4,11 +4,11 @@ import java.util.ArrayList;
 
 public class SQLVisitorJoinConditions {
     ArrayList<String> tableNames;
-    ArrayList<Boolean> joinTypes;
+    ArrayList<Integer> joinTypes;
     ArrayList<ArrayList<ArrayList<ArrayList>>> conditions;
 
     public SQLVisitorJoinConditions(ArrayList<String> tableNames,
-            ArrayList<Boolean> joinTypes,
+            ArrayList<Integer> joinTypes,
             ArrayList<ArrayList<ArrayList<ArrayList>>> conditions)
     {
         this.tableNames = tableNames;

@@ -164,7 +164,7 @@ join_clause
  ;
 
 join_def
- : K_NATURAL? (K_OUTER|K_INNER)? K_JOIN table_name (K_ON expr)?
+ : K_NATURAL? ((K_LEFT|K_RIGHT)? K_OUTER|K_INNER)? K_JOIN table_name (K_ON expr)?
  ;
 
 

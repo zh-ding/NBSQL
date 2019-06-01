@@ -22,7 +22,7 @@ public class SQLVisitorJoin extends SQLBaseVisitor<SQLVisitorJoinConditions>{
         ArrayList<ArrayList<Integer>> columnTypes = new ArrayList<>();
         columnNames.add(db.getTable(tableNames.get(0)).getColumnName());
         columnTypes.add(db.getTable(tableNames.get(0)).getColumnType());
-        ArrayList<Boolean> joinTypes = new ArrayList<>();
+        ArrayList<Integer> joinTypes = new ArrayList<>();
         ArrayList<ArrayList<ArrayList<ArrayList>>> conditions = new ArrayList<>();
         for(SQLParser.Join_defContext c:ctx.join_def())
         {
@@ -31,9 +31,17 @@ public class SQLVisitorJoin extends SQLBaseVisitor<SQLVisitorJoinConditions>{
             columnNames.add(db.getTable(name).getColumnName());
             columnTypes.add(db.getTable(name).getColumnType());
             if(c.K_OUTER() != null)
-                joinTypes.add(true);
+            {
+                if(c.K_LEFT() != null)
+                    joinTypes.add(2);
+                else if(c.K_RIGHT() != null)
+                    joinTypes.add(3);
+                else
+                    joinTypes.add(1);
+
+            }
             else
-                joinTypes.add(false);
+                joinTypes.add(0);
             if((c.K_NATURAL() != null && c.K_ON() != null) || (c.K_NATURAL() == null && c.K_ON() == null))
             {
                 throw new ParseCancellationException("Join clause invalid");
