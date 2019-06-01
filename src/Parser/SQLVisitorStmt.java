@@ -1,6 +1,7 @@
 package Parser;
 
 import Database.Database;
+import Exceptions.DatabaseException;
 import Table.Table;
 import generator.Generator;
 
@@ -150,10 +151,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     public Void visitCreate_database_stmt(SQLParser.Create_database_stmtContext ctx) {
         String name = ctx.database_name().getText().toUpperCase();
         try {
-            Database temp = new Database(name);
+            this.db.newDB(name);
             this.writeStr("create database" + name + "success");
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             this.writeStr("create database" + name + "fail: " + e.getMessage());
         }
@@ -164,16 +165,11 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     public Void visitDrop_database_stmt(SQLParser.Drop_database_stmtContext ctx)
     {
         String name = ctx.database_name().getText().toUpperCase();
-//        if(name.equals(this.dbName.toString()))
-//        {
-//            this.writeStr("Database is being used");
-//            return null;
-//        }
         try {
-            Database temp = new Database(name);
+            db.dropDB(name);
             this.writeStr("drop database" + name + "success");
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             this.writeStr("drop database" + name +  "fail: " + e.getMessage());
         }
@@ -185,10 +181,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     {
         String name = ctx.database_name().getText().toUpperCase();
         try {
-            this.db = new Database(name);
+            this.db.useDB(name);
             this.writeStr("use database " + name + " success");
         }
-        catch (IOException e)
+        catch (Exception e)
         {
             this.writeStr("use database " + name + " fail: " + e.getMessage());
         }
