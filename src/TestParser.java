@@ -1,10 +1,7 @@
 import Database.Database;
 import Exceptions.BPlusTreeException;
 import Exceptions.DatabaseException;
-import Parser.SQLLexer;
-import Parser.SQLParser;
-import Parser.SQLVisitorStmt;
-import Parser.ThrowingErrorListener;
+import Parser.*;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 

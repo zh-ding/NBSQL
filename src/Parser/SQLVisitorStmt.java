@@ -517,6 +517,9 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                         }
                         switch (data.type)
                         {
+                            case -1:
+                                result_output.add(null);
+                                break;
                             case 0:
                                 result_output.add(data.int_data);
                                 break;
@@ -550,7 +553,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         } catch (Exception e)
         {
 
-            writeStr("select fail\n");
+            writeStr("select fail: " + e.getMessage() + '\n');
         }
         return null;
     }
