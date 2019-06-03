@@ -11,8 +11,8 @@ import java.util.Set;
 
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException, DatabaseException {
-        int num = 10; // data
-        int table_num = 10;
+        int num = 100; // data
+        int table_num = 2; // >= 2
 
         Database db = new Database("test");
         db.newDB("test_for_use");
@@ -35,6 +35,8 @@ public class test {
 
         db.useDB("test");
 
+        long starTime=System.currentTimeMillis();
+
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
             for(int j = 0; j<num; j++){
@@ -45,6 +47,9 @@ public class test {
             }
         }
 
+        long endTime=System.currentTimeMillis();
+        long time = endTime - starTime;
+        System.out.println(time);
         System.out.println("----------------------start testing insert-----------------");
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);

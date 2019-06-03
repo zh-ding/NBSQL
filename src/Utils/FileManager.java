@@ -8,6 +8,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FileManager {
 
@@ -23,6 +25,14 @@ public class FileManager {
     private static final int page_size = 1024 * 4;
     private static final int header_page_num = 4;
     private static final int page_header_len = 8;
+    /*
+    to do cache limit
+     */
+    /*
+    offset, [ boolean, ArraylistNode  ]
+    */
+    private ArrayList valueType = new ArrayList();
+    private Map<Integer, ArrayList> node_cahce = new HashMap<>();
 
     public FileManager(String name) throws IOException{
         this.inputFile = name + ".dat";
@@ -76,14 +86,20 @@ public class FileManager {
     }
 
     public ArrayList<Integer> getValueType() throws IOException{
-        ArrayList<Integer> valueType = new ArrayList<Integer>();
-        this.file.seek(4);
-        int col_num = this.file.readInt();
-        for(int i = 0; i<col_num; i++){
-            this.file.readUTF();
-            valueType.add(this.file.readInt());
+        if(this.valueType.size() == 0) {
+            ArrayList<Integer> valueType = new ArrayList<Integer>();
+            this.file.seek(4);
+            int col_num = this.file.readInt();
+            for (int i = 0; i < col_num; i++) {
+                this.file.readUTF();
+                valueType.add(this.file.readInt());
+            }
+            this.valueType = valueType;
+            return valueType;
         }
-        return valueType;
+        else{
+            return this.valueType;
+        }
     }
 
     public int writeValue(ArrayList value) throws IOException{
@@ -165,50 +181,65 @@ public class FileManager {
     }
 
     public void updateNode(BPlusTreeNode node) throws IOException{
-        ArrayList<Integer> valueType = getKeyType(node.id);
-        this.file.seek(node.location);
-        this.file.writeBoolean(node.isLeafNode);
-        this.file.writeInt(node.keyNum);
-        int len = 0;
-        for(int i = 0; i<node.keyNum; i++){
-            this.file.writeInt(node.pointers.get(i));
-            len = 0;
-            for(int j = 0; j<node.keys.get(0).size(); j++){
-                switch (valueType.get(j)) {
-                    case -1:
-                        this.file.writeInt((int)node.keys.get(i).get(j));
-                        len += 4;
-                        break;
-                    case -2:
-                        this.file.writeLong((long)node.keys.get(i).get(j));
-                        len += 8;
-                        break;
-                    case -3:
-                        this.file.writeFloat((float)node.keys.get(i).get(j));
-                        len += 4;
-                        break;
-                    case -4:
-                        this.file.writeDouble((double)node.keys.get(i).get(j));
-                        len += 8;
-                        break;
-                    default:
-                        this.file.writeUTF(formatStr(node.keys.get(i).get(j).toString(), valueType.get(i)));
-                        len += 2;
-                        len += valueType.get(i);
-                        break;
+//        if(!this.node_cahce.containsKey(node.location)) {
+            ArrayList<Integer> valueType = getKeyType(node.id);
+            this.file.seek(node.location);
+            this.file.writeBoolean(node.isLeafNode);
+            this.file.writeInt(node.keyNum);
+            int len = 0;
+            for (int i = 0; i < node.keyNum; i++) {
+                this.file.writeInt(node.pointers.get(i));
+                len = 0;
+                for (int j = 0; j < node.keys.get(0).size(); j++) {
+                    switch (valueType.get(j)) {
+                        case -1:
+                            this.file.writeInt((int) node.keys.get(i).get(j));
+                            len += 4;
+                            break;
+                        case -2:
+                            this.file.writeLong((long) node.keys.get(i).get(j));
+                            len += 8;
+                            break;
+                        case -3:
+                            this.file.writeFloat((float) node.keys.get(i).get(j));
+                            len += 4;
+                            break;
+                        case -4:
+                            this.file.writeDouble((double) node.keys.get(i).get(j));
+                            len += 8;
+                            break;
+                        default:
+                            this.file.writeUTF(formatStr(node.keys.get(i).get(j).toString(), valueType.get(i)));
+                            len += 2;
+                            len += valueType.get(i);
+                            break;
+                    }
                 }
             }
-        }
-        if(node.isLeafNode == false){
-            this.file.writeInt(node.pointers.get(node.keyNum));
-        }
-        else {
-            this.file.writeInt(-1);
-        }
-        this.file.seek(node.location+1+4+4*4+3*len);
-        this.file.writeInt(node.parent);
-        this.file.writeInt(node.leftSibling);
-        this.file.writeInt(node.rightSibling);
+            if (node.isLeafNode == false) {
+                this.file.writeInt(node.pointers.get(node.keyNum));
+            } else {
+                this.file.writeInt(-1);
+            }
+            this.file.seek(node.location + 1 + 4 + 4 * 4 + 3 * len);
+            this.file.writeInt(node.parent);
+            this.file.writeInt(node.leftSibling);
+            this.file.writeInt(node.rightSibling);
+            /*
+            cache
+             */
+            ArrayList data = new ArrayList();
+            data.add(false);
+            data.add(node);
+            this.node_cahce.put(node.location, data);
+//        }
+////        else {
+////            ArrayList data = new ArrayList();
+////            data.add(0, true);
+////            data.add(1, node);
+////            this.node_cahce.remove(node.location);
+////            this.node_cahce.put(node.location, data);
+////        }
     }
 
     public int writeTableHeader(int col_num, int index_num, int size, ArrayList<String> column_name,

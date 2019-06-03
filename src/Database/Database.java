@@ -175,7 +175,7 @@ public class Database {
     2 left
     3 right
      */
-    public Generator<ArrayList> selectFromTables(ArrayList<Table> tabs, ArrayList<Integer> isOuterOrNot, ArrayList<ArrayList<ArrayList<ArrayList>>> onConditions, ArrayList<ArrayList<ArrayList>> whereConditions, ArrayList colNames)
+    public Generator<ArrayList> selectFromTables(ArrayList<Table> tabs, ArrayList<Integer> isOuterOrNot, ArrayList<ArrayList<ArrayList<ArrayList>>> onConditions, ArrayList<ArrayList<ArrayList>> whereConditions, ArrayList mycolNames)
             throws IOException, BPlusTreeException {
         Database m_db = this;
         Generator<ArrayList> finalRes = new Generator<ArrayList>() {
@@ -186,16 +186,25 @@ public class Database {
                 */
                 ArrayList<String> schema = new ArrayList<>();
                 ArrayList<Integer> schema_type = new ArrayList<>();
-
-                for (int j = 0; j < tabs.size(); ++j) {
-                    for (int i = 1; i < tabs.get(j).getColumnName().size(); ++i) {
+                ArrayList<Integer> index = new ArrayList<>();
+                if(mycolNames != null){
+                    index = new ArrayList<>();
+                    for (int j = 0; j < tabs.size(); ++j) {
+                        for (int i = 1; i < tabs.get(j).getColumnName().size(); ++i) {
                         schema.add(tabs.get(j).table_name + "." + tabs.get(j).getColumnName().get(i));
-                        schema_type.add(tabs.get(j).getColumnType().get(i));
+//                        schema_type.add(tabs.get(j).getColumnType().get(i));
+                        }
                     }
+                    for(int len = 0; len<schema.size(); len++){
+                        for(int k = 0; k<mycolNames.size(); k++) {
+                            if (mycolNames.get(k).toString().compareTo(schema.get(len)) == 0){
+                                index.add(len);
+                            }
+                        }
+                    }
+//                yield(schema);
+//                yield(schema_type);
                 }
-                yield(schema);
-                yield(schema_type);
-
                 Set<ArrayList> res = new HashSet<>();
                 Set<ArrayList> joinRes;
                 try {
@@ -274,7 +283,17 @@ public class Database {
                 }
                 try {
                     for (ArrayList tmpres : res) {
-                        yield(getValuesWithoutAuto(tabs, tmpres));
+                        if(mycolNames != null){
+                            ArrayList data = getValuesWithoutAuto(tabs, tmpres);
+                            ArrayList my = new ArrayList();
+                            for(int k = 0; k<index.size(); k++){
+                                my.add(data.get(index.get(k)));
+                            }
+                            yield(my);
+                        }
+                        else {
+                            yield(getValuesWithoutAuto(tabs, tmpres));
+                        }
                     }
                 }
                 catch (IOException e){
