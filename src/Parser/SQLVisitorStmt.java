@@ -1,13 +1,10 @@
 package Parser;
 
 import Database.Database;
-import Exceptions.DatabaseException;
 import Table.Table;
 import generator.Generator;
-import sun.plugin2.gluegen.runtime.StructAccessor;
 
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
