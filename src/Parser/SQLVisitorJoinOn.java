@@ -80,7 +80,7 @@ public class SQLVisitorJoinOn extends SQLBaseVisitor<ArrayList<ArrayList<ArrayLi
                 int dataType = columnTypes.get(index).get(columnNames.get(index).indexOf(column_name2));
                 data = ctx.expr(0).literal_value().accept(new SQLVisitorLiteralValue(dataType));
             }
-            else
+            else if(ctx.expr(1).literal_value() != null)
             {
                 int index = tableNames.indexOf(table_name1);
                 int dataType = columnTypes.get(index).get(columnNames.get(index).indexOf(column_name1));
@@ -109,7 +109,7 @@ public class SQLVisitorJoinOn extends SQLBaseVisitor<ArrayList<ArrayList<ArrayLi
                     condition.add(column_name2);
                     condition.add(switchType(type));
                 }
-
+                condition.add(null);
                 if(data != null)
                 {
                     switch (data.type)
@@ -135,7 +135,7 @@ public class SQLVisitorJoinOn extends SQLBaseVisitor<ArrayList<ArrayList<ArrayLi
                 {
                     condition.add(null);
                 }
-                condition.add(null);
+
                 condition.add(true);
             }
             singleCondition.get(0).add(condition);

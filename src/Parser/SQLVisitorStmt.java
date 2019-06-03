@@ -333,12 +333,17 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         {
             if(ctx.result_column(i).STAR() != null)
             {
-                String t = ctx.result_column(i).table_name().accept(new SQLVisitorNames());
-                ArrayList<String> name_temp = tableColumnNames.get(joinCondition.tableNames.indexOf(t));
-                for(String c:name_temp)
-                {
-                    c = t + "." + c;
-                    column_names.add(c);
+                ArrayList<String> table_temp = new ArrayList<>();
+                if(ctx.result_column(i).table_name() != null)
+                    table_temp.add(ctx.result_column(i).table_name().accept(new SQLVisitorNames()));
+                else
+                    table_temp = joinCondition.tableNames;
+                for(String t:table_temp) {
+                    ArrayList<String> name_temp = tableColumnNames.get(joinCondition.tableNames.indexOf(t));
+                    for (String c : name_temp) {
+                        c = t + "." + c;
+                        column_names.add(c);
+                    }
                 }
             }
             else if(ctx.result_column(i).column_alias() != null)
@@ -380,12 +385,13 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
 
         //condition
         if(ctx.K_WHERE() != null)
-            conditions = ctx.expr().accept(new SQLVisitorWhereClause(tableColumnNames, tableColumnTypes, true));
+            conditions = ctx.expr().accept(new SQLVisitorWhereClause(joinCondition.tableNames, tableColumnNames, tableColumnTypes));
         else
             conditions = null;
 
         try {
             Generator<ArrayList> result = this.db.selectFromTables(tables,joinCondition.joinTypes,joinCondition.conditions,conditions,column_queries);
+//            ArrayList<ArrayList> result = this.db.selectFromTables(tables,joinCondition.joinTypes,joinCondition.conditions,conditions,column_queries);
             for(String c:column_names)
             {
                 writeStr(c + "\t");
@@ -407,6 +413,9 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                             continue;
                         }
                         switch (data.type) {
+                            case -1:
+                                result_output.add(null);
+                                break;
                             case 0:
                                 result_output.add(data.int_data);
                                 break;
