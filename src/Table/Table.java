@@ -131,12 +131,14 @@ public class Table {
                 key.add(row.get(this.index_key.get(i).get(j)));
             index_forest.get(i).insert(key, offset);
         }
+//        this.file.resetNodeCache();
     }
 
     public void DeleteRows(ArrayList<ArrayList<ArrayList>> conditions) throws IOException, BPlusTreeException{
         for(ArrayList row: SelectRows(conditions, null)){
             this.DeleteRow(row);
         }
+//        this.file.resetNodeCache();
     }
 
     public void DeleteRow(ArrayList row)throws IOException, BPlusTreeException{
@@ -150,6 +152,7 @@ public class Table {
              */
             index_forest.get(i).delete(key, (int)row.get(0));
         }
+//        this.file.resetNodeCache();
     }
 
     public void UpdateRow(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_name, ArrayList newRow) throws IOException, BPlusTreeException, TableException{
@@ -161,7 +164,7 @@ public class Table {
                 }
             }
         }
-
+//        this.file.resetNodeCache();
         for(ArrayList row: SelectRows(conditions, this.column_name)){
             this.DeleteRow(row);
             for(int k = 0; k<column_name.size(); ++k){
@@ -169,7 +172,6 @@ public class Table {
             }
             this.InsertRow(row);
         }
-
     }
 
     /*

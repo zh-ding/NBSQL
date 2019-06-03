@@ -12,7 +12,7 @@ import java.util.Set;
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException, DatabaseException {
 
-        int num = 100; // data
+        int num = 1000; // data
         int table_num = 2; // >= 2
 
         Database db = new Database("test");
@@ -215,10 +215,8 @@ public class test {
 //        ArrayList<ArrayList> finalres = db.selectFromTables(db.tables, isOuterOrNot, conditions, wheretest_test_test, null);
         number = 0;
         for(ArrayList tmpres: finalres){
-            System.out.println(tmpres);
             number ++;
         }
-        number -= 2;
         if(number == num/2){
             System.out.println(Integer.toString(table_num)+" tables select join success");
         }
@@ -268,10 +266,8 @@ public class test {
         finalres = db.selectFromTables(db.tables, outer, onconditions, wheretest_test_test, null);
         number = 0;
         for(ArrayList tmpres: finalres){
-            System.out.println(tmpres);
             number ++;
         }
-        number -= 2;
         if(number == num/2){
             System.out.println(Integer.toString(table_num)+" tables select outer join success");
         }
