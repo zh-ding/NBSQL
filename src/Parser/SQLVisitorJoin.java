@@ -44,7 +44,7 @@ public class SQLVisitorJoin extends SQLBaseVisitor<SQLVisitorJoinConditions>{
                 joinTypes.add(0);
             if((c.K_NATURAL() != null && c.K_ON() != null) || (c.K_NATURAL() == null && c.K_ON() == null))
             {
-                throw new ParseCancellationException("Join clause invalid");
+                throw new ParseCancellationException("!Join clause invalid\n");
             }
             if(c.K_NATURAL() != null)
             {

@@ -40,7 +40,7 @@ public class SQLVisitorEvalValue extends SQLBaseVisitor<DataTypes>{
             int type = types.get(index);
             DataTypes column_data;
             if(data.get(index) == null)
-                return null;
+                return new DataTypes(null);
             switch (type)
             {
                 case -1:
@@ -110,7 +110,7 @@ public class SQLVisitorEvalValue extends SQLBaseVisitor<DataTypes>{
 
         }catch (ParserException e)
         {
-            throw new ParseCancellationException(e.getMessage());
+            throw new ParseCancellationException("!" + e.getMessage() + "\n");
         }
         return null;
     }

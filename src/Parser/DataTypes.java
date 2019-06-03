@@ -37,8 +37,12 @@ public class DataTypes {
 
     public DataTypes(String data)
     {
-        this.type = 4;
-        this.string_data = data;
+        if(data == null)
+            this.type = -1;
+        else {
+            this.type = 4;
+            this.string_data = data;
+        }
     }
 
     public DataTypes(boolean data)
@@ -47,16 +51,10 @@ public class DataTypes {
         this.bool_data = data;
     }
 
-//    public Void typeConvert(int newType)
-//    {
-//        switch(newType)
-//        {
-//            case
-//        }
-//    }
-
     public DataTypes add(DataTypes b) throws ParserException
     {
+        if(this.type == -1 || b.type == -1)
+            return new DataTypes(null);
         switch(this.type)
         {
             case 0:
@@ -126,6 +124,8 @@ public class DataTypes {
 
     public DataTypes minus(DataTypes b) throws ParserException
     {
+        if(this.type == -1 || b.type == -1)
+            return new DataTypes(null);
         switch(this.type)
         {
             case 0:
@@ -195,6 +195,8 @@ public class DataTypes {
 
     public DataTypes multiply(DataTypes b) throws ParserException
     {
+        if(this.type == -1 || b.type == -1)
+            return new DataTypes(null);
         switch(this.type)
         {
             case 0:
@@ -264,6 +266,8 @@ public class DataTypes {
 
     public DataTypes divide(DataTypes b) throws ParserException
     {
+        if(this.type == -1 || b.type == -1)
+            return new DataTypes(null);
         switch(this.type)
         {
             case 0:
@@ -333,6 +337,8 @@ public class DataTypes {
 
     public DataTypes mod(DataTypes b) throws ParserException
     {
+        if(this.type == -1 || b.type == -1)
+            return new DataTypes(null);
         switch(this.type)
         {
             case 0:
@@ -401,6 +407,8 @@ public class DataTypes {
 
     public DataTypes notEqual(DataTypes b) throws ParserException
     {
+        if(this.type == -1 || b.type == -1)
+            return new DataTypes(false);
         switch(this.type)
         {
             case 0:
@@ -485,6 +493,8 @@ public class DataTypes {
 
     public DataTypes equal(DataTypes b) throws ParserException
     {
+        if(this.type == -1 || b.type == -1)
+            return new DataTypes(false);
         switch(this.type)
         {
             case 0:
@@ -569,6 +579,8 @@ public class DataTypes {
 
     public DataTypes greaterEqual(DataTypes b) throws ParserException
     {
+        if(this.type == -1 || b.type == -1)
+            return new DataTypes(false);
         switch(this.type)
         {
             case 0:
@@ -645,6 +657,8 @@ public class DataTypes {
 
     public DataTypes greater(DataTypes b) throws ParserException
     {
+        if(this.type == -1 || b.type == -1)
+            return new DataTypes(false);
         switch(this.type)
         {
             case 0:
@@ -721,6 +735,8 @@ public class DataTypes {
 
     public DataTypes lower(DataTypes b) throws ParserException
     {
+        if(this.type == -1 || b.type == -1)
+            return new DataTypes(false);
         switch(this.type)
         {
             case 0:
@@ -797,6 +813,8 @@ public class DataTypes {
 
     public DataTypes lowerEqual(DataTypes b) throws ParserException
     {
+        if(this.type == -1 || b.type == -1)
+            return new DataTypes(false);
         switch(this.type)
         {
             case 0:
@@ -875,6 +893,8 @@ public class DataTypes {
     {
         switch(this.type)
         {
+            case -1:
+                break;
             case 0:
                 this.int_data = -this.int_data;
                 break;
