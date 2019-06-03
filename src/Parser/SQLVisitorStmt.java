@@ -26,7 +26,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     private Void writeStr(String s)
     {
         try {
-            output.writeUTF(s);
+            output.writeBytes(s);
         }
         catch (IOException e)
         {
@@ -80,16 +80,16 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             }
             try {
                 this.db.createTable(names.toArray(new String[names.size()]), types, primary_key.toArray(new String[primary_key.size()]), tableName, not_null);
-                writeStr("create table " + tableName + "success");
+                writeStr("create table " + tableName + " success\n");
             }
             catch (Exception e)
             {
-                writeStr("create table"  + tableName + "fail:" + e.getMessage());
+                writeStr("create table "  + tableName + " fail: " + e.getMessage() + '\n');
             }
         }
         else
         {
-            writeStr("create table fail");
+            writeStr("create table fail\n");
         }
         return null;
     }
@@ -100,7 +100,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         {
             String tableName = ctx.table_name().getText().toUpperCase();
             this.db.dropTable(tableName);
-            writeStr("drop table success");
+            writeStr("drop table success\n");
         }
         return null;
     }
@@ -140,7 +140,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             }
             else
             {
-                writeStr("Table does not exist");
+                writeStr("Table does not exist\n");
             }
         }
         return null;
@@ -153,11 +153,11 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         String name = ctx.database_name().getText().toUpperCase();
         try {
             this.db.newDB(name);
-            this.writeStr("create database" + name + "success");
+            this.writeStr("create database " + name + " success\n");
         }
         catch (Exception e)
         {
-            this.writeStr("create database" + name + "fail: " + e.getMessage());
+            this.writeStr("create database " + name + " fail: " + e.getMessage() + '\n');
         }
         return null;
     }
@@ -168,11 +168,11 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         String name = ctx.database_name().getText().toUpperCase();
         try {
             db.dropDB(name);
-            this.writeStr("drop database" + name + "success");
+            this.writeStr("drop database " + name + " success\n");
         }
         catch (Exception e)
         {
-            this.writeStr("drop database" + name +  "fail: " + e.getMessage());
+            this.writeStr("drop database " + name +  " fail: " + e.getMessage() + '\n');
         }
         return null;
     }
@@ -183,11 +183,11 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         String name = ctx.database_name().getText().toUpperCase();
         try {
             this.db.useDB(name);
-            this.writeStr("use database " + name + " success");
+            this.writeStr("use database " + name + " success\n");
         }
         catch (Exception e)
         {
-            this.writeStr("use database " + name + " fail: " + e.getMessage());
+            this.writeStr("use database " + name + " fail: " + e.getMessage() + '\n');
         }
         return null;
     }
@@ -207,7 +207,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         else
         {
-            writeStr("Database" + name + "not exists");
+            writeStr("Database " + name + " not exists\n");
         }
         return null;
     }
@@ -291,11 +291,11 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             try {
                 t.InsertRow(row);
             } catch (Exception a) {
-                writeStr(a.getMessage());
+                writeStr(a.getMessage() + "\n");
                 return null;
             }
         }
-        writeStr("insert success");
+        writeStr("insert success\n");
         return null;
     }
 
@@ -439,7 +439,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         catch (Exception e)
         {
-            writeStr("select fail: " + e.getMessage());
+            writeStr("select fail: " + e.getMessage() + '\n');
         }
         return null;
     }
@@ -517,6 +517,9 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                         }
                         switch (data.type)
                         {
+                            case -1:
+                                result_output.add(null);
+                                break;
                             case 0:
                                 result_output.add(data.int_data);
                                 break;
@@ -550,7 +553,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         } catch (Exception e)
         {
 
-            writeStr("select fail");
+            writeStr("select fail: " + e.getMessage() + '\n');
         }
         return null;
     }
@@ -572,10 +575,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         ArrayList<ArrayList> result;
         try {
             this.db.getTable(tableName).DeleteRows(conditions);
-            this.writeStr("delete rows success");
+            this.writeStr("delete rows success\n");
         } catch (Exception e)
         {
-            this.writeStr("delete rows fail");
+            this.writeStr("delete rows fail " + e.getMessage() + '\n');
         }
         return null;
     }
@@ -636,10 +639,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         try {
             this.db.getTable(tableName).UpdateRow(conditions,column_names,data);
-            this.writeStr("update rows success");
+            this.writeStr("update rows success\n");
         } catch (Exception e)
         {
-            this.writeStr("update rows fail");
+            this.writeStr("update rows fail: " + e.getMessage() + '\n');
         }
         return null;
 

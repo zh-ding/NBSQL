@@ -1,10 +1,7 @@
 import Database.Database;
 import Exceptions.BPlusTreeException;
 import Exceptions.DatabaseException;
-import Parser.SQLLexer;
-import Parser.SQLParser;
-import Parser.SQLVisitorStmt;
-import Parser.ThrowingErrorListener;
+import Parser.*;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
@@ -19,14 +16,16 @@ public class TestParser {
         }
         Database db = new Database("TEST");
         DataOutputStream out = new DataOutputStream(System.out);
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        InputStreamReader in = new InputStreamReader(new FileInputStream("src/test.sql"));
+        BufferedReader br = new BufferedReader(in);
         while(true) {
             String sql = "quit";
             try {
                 sql = br.readLine();
+                System.out.println(sql + '\n');
             } catch (IOException e) {
             }
-            if (sql.compareTo("quit") == 0)
+            if(sql.equals("quit"))
                 break;
             try {
                 SQLLexer lexer = new SQLLexer(CharStreams.fromString(sql));
@@ -43,6 +42,8 @@ public class TestParser {
                 System.out.println(e.getMessage());
             }
         }
+
     }
 }
+
 

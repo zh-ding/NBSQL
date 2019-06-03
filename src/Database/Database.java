@@ -52,8 +52,10 @@ public class Database {
         if(tmplist != null)
         {
             for(File f:tmplist){
-                String tmp = f.getName();
-                res.add(tmp);
+                if(!f.isHidden()) {
+                    String tmp = f.getName();
+                    res.add(tmp);
+                }
             }
             return res;
         }
@@ -80,7 +82,6 @@ public class Database {
         if(this.db_name.compareTo(db_name) == 0){
             throw new DatabaseException("can't drop the database which is being used");
         }
-        this.db_name = db_name;
         db_name = this.path + db_name;
         File db = new File(db_name);
         if(db.isFile() && db.exists()){
