@@ -33,6 +33,7 @@ public class FileManager {
     */
     private ArrayList<ArrayList> keyType = new ArrayList<>();
     private ArrayList valueType = new ArrayList();
+    private int maxLength = 100000;
     private Map<Integer, ArrayList> node_cahce = new HashMap<>();
 
     public FileManager(String name) throws IOException{
@@ -187,6 +188,7 @@ public class FileManager {
                 this.resetNode((BPlusTreeNode) this.node_cahce.get(offset).get(1));
             }
         }
+        this.node_cahce.clear();
     }
 
     private void resetNode(BPlusTreeNode node) throws IOException{
@@ -245,6 +247,9 @@ public class FileManager {
             data.add(false);
             data.add(node);
             this.node_cahce.put(node.location, data);
+            if(this.node_cahce.size() > maxLength){
+                this.resetNodeCache();
+            }
         }
         else {
             ArrayList data = new ArrayList();
@@ -471,6 +476,17 @@ public class FileManager {
             }
             else{
                 node = new BPlusTreeInnerNode(keys, pointers, parent, leftSibling, rightSibling, keyNum, location, isLeafNode, id);
+            }
+
+            /*
+            cache
+             */
+            ArrayList data = new ArrayList();
+            data.add(false);
+            data.add(node);
+            this.node_cahce.put(node.location, data);
+            if(this.node_cahce.size() > maxLength){
+                this.resetNodeCache();
             }
             return node;
         }

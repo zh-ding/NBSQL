@@ -386,7 +386,6 @@ public class Database {
 //        return finalRes;
 //    }
 
-
     public Set<ArrayList> joinTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList<ArrayList>>> conditions, ArrayList<Integer> isOuterOrNot) throws IOException, BPlusTreeException{
         ArrayList tmp = new ArrayList();
         tmp.add(tabs.get(0));
