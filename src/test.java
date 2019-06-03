@@ -11,8 +11,8 @@ import java.util.Set;
 
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException, DatabaseException {
-        int num = 10; // data
-        int table_num = 10;
+        int num = 1000; // data
+        int table_num = 1;
 
         Database db = new Database("test");
         db.newDB("test_for_use");
@@ -28,13 +28,14 @@ public class test {
         isNotNull[0] = true;
         isNotNull[1] = false;
 
+
         for(int i =0; i<table_num; ++i){
             s[1] = "name";
             db.createTable(s, a, p, "test_"+Integer.toString(i), isNotNull);
         }
 
         db.useDB("test");
-
+        System.out.println("----------------------start testing insert-----------------");
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
             for(int j = 0; j<num; j++){
@@ -44,8 +45,8 @@ public class test {
                 table.InsertRow(arr);
             }
         }
+        System.out.println("----------------------end testing insert-----------------");
 
-        System.out.println("----------------------start testing insert-----------------");
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
             Generator<ArrayList> tmp =  table.SelectRows(null, null);

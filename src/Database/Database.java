@@ -77,10 +77,9 @@ public class Database {
     }
 
     public void dropDB(String db_name) throws DatabaseException {
-        if(this.db_name == db_name){
+        if(this.db_name.equals(db_name)){
             throw new DatabaseException("can't drop the database which is being used");
         }
-        this.db_name = db_name;
         db_name = this.path + db_name;
         File db = new File(db_name);
         if(db.isFile() && db.exists()){

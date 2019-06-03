@@ -492,13 +492,12 @@ STRING_LITERAL
  : '\'' ( ~'\'' | '\'\'' )* '\''
  ;
 
-
 SINGLE_LINE_COMMENT
- : '--' ~[\r\n]* -> channel(HIDDEN)
+ : '--' ~[\r\n]* -> skip
  ;
 
 MULTILINE_COMMENT
- : '/*' .*? ( '*/' | EOF ) -> channel(HIDDEN)
+ : '/*' .*? ( '*/' | EOF ) -> skip
  ;
 
 SPACES

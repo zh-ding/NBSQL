@@ -787,7 +787,7 @@ public class SQLLexer extends Lexer {
 		"\3\2\2\2\u0599\u059a\7,\2\2\u059a\u059d\7\61\2\2\u059b\u059d\7\2\2\3\u059c"+
 		"\u0599\3\2\2\2\u059c\u059b\3\2\2\2\u059d\u059e\3\2\2\2\u059e\u059f\b\u00a2"+
 		"\2\2\u059f\u0144\3\2\2\2\u05a0\u05a1\t\n\2\2\u05a1\u05a2\3\2\2\2\u05a2"+
-		"\u05a3\b\u00a3\2\2\u05a3\u0146\3\2\2\2\u05a4\u05a5\13\2\2\2\u05a5\u0148"+
+		"\u05a3\b\u00a3\3\2\u05a3\u0146\3\2\2\2\u05a4\u05a5\13\2\2\2\u05a5\u0148"+
 		"\3\2\2\2\u05a6\u05a7\t\13\2\2\u05a7\u014a\3\2\2\2\u05a8\u05a9\t\f\2\2"+
 		"\u05a9\u014c\3\2\2\2\u05aa\u05ab\t\r\2\2\u05ab\u014e\3\2\2\2\u05ac\u05ad"+
 		"\t\16\2\2\u05ad\u0150\3\2\2\2\u05ae\u05af\t\17\2\2\u05af\u0152\3\2\2\2"+
@@ -805,7 +805,7 @@ public class SQLLexer extends Lexer {
 		"\2\2\u05d7\u017a\3\2\2\2\u05d8\u05d9\t$\2\2\u05d9\u017c\3\2\2\2\u05da"+
 		"\u05db\t%\2\2\u05db\u017e\3\2\2\2\32\2\u052d\u052f\u0537\u0539\u0541\u0549"+
 		"\u054c\u0551\u0557\u055a\u055e\u0563\u0565\u056b\u056f\u0574\u0576\u0578"+
-		"\u057e\u0580\u058b\u0596\u059c\3\2\3\2";
+		"\u057e\u0580\u058b\u0596\u059c\4\b\2\2\2\3\2";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

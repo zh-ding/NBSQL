@@ -1,0 +1,24 @@
+create database test2;
+show databases;
+use database test2;
+create table test1(a int primary key, b long not null, c float primary key, d double, e string(10));
+create table test2(a int primary key, b long not null, c float primary key, d double, e string(10));
+create table test3(a int primary key, b long not null, c float primary key, d double, e string(10));
+show table test1;
+drop table test2;
+show database test2;
+drop database test2;
+use database test;
+drop database test2;
+create table test1(a int primary key, b long not null, c float primary key, d double, e string(10));
+insert into test1 values(1,1,1,1,'abc');
+insert into test1 (a,c,d,e) values(2,2,2,'abc');
+insert into test1 values(1,1,3,1,'abc');
+insert into test1 values(2,2,2,2,'abcabcabcabc');
+insert into test1 values(2,2,2,2,'abc'),(3,3,3,3,'abc'),(4,4,4,4,'abc'),(5,5,5,5,'def');
+create table test2(a int primary key, b long, c float, d double, e string(10));
+create table test3(a int primary key, b long, c float, d double, e string(10));
+drop table test1;
+drop table test2;
+drop table test3;
+quit
