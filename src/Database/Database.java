@@ -77,7 +77,7 @@ public class Database {
     }
 
     public void dropDB(String db_name) throws DatabaseException {
-        if(this.db_name.equals(db_name)){
+        if(this.db_name.compareTo(db_name) == 0){
             throw new DatabaseException("can't drop the database which is being used");
         }
         db_name = this.path + db_name;
@@ -285,6 +285,86 @@ public class Database {
 
         return finalRes;
     }
+
+//        public ArrayList<ArrayList> selectFromTables(ArrayList<Table> tabs, ArrayList<Integer> isOuterOrNot, ArrayList<ArrayList<ArrayList<ArrayList>>> onConditions, ArrayList<ArrayList<ArrayList>> whereConditions, ArrayList colNames)
+//            throws IOException, BPlusTreeException {
+//            ArrayList<ArrayList> finalRes = new ArrayList<ArrayList>();
+//                /*
+//                    show res with schema
+//                */
+//            ArrayList<String> schema = new ArrayList<>();
+//            ArrayList<Integer> schema_type = new ArrayList<>();
+//
+//            for (int j = 0; j < tabs.size(); ++j) {
+//                for (int i = 1; i < tabs.get(j).getColumnName().size(); ++i) {
+//                    schema.add(tabs.get(j).table_name + "." + tabs.get(j).getColumnName().get(i));
+//                    schema_type.add(tabs.get(j).getColumnType().get(i));
+//                }
+//            }
+//            finalRes.add(schema);
+//            finalRes.add(schema_type);
+//
+//            Set<ArrayList> res = new HashSet<>();
+//            Set<ArrayList> joinRes = new HashSet<>();
+//
+//            joinRes = this.joinTables(tabs, onConditions, isOuterOrNot);
+//
+//            for (int i = 0; i < whereConditions.size(); ++i) {
+//                for (ArrayList tmp : joinRes) {
+//                    ArrayList<ArrayList> tmpvalue = new ArrayList<>();
+//                    try {
+//                        tmpvalue = getValues(tabs, tmp);
+//                    } catch (IOException e) {
+//                        System.out.print(e);
+//                    }
+//                    boolean flag = true;
+//                    for (int l = 0; l < whereConditions.get(i).size(); ++l) {
+//                        if ((boolean) whereConditions.get(i).get(l).get(5)) {
+//                            ArrayList tmpC = new ArrayList();
+//                            tmpC.add(whereConditions.get(i).get(l));
+//                            for (int t = 0; t < tabs.size(); t++) {
+//                                if (tabs.get(t).table_name.compareTo(whereConditions.get(i).get(l).get(0).toString()) == 0) {
+//
+//                                    if (!isObeyConditions(tmpC, tabs.get(t), tabs.get(tabs.size() - 1), tmpvalue.get(t), tmpvalue.get(tabs.size() - 1))) {
+//                                        flag = false;
+//                                        break;
+//                                    }
+//
+//                                }
+//                            }
+//                            if (!flag) {
+//                                break;
+//                            }
+//                        } else {
+//                            ArrayList tmpC = new ArrayList();
+//                            tmpC.add(whereConditions.get(i).get(l));
+//                            int t1 = 0, t2 = 0;
+//                            for (int t = 0; t < tabs.size(); t++) {
+//                                if (tabs.get(t).table_name.compareTo(whereConditions.get(i).get(l).get(0).toString()) == 0) {
+//                                    t1 = t;
+//                                }
+//                                if (tabs.get(t).table_name.compareTo(whereConditions.get(i).get(l).get(3).toString()) == 0) {
+//                                    t2 = t;
+//                                }
+//                            }
+//                            if (!isObeyConditions(tmpC, tabs.get(t1), tabs.get(t2), tmpvalue.get(t1), tmpvalue.get(t2))) {
+//                                flag = false;
+//                                break;
+//                            }
+//                        }
+//                    }
+//                    if (flag == true) {
+//                        res.add(tmp);
+//                    }
+//                }
+//            }
+//
+//            for (ArrayList tmpres : res) {
+//                finalRes.add(getValuesWithoutAuto(tabs, tmpres));
+//            }
+//        return finalRes;
+//    }
+
 
     public Set<ArrayList> joinTables(ArrayList<Table> tabs, ArrayList<ArrayList<ArrayList<ArrayList>>> conditions, ArrayList<Integer> isOuterOrNot) throws IOException, BPlusTreeException{
         ArrayList tmp = new ArrayList();

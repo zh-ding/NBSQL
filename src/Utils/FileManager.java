@@ -385,7 +385,7 @@ public class FileManager {
                         tmpKey.add(this.file.readDouble());
                         break;
                     default:
-                        tmpKey.add(this.file.readUTF());
+                        tmpKey.add(Rtrim(this.file.readUTF()));
                         break;
                 }
             }
@@ -405,6 +405,19 @@ public class FileManager {
             node = new BPlusTreeInnerNode(keys, pointers, parent, leftSibling, rightSibling, keyNum, location, isLeafNode, id);
         }
         return node;
+    }
+
+    private String Rtrim(String str){
+        String tmpstr= str;
+        int len = tmpstr.length()-1;
+        while(tmpstr.charAt(len) == ' '){
+            len --;
+            if(len == 0){
+                break;
+            }
+        }
+        tmpstr = tmpstr.substring(0,len+1);
+        return tmpstr;
     }
 
     public ArrayList readData(int offset) throws IOException{
@@ -456,7 +469,7 @@ public class FileManager {
                         break;
                     }
                     else
-                        data.add(this.file.readUTF());
+                        data.add(Rtrim(this.file.readUTF()));
                     break;
             }
         }
