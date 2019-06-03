@@ -44,6 +44,7 @@ sql_stmt
     | drop_database_stmt
     | use_database_stmt
     | show_database_stmt
+    | EOF
     )
  ;
 

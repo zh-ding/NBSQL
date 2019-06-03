@@ -14,7 +14,7 @@ create table test1(a int primary key, b long not null, c float primary key, d do
 insert into test1 values(1,1,1,1,'abc');
 insert into test1 (a,c,d,e) values(2,2,2,'abc');
 insert into test1 values(1,1,3,1,'abc');
-insert into test1 values(2,2,2,2,'abcabcabcabc');
+--insert into test1 values(2,2,2,2,'abcabcabcabc');
 insert into test1 values(2,2,2,2,'abc'),(3,3,3,3,'abc'),(4,4,4,4,'abc'),(5,5,5,5,'def');
 create table test2(a int primary key, b long, c float, d double, e string(10));
 create table test3(a int primary key, b long, c float, d double, e string(10));
