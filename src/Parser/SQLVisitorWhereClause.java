@@ -84,11 +84,11 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
             ArrayList condition = new ArrayList();
             if(ctx.expr(0).column_name() == null && ctx.expr(1).column_name() == null)
             {
-                throw new ParseCancellationException("Invalid where clause");
+                throw new ParseCancellationException("!Invalid where clause\n");
             }
             if(isMulti && ctx.expr(0).table_name() == null && ctx.expr(1).table_name() == null)
             {
-                throw new ParseCancellationException("Invalid where clause");
+                throw new ParseCancellationException("!Invalid where clause\n");
             }
             if(ctx.expr(0).column_name() != null)
             {

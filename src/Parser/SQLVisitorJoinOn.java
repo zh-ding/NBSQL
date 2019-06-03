@@ -60,7 +60,7 @@ public class SQLVisitorJoinOn extends SQLBaseVisitor<ArrayList<ArrayList<ArrayLi
             ArrayList condition = new ArrayList();
             if(ctx.expr(0).column_name() == null && ctx.expr(1).column_name() == null)
             {
-                throw new ParseCancellationException("Invalid Expression");
+                throw new ParseCancellationException("!Invalid Expression\n");
             }
             if(ctx.expr(0).column_name() != null)
             {
