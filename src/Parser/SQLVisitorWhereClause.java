@@ -19,9 +19,10 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
         this.columnTypes = columnTypes;
     }
 
-    public SQLVisitorWhereClause(ArrayList<ArrayList<String>> columnNames, ArrayList<ArrayList<Integer>> columnTypes, boolean isMulti)
+    public SQLVisitorWhereClause(ArrayList<String> tableNames, ArrayList<ArrayList<String>> columnNames, ArrayList<ArrayList<Integer>> columnTypes)
     {
-        this.isMulti = isMulti;
+        this.tableNames = tableNames;
+        this.isMulti = true;
         this.columnNamesMulti = columnNames;
         this.columnTypesMulti = columnTypes;
     }
@@ -35,8 +36,8 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
             ArrayList<ArrayList<ArrayList>> l, r;
             if(isMulti)
             {
-                l = ctx.expr(0).accept(new SQLVisitorWhereClause(columnNamesMulti, columnTypesMulti,true));
-                r = ctx.expr(1).accept(new SQLVisitorWhereClause(columnNamesMulti, columnTypesMulti, true));
+                l = ctx.expr(0).accept(new SQLVisitorWhereClause(tableNames, columnNamesMulti, columnTypesMulti));
+                r = ctx.expr(1).accept(new SQLVisitorWhereClause(tableNames, columnNamesMulti, columnTypesMulti));
             }
             else {
                 l = ctx.expr(0).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
@@ -50,8 +51,8 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
             ArrayList<ArrayList<ArrayList>> l, r;
             if(isMulti)
             {
-                l = ctx.expr(0).accept(new SQLVisitorWhereClause(columnNamesMulti, columnTypesMulti,true));
-                r = ctx.expr(1).accept(new SQLVisitorWhereClause(columnNamesMulti, columnTypesMulti, true));
+                l = ctx.expr(0).accept(new SQLVisitorWhereClause(tableNames, columnNamesMulti, columnTypesMulti));
+                r = ctx.expr(1).accept(new SQLVisitorWhereClause(tableNames, columnNamesMulti, columnTypesMulti));
             }
             else {
                 l = ctx.expr(0).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
@@ -83,11 +84,11 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
             ArrayList condition = new ArrayList();
             if(ctx.expr(0).column_name() == null && ctx.expr(1).column_name() == null)
             {
-                throw new ParseCancellationException("Invalid where clause");
+                throw new ParseCancellationException("!Invalid where clause\n");
             }
             if(isMulti && ctx.expr(0).table_name() == null && ctx.expr(1).table_name() == null)
             {
-                throw new ParseCancellationException("Invalid where clause");
+                throw new ParseCancellationException("!Invalid where clause\n");
             }
             if(ctx.expr(0).column_name() != null)
             {
@@ -115,7 +116,7 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
                 }
                 data = ctx.expr(0).literal_value().accept(new SQLVisitorLiteralValue(dataType));
             }
-            else
+            else if(ctx.expr(1).literal_value() != null)
             {
                 int dataType;
                 if(isMulti)
@@ -168,8 +169,6 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
                     condition.add(column_name2);
                     condition.add(switchType(type));
                 }
-                if(isMulti)
-                    condition.add(null);
                 if(data != null)
                 {
                     switch (data.type)
@@ -195,6 +194,8 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
                 {
                     condition.add(null);
                 }
+                if(isMulti)
+                    condition.add(null);
                 condition.add(true);
             }
             singleCondition.get(0).add(condition);

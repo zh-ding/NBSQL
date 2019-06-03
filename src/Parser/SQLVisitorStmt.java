@@ -30,7 +30,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         catch (IOException e)
         {
-            System.out.println("Datastream write fail: " + e.getMessage());
+            System.out.println("!Datastream write fail: " + e.getMessage() + "\n");
         }
         return null;
     }
@@ -80,16 +80,16 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             }
             try {
                 this.db.createTable(names.toArray(new String[names.size()]), types, primary_key.toArray(new String[primary_key.size()]), tableName, not_null);
-                writeStr("create table " + tableName + " success\n");
+                writeStr("@create table " + tableName + " success\n");
             }
             catch (Exception e)
             {
-                writeStr("create table "  + tableName + " fail: " + e.getMessage() + '\n');
+                writeStr("!create table "  + tableName + " fail: " + e.getMessage() + '\n');
             }
         }
         else
         {
-            writeStr("create table fail\n");
+            writeStr("!create table fail\n");
         }
         return null;
     }
@@ -100,7 +100,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         {
             String tableName = ctx.table_name().getText().toUpperCase();
             this.db.dropTable(tableName);
-            writeStr("drop table success\n");
+            writeStr("@drop table success\n");
         }
         return null;
     }
@@ -140,7 +140,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             }
             else
             {
-                writeStr("Table does not exist\n");
+                writeStr("!Table does not exist\n");
             }
         }
         return null;
@@ -153,11 +153,11 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         String name = ctx.database_name().getText().toUpperCase();
         try {
             this.db.newDB(name);
-            this.writeStr("create database " + name + " success\n");
+            this.writeStr("@create database " + name + " success\n");
         }
         catch (Exception e)
         {
-            this.writeStr("create database " + name + " fail: " + e.getMessage() + '\n');
+            this.writeStr("!create database " + name + " fail: " + e.getMessage() + '\n');
         }
         return null;
     }
@@ -168,11 +168,11 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         String name = ctx.database_name().getText().toUpperCase();
         try {
             db.dropDB(name);
-            this.writeStr("drop database " + name + " success\n");
+            this.writeStr("@drop database " + name + " success\n");
         }
         catch (Exception e)
         {
-            this.writeStr("drop database " + name +  " fail: " + e.getMessage() + '\n');
+            this.writeStr("!drop database " + name +  " fail: " + e.getMessage() + '\n');
         }
         return null;
     }
@@ -183,11 +183,11 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         String name = ctx.database_name().getText().toUpperCase();
         try {
             this.db.useDB(name);
-            this.writeStr("use database " + name + " success\n");
+            this.writeStr("@use database " + name + " success\n");
         }
         catch (Exception e)
         {
-            this.writeStr("use database " + name + " fail: " + e.getMessage() + '\n');
+            this.writeStr("!use database " + name + " fail: " + e.getMessage() + '\n');
         }
         return null;
     }
@@ -207,7 +207,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         else
         {
-            writeStr("Database " + name + " not exists\n");
+            writeStr("!Database " + name + " not exists\n");
         }
         return null;
     }
@@ -291,11 +291,11 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             try {
                 t.InsertRow(row);
             } catch (Exception a) {
-                writeStr(a.getMessage() + "\n");
+                writeStr("!" + a.getMessage() + "\n");
                 return null;
             }
         }
-        writeStr("insert success\n");
+        writeStr("@Insert success\n");
         return null;
     }
 
@@ -333,12 +333,17 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         {
             if(ctx.result_column(i).STAR() != null)
             {
-                String t = ctx.result_column(i).table_name().accept(new SQLVisitorNames());
-                ArrayList<String> name_temp = tableColumnNames.get(joinCondition.tableNames.indexOf(t));
-                for(String c:name_temp)
-                {
-                    c = t + "." + c;
-                    column_names.add(c);
+                ArrayList<String> table_temp = new ArrayList<>();
+                if(ctx.result_column(i).table_name() != null)
+                    table_temp.add(ctx.result_column(i).table_name().accept(new SQLVisitorNames()));
+                else
+                    table_temp = joinCondition.tableNames;
+                for(String t:table_temp) {
+                    ArrayList<String> name_temp = tableColumnNames.get(joinCondition.tableNames.indexOf(t));
+                    for (String c : name_temp) {
+                        c = t + "." + c;
+                        column_names.add(c);
+                    }
                 }
             }
             else if(ctx.result_column(i).column_alias() != null)
@@ -380,12 +385,13 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
 
         //condition
         if(ctx.K_WHERE() != null)
-            conditions = ctx.expr().accept(new SQLVisitorWhereClause(tableColumnNames, tableColumnTypes, true));
+            conditions = ctx.expr().accept(new SQLVisitorWhereClause(joinCondition.tableNames, tableColumnNames, tableColumnTypes));
         else
             conditions = null;
 
         try {
             Generator<ArrayList> result = this.db.selectFromTables(tables,joinCondition.joinTypes,joinCondition.conditions,conditions,column_queries);
+//            ArrayList<ArrayList> result = this.db.selectFromTables(tables,joinCondition.joinTypes,joinCondition.conditions,conditions,column_queries);
             for(String c:column_names)
             {
                 writeStr(c + "\t");
@@ -407,6 +413,9 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                             continue;
                         }
                         switch (data.type) {
+                            case -1:
+                                result_output.add(null);
+                                break;
                             case 0:
                                 result_output.add(data.int_data);
                                 break;
@@ -439,7 +448,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         catch (Exception e)
         {
-            writeStr("select fail: " + e.getMessage() + '\n');
+            writeStr("!select fail: " + e.getMessage() + '\n');
         }
         return null;
     }
@@ -553,7 +562,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         } catch (Exception e)
         {
 
-            writeStr("select fail: " + e.getMessage() + '\n');
+            writeStr("!select fail: " + e.getMessage() + '\n');
         }
         return null;
     }
@@ -575,10 +584,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         ArrayList<ArrayList> result;
         try {
             this.db.getTable(tableName).DeleteRows(conditions);
-            this.writeStr("delete rows success\n");
+            this.writeStr("@delete rows success\n");
         } catch (Exception e)
         {
-            this.writeStr("delete rows fail " + e.getMessage() + '\n');
+            this.writeStr("!delete rows fail " + e.getMessage() + '\n');
         }
         return null;
     }
@@ -639,10 +648,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         try {
             this.db.getTable(tableName).UpdateRow(conditions,column_names,data);
-            this.writeStr("update rows success\n");
+            this.writeStr("@update rows success\n");
         } catch (Exception e)
         {
-            this.writeStr("update rows fail: " + e.getMessage() + '\n');
+            this.writeStr("!update rows fail: " + e.getMessage() + '\n');
         }
         return null;
 
