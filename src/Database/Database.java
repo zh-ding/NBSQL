@@ -52,8 +52,10 @@ public class Database {
         if(tmplist != null)
         {
             for(File f:tmplist){
-                String tmp = f.getName();
-                res.add(tmp);
+                if(!f.isHidden()) {
+                    String tmp = f.getName();
+                    res.add(tmp);
+                }
             }
             return res;
         }
