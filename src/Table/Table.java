@@ -303,7 +303,10 @@ public class Table {
                                     }
                                 }else {
                                     try {
-                                        addResultWoIndex(table.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
+                                        int next = addResultWoIndex(table.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
+                                        while(next != -1){
+                                            next = addResultWoIndex((BPlusTreeLeafNode) table.file.readNode(next, 0), arr_and, arr1, arr2, isFirst, relation);
+                                        }
 
                                     }catch (BPlusTreeException e){
                                         System.out.println(e);
@@ -315,7 +318,10 @@ public class Table {
                                 }
                             }else if(isPrimitive && relation == 5){
                                 try{
-                                    addResultWoIndex(table.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
+                                    int next = addResultWoIndex(table.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
+                                    while(next != -1){
+                                        next = addResultWoIndex((BPlusTreeLeafNode) table.file.readNode(next, 0), arr_and, arr1, arr2, isFirst, relation);
+                                    }
                                 }catch (BPlusTreeException e){
                                     System.out.println(e);
                                     throw new InterruptedException();
@@ -625,7 +631,7 @@ public class Table {
        }
     }
 
-    private void addResultWoIndex(BPlusTreeLeafNode node, ArrayList arr, Set<Integer> arr1, Set<Integer> arr2,
+    private int addResultWoIndex(BPlusTreeLeafNode node, ArrayList arr, Set<Integer> arr1, Set<Integer> arr2,
                                   boolean isFirst, int relation)
             throws IOException, BPlusTreeException{
 
@@ -652,8 +658,10 @@ public class Table {
             }
 
         }
-        if(node.rightSibling != -1)
-            addResultWoIndex((BPlusTreeLeafNode) this.file.readNode(node.rightSibling, 0), arr, arr1, arr2, isFirst, relation);
+        key1 = null;
+        key2 = null;
+        System.gc();
+        return node.rightSibling;
     }
 
     private void addAllResult(BPlusTreeLeafNode node, Set<Integer> arr)
@@ -729,16 +737,20 @@ public class Table {
 
 
     private void addKey(ArrayList arr, ArrayList key){
-        if(column_type.get(this.column_name.indexOf(arr.get(0))) == -1)
-            key.add((Integer)arr.get(2));
-        else if(column_type.get(this.column_name.indexOf(arr.get(0))) == -2)
-            key.add((Long)arr.get(2));
-        else if(column_type.get(this.column_name.indexOf(arr.get(0))) == -3)
-            key.add((Float)arr.get(2));
-        else if(column_type.get(this.column_name.indexOf(arr.get(0))) == -4)
-            key.add((Double)arr.get(2));
-        else
-            key.add((String)arr.get(2));
+        try {
+            if (column_type.get(this.column_name.indexOf(arr.get(0))) == -1)
+                key.add((Integer) arr.get(2));
+            else if (column_type.get(this.column_name.indexOf(arr.get(0))) == -2)
+                key.add((Long) arr.get(2));
+            else if (column_type.get(this.column_name.indexOf(arr.get(0))) == -3)
+                key.add((Float) arr.get(2));
+            else if (column_type.get(this.column_name.indexOf(arr.get(0))) == -4)
+                key.add((Double) arr.get(2));
+            else
+                key.add((String) arr.get(2));
+        }catch (Exception e){
+            e.printStackTrace();
+        }
     }
 
     private void addRandomKey(int index, ArrayList key){

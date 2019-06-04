@@ -12,7 +12,7 @@ import java.util.Set;
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException, DatabaseException {
 
-        int num = 10000; // data
+        int num = 1000; // data
         int table_num = 2; // >= 2
 
         Database db = new Database("test");
