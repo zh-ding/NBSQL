@@ -257,6 +257,38 @@ public abstract class BPlusTreeNode {
 
     abstract public BPlusTreeNode search(FileManager fm, ArrayList key)throws IOException, BPlusTreeException;
 
+    public void print(){
+        System.out.print(this.location);
+        System.out.print(' ');
+        if(isLeafNode)
+            System.out.print("leaf");
+        else
+            System.out.print("inner");
+        System.out.print(' ');
+        System.out.print(this.keyNum);
+        System.out.print(" [");
+        for(ArrayList arr: this.keys){
+            System.out.print('[');
+            for(Object o:arr){
+                System.out.print(o);
+                System.out.print(',');
+            }
+            System.out.print("],");
+        }
+        System.out.print("] [");
+        for(Integer offset: this.pointers){
+            System.out.print(offset);
+            System.out.print(',');
+        }
+        System.out.print("] ");
+        System.out.print(this.parent);
+        System.out.print(" ");
+        System.out.print(this.leftSibling);
+        System.out.print(" ");
+        System.out.print(this.rightSibling);
+        System.out.println();
+    }
+
     /*
     0: key1 == key2
     -1: key1 < key2

@@ -1,5 +1,6 @@
 package Utils;
 
+import BPlusTree.BPlusTree;
 import BPlusTree.BPlusTreeInnerNode;
 import BPlusTree.BPlusTreeLeafNode;
 import BPlusTree.BPlusTreeNode;
@@ -25,7 +26,7 @@ public class FileManager {
     private static final int page_size = 1024 * 4;
     private static final int header_page_num = 4;
     private static final int page_header_len = 8;
-    private static final int maxTreeKeyNum = 3;
+    private static final int maxTreeKeyNum = BPlusTree.M - 1;
     /*
     to do cache limit
      */

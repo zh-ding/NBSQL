@@ -201,7 +201,7 @@ public class BPlusTreeLeafNode extends BPlusTreeNode {
         }
 
         this.keys.add(i, key);
-        this.pointers.add(data);
+        this.pointers.add(i, data);
         ++this.keyNum;
         fm.updateNode(this);
 
@@ -349,7 +349,7 @@ public class BPlusTreeLeafNode extends BPlusTreeNode {
         if(i - 1 >= 0){
             for(int j = 0; j < this.keyNum; ++j){
                 left.keys.add(this.keys.get(j));
-                left.pointers.add(this.pointers.get(j));
+                left.pointers.add(left.keyNum + j, this.pointers.get(j));
             }
 
             left.keyNum += this.keyNum;
@@ -368,7 +368,7 @@ public class BPlusTreeLeafNode extends BPlusTreeNode {
 
         for(int j = 0; j < right.keyNum; ++j){
             this.keys.add(right.keys.get(j));
-            this.pointers.add(right.pointers.get(j));
+            this.pointers.add(right.keyNum + j, right.pointers.get(j));
         }
 
         this.keyNum += right.keyNum;

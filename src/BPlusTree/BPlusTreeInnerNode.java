@@ -422,17 +422,17 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
 
         if(left != null){
 
-            int k;
-            for(k = 0; k < parent.keyNum; ++k){
-                int cmp = this.compare(parent.keys.get(k), left.keys.get(0));
-
-                if(cmp == 1)
-                    break;
-            }
+//            int k;
+//            for(k = 0; k < parent.keyNum; ++k){
+//                int cmp = this.compare(parent.keys.get(k), left.keys.get(0));
+//
+//                if(cmp == 1)
+//                    break;
+//            }
 
             //assert k > 0;
 
-            this.keys.add(0, parent.keys.get(k));
+            this.keys.add(0, parent.keys.get(i - 1));
 
             for(int j = 0; j < left.keyNum; ++j){
                 this.keys.add(j, left.keys.get(j));
@@ -455,21 +455,21 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
             fm.updateNode(this);
             fm.updateNode(node);
 
-            return parent.delete(fm, k, k);
+            return parent.delete(fm, i - 1, i - 1);
 
         }
 
 
-        int k;
-        for(k = 0; k < parent.keyNum; ++k){
-            int cmp = this.compare(parent.keys.get(k), right.keys.get(0));
-            if(cmp == 1)
-                break;
-        }
+//        int k;
+//        for(k = 0; k < parent.keyNum; ++k){
+//            int cmp = this.compare(parent.keys.get(k), right.keys.get(0));
+//            if(cmp == 1)
+//                break;
+//        }
 
         //assert k < this.parent.keyNum;
 
-        this.keys.add(parent.keys.get(k - 1));
+        this.keys.add(parent.keys.get(i));
 
         for(int j = 0; j < right.keyNum; ++j){
             this.keys.add(right.keys.get(j));
@@ -491,6 +491,6 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
         fm.updateNode(this);
         fm.updateNode(node);
 
-        return parent.delete(fm,k - 1, k);
+        return parent.delete(fm, i, i + 1);
     }
 }

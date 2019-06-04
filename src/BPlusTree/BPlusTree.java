@@ -125,7 +125,7 @@ import java.util.ArrayList;
 public class BPlusTree {
 
     private BPlusTreeNode root;
-    public static final int M = 4;
+    public static final int M = 20;
     public FileManager fm;
     public int ID;
 
@@ -150,7 +150,7 @@ public class BPlusTree {
 
         BPlusTreeNode n = leaf.insert(this.fm, key, data);
 
-
+        this.root = fm.readNode(this.root.location, this.ID);
 
         if(n != null) {
             this.root = n;
@@ -163,6 +163,7 @@ public class BPlusTree {
     public void delete(ArrayList key, int id)throws IOException, BPlusTreeException{
         BPlusTreeLeafNode leaf = this.findLeafNode(key);
         BPlusTreeNode n = leaf.delete(fm, key);
+        this.root = fm.readNode(this.root.location, this.ID);
         if(n != null) {
             this.root = n;
             this.root.parent = -1;
@@ -195,7 +196,7 @@ public class BPlusTree {
 //        System.out.println(this.root.keys);
 //        printNode(this.root);
 //    }
-
+//
 //    private void printNode(BPlusTreeNode node){
 //        if(node.isLeafNode)
 //            return;
@@ -206,6 +207,25 @@ public class BPlusTree {
 //        for(int i = 0; i < node.keyNum + 1; ++i)
 //            printNode(node.pointers.get(i));
 //    }
+
+    public void printBPlusTree()
+            throws IOException{
+
+        printBPlusTree(this.root);
+        System.out.println();
+    }
+
+    private void printBPlusTree(BPlusTreeNode node)
+            throws IOException{
+
+        node.print();
+        if(node.isLeafNode)
+            return;
+        for(int i = 0; i < node.keyNum + 1; ++i){
+            BPlusTreeNode n = fm.readNode(node.pointers.get(i), this.ID);
+            printBPlusTree(n);
+        }
+    }
 
     private BPlusTreeLeafNode findLeafNode(ArrayList key)throws IOException, BPlusTreeException {
 
