@@ -257,6 +257,7 @@ public class FileManager {
     }
 
     public void updateNode(BPlusTreeNode node) throws IOException{
+
         if(!this.node_cahce.containsKey(node.location)) {
             this.resetNode(node);
             /*
@@ -528,6 +529,9 @@ public class FileManager {
     }
 
     public ArrayList readData(int offset) throws IOException{
+        if(offset == -1){
+            return null;
+        }
         if(!this.data_cahce.containsKey(offset)){
             ArrayList<Integer> valueType = this.getValueType();
             ArrayList data = new ArrayList();
@@ -709,6 +713,7 @@ public class FileManager {
     public void deleteFile(){
         try {
             this.resetNodeCache();
+            this.data_cahce.clear();
             file.close();
         } catch (IOException e) {
             e.printStackTrace();
