@@ -12,7 +12,7 @@ import java.util.Set;
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException, DatabaseException {
 
-        int num = 1000; // data to be even
+        int num = 100000; // data to be even
         int table_num = 2; // >= 2
 
         Database db = new Database("test");
@@ -38,7 +38,7 @@ public class test {
         db.useDB("test");
 
         System.out.println("----------------------start testing insert-----------------");
-        long starTime=System.currentTimeMillis();
+        long starTime=System.nanoTime();
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
             for(int j = 0; j<num; j++){
@@ -48,9 +48,8 @@ public class test {
                 table.InsertRow(arr);
             }
         }
-        long endTime=System.currentTimeMillis();
-        long time = endTime - starTime;
-        System.out.println(Float.toString(time/(1000))+"s");
+        long endTime=System.nanoTime();
+        System.out.println((endTime-starTime)/1000000.0+"ms");
 
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
@@ -94,7 +93,7 @@ public class test {
         System.out.println("----------------------start testing delete-----------------");
 
 
-
+        starTime = System.nanoTime();
 
         ArrayList test = new ArrayList();
         test.add("m_id");
@@ -122,6 +121,8 @@ public class test {
             }
         }
 
+        endTime = System.nanoTime();
+        System.out.println((endTime - starTime) / 1000000.0 + "ms");
 
         System.out.println("----------------------start testing update-----------------");
 
