@@ -12,7 +12,7 @@ import java.util.Set;
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException, DatabaseException {
 
-        int num = 1000; // data
+        int num = 10000; // data to be even
         int table_num = 2; // >= 2
 
         Database db = new Database("test");
@@ -88,7 +88,14 @@ public class test {
             }
         }
 
+        //db.tables.get(0).index_forest.get(0).printBPlusTree();
+
+
         System.out.println("----------------------start testing delete-----------------");
+
+
+
+
         ArrayList test = new ArrayList();
         test.add("m_id");
         test.add(4);
@@ -115,7 +122,14 @@ public class test {
             }
         }
 
+
         System.out.println("----------------------start testing update-----------------");
+
+//        ArrayList arr1 = new ArrayList<>();
+//        arr1.add(0);
+//        arr1.add(Integer.toString(0));
+//        db.tables.get(0).InsertRow(arr1);
+
         ArrayList col_name = new ArrayList();
         col_name.add("name");
         ArrayList new_row = new ArrayList();
