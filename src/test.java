@@ -13,7 +13,7 @@ public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException, DatabaseException {
 
 
-        int num = 16; // data
+        int num = 2; // data
 
         int table_num = 2; // >= 2
 
