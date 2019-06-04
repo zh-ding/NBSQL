@@ -654,7 +654,6 @@ public class Table {
         }
         if(node.rightSibling != -1)
             addResultWoIndex((BPlusTreeLeafNode) this.file.readNode(node.rightSibling, 0), arr, arr1, arr2, isFirst, relation);
-
     }
 
     private void addAllResult(BPlusTreeLeafNode node, Set<Integer> arr)

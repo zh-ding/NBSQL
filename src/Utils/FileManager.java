@@ -25,16 +25,23 @@ public class FileManager {
     private static final int page_size = 1024 * 4;
     private static final int header_page_num = 4;
     private static final int page_header_len = 8;
+    private static final int maxTreeKeyNum = 3;
     /*
     to do cache limit
      */
     /*
-    offset, [ boolean, ArraylistNode  ]
+    offset, [ boolean, node  ]
     */
     private ArrayList<ArrayList> keyType = new ArrayList<>();
     private ArrayList valueType = new ArrayList();
-    private int maxLength = 100000;
+    private static final int maxNodeLength = 1000;
     private Map<Integer, ArrayList> node_cahce = new HashMap<>();
+    /*
+    offset, [ boolean, node  ]
+    */
+    private static final int maxDataCache = 1000;
+    private Map<Integer, ArrayList> data_cahce = new HashMap<>();
+
 
     public FileManager(String name) throws IOException{
         this.inputFile = name + ".dat";
@@ -111,6 +118,17 @@ public class FileManager {
         len += valueType.size();
         int pos = this.findBlock(len);
         this.file.seek(pos);
+        /*
+        cache
+         */
+        ArrayList tmpdata = new ArrayList();
+        tmpdata.add(false);
+        tmpdata.add(value);
+        this.data_cahce.put(pos, tmpdata);
+        if(this.data_cahce.size()>maxDataCache){
+            this.data_cahce.clear();
+        }
+
         for(int i = 0; i<valueType.size(); i++){
             int tmp = 0;
             if(value.get(i) == null){
@@ -231,7 +249,7 @@ public class FileManager {
         } else {
             this.file.writeInt(-1);
         }
-        this.file.seek(node.location + 1 + 4 + 4 * 4 + 3 * len);
+        this.file.seek(node.location + 1 + 4 + (this.maxTreeKeyNum+1) * 4 + (this.maxTreeKeyNum) * len);
         this.file.writeInt(node.parent);
         this.file.writeInt(node.leftSibling);
         this.file.writeInt(node.rightSibling);
@@ -247,7 +265,7 @@ public class FileManager {
             data.add(false);
             data.add(node);
             this.node_cahce.put(node.location, data);
-            if(this.node_cahce.size() > maxLength){
+            if(this.node_cahce.size() > maxNodeLength){
                 this.resetNodeCache();
             }
         }
@@ -296,7 +314,7 @@ public class FileManager {
                     break;
             }
         }
-        len = 1+4+4*4+3*4+3*(len);
+        len = 1+4+(this.maxTreeKeyNum+1)*4+3*4+(this.maxTreeKeyNum)*(len);
         int pos = this.findBlock(len);
         this.file.seek(2*page_size+4);
         this.file.writeInt(pos);
@@ -387,7 +405,7 @@ public class FileManager {
             }
         }
         num.add(len);
-        int total = len*3+4*4+4+1+4*3;
+        int total = len*(this.maxTreeKeyNum)+(this.maxTreeKeyNum+1)*4+4+1+4*3;
         num.add(total);
         return num;
     }
@@ -401,7 +419,7 @@ public class FileManager {
         this.file.seek(pos);
         this.file.writeBoolean(isleafnode);
         this.file.writeInt(0);
-        this.file.seek(pos+1+4+4*4+3*len);
+        this.file.seek(pos+1+4+(this.maxTreeKeyNum+1)*4+(this.maxTreeKeyNum)*len);
         this.file.writeInt(-1);
         this.file.writeInt(-1);
         this.file.writeInt(-1);
@@ -465,7 +483,7 @@ public class FileManager {
                 keys.add(tmpKey);
                 pointers.add(this.file.readInt());
             }
-            this.file.seek(offset+1+4+4*4+3*len);
+            this.file.seek(offset+1+4+(this.maxTreeKeyNum+1)*4+(this.maxTreeKeyNum)*len);
             parent = this.file.readInt();
             leftSibling = this.file.readInt();
             rightSibling = this.file.readInt();
@@ -485,7 +503,7 @@ public class FileManager {
             data.add(false);
             data.add(node);
             this.node_cahce.put(node.location, data);
-            if(this.node_cahce.size() > maxLength){
+            if(this.node_cahce.size() > maxNodeLength){
                 this.resetNodeCache();
             }
             return node;
@@ -509,59 +527,74 @@ public class FileManager {
     }
 
     public ArrayList readData(int offset) throws IOException{
-        ArrayList<Integer> valueType = this.getValueType();
-        ArrayList data = new ArrayList();
-        this.file.seek(offset);
-        for(int i = 0; i<valueType.size(); i++){
-            int tmp = 0;
-            if(this.file.readBoolean() == true){
-                data.add(null);
-                tmp = 1;
+        if(!this.data_cahce.containsKey(offset)){
+            ArrayList<Integer> valueType = this.getValueType();
+            ArrayList data = new ArrayList();
+            this.file.seek(offset);
+            for(int i = 0; i<valueType.size(); i++){
+                int tmp = 0;
+                if(this.file.readBoolean() == true){
+                    data.add(null);
+                    tmp = 1;
+                }
+                switch (valueType.get(i)) {
+                    case -1:
+                        if(tmp == 1){
+                            this.file.readInt();
+                            break;
+                        }
+                        else
+                            data.add(this.file.readInt());
+                        break;
+                    case -2:
+                        if(tmp == 1){
+                            this.file.readLong();
+                            break;
+                        }
+                        else
+                            data.add(this.file.readLong());
+                        break;
+                    case -3:
+                        if(tmp == 1){
+                            this.file.readFloat();
+                            break;
+                        }
+                        else
+                            data.add(this.file.readFloat());
+                        break;
+                    case -4:
+                        if(tmp == 1){
+                            this.file.readDouble();
+                            break;
+                        }
+                        else
+                            data.add(this.file.readDouble());
+                        break;
+                    default:
+                        if(tmp == 1){
+                            this.file.readUTF();
+                            break;
+                        }
+                        else
+                            data.add(Rtrim(this.file.readUTF()));
+                        break;
+                }
             }
-            switch (valueType.get(i)) {
-                case -1:
-                    if(tmp == 1){
-                        this.file.readInt();
-                        break;
-                    }
-                    else
-                        data.add(this.file.readInt());
-                    break;
-                case -2:
-                    if(tmp == 1){
-                        this.file.readLong();
-                        break;
-                    }
-                    else
-                        data.add(this.file.readLong());
-                    break;
-                case -3:
-                    if(tmp == 1){
-                        this.file.readFloat();
-                        break;
-                    }
-                    else
-                        data.add(this.file.readFloat());
-                    break;
-                case -4:
-                    if(tmp == 1){
-                        this.file.readDouble();
-                        break;
-                    }
-                    else
-                        data.add(this.file.readDouble());
-                    break;
-                default:
-                    if(tmp == 1){
-                        this.file.readUTF();
-                        break;
-                    }
-                    else
-                        data.add(Rtrim(this.file.readUTF()));
-                    break;
+            /*
+            cache
+             */
+            ArrayList tmpdata = new ArrayList();
+            tmpdata.add(false);
+            tmpdata.add(data);
+            this.data_cahce.put(offset, tmpdata);
+            if(this.data_cahce.size()>maxDataCache){
+                this.data_cahce.clear();
             }
+            return data;
         }
-        return data;
+        else{
+            return (ArrayList)(this.data_cahce.get(offset).get(1));
+        }
     }
 
     public void updateRoot(int id, int location) throws IOException{
@@ -662,6 +695,9 @@ public class FileManager {
     }
 
     public void deleteValue(int offset) throws IOException{
+        if(this.data_cahce.containsKey(offset)){
+            this.data_cahce.remove(offset);
+        }
         ArrayList<Integer> valueType = getValueType();
         ArrayList<Integer> node_len = this.calNodeLen(valueType);
         int total = node_len.get(0);

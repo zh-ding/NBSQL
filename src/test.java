@@ -12,7 +12,7 @@ import java.util.Set;
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException, DatabaseException {
 
-        int num = 1000; // data
+        int num = 10000; // data
         int table_num = 2; // >= 2
 
         Database db = new Database("test");
@@ -38,9 +38,10 @@ public class test {
         db.useDB("test");
 
 
-        long starTime=System.currentTimeMillis();
+
 
         System.out.println("----------------------start testing insert-----------------");
+        long starTime=System.currentTimeMillis();
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
             for(int j = 0; j<num; j++){
@@ -50,10 +51,10 @@ public class test {
                 table.InsertRow(arr);
             }
         }
-
         long endTime=System.currentTimeMillis();
         long time = endTime - starTime;
-        System.out.println(time);
+        System.out.println(Float.toString(time/(1000))+"s");
+
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
             Generator<ArrayList> tmp =  table.SelectRows(null, null);
