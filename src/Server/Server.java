@@ -58,23 +58,31 @@ public class Server {
                         line = in.readUTF();
                         System.out.println(socket + line);
 
-                        SQLLexer lexer = new SQLLexer(CharStreams.fromString(line));
-                        lexer.removeErrorListeners();
-                        lexer.addErrorListener(new ThrowingErrorListener());
-                        SQLParser parser = new SQLParser(new CommonTokenStream(lexer));
-                        parser.removeErrorListeners();
-                        parser.addErrorListener(new ThrowingErrorListener());
-                        SQLParser.Sql_stmtContext stmt = parser.sql_stmt();
-                        SQLVisitorStmt visitor = new SQLVisitorStmt(db, out);
-                        stmt.accept(visitor);
+                        try {
+
+                            SQLLexer lexer = new SQLLexer(CharStreams.fromString(line));
+                            lexer.removeErrorListeners();
+                            lexer.addErrorListener(new ThrowingErrorListener());
+                            SQLParser parser = new SQLParser(new CommonTokenStream(lexer));
+                            parser.removeErrorListeners();
+                            parser.addErrorListener(new ThrowingErrorListener());
+                            SQLParser.Sql_stmtContext stmt = parser.sql_stmt();
+                            SQLVisitorStmt visitor = new SQLVisitorStmt(db, out);
+                            stmt.accept(visitor);
+                        }catch (Exception e){
+                            try {
+                                System.out.println(e.toString());
+                                out.writeUTF(e.getMessage());
+                            }catch (Exception e1){
+                                out.writeUTF("!" + e.toString() + "\n");
+                            }
+                        }
                         out.writeUTF("over");
 
-                    } catch (Exception i) {
+                    } catch (IOException i) {
                         System.out.println(i);
-                        out.writeUTF(i.getMessage());
                         out.writeUTF("over");
                         System.out.println(i);
-                        //break;
                     }
 
                 }
