@@ -108,7 +108,7 @@ public class Database {
 
     public Database(String db_name) throws IOException, DatabaseException{
         this.tables = new ArrayList<Table>();
-        this.newDB(db_name);
+        //this.newDB(db_name);
         this.useDB(db_name);
     }
 

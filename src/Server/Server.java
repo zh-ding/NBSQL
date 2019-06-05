@@ -71,8 +71,8 @@ public class Server {
                             stmt.accept(visitor);
                         }catch (Exception e){
                             try {
-                                System.out.println(e.toString());
-                                out.writeUTF(e.getMessage());
+                                System.out.println("1: " + e.toString());
+                                out.writeUTF("!" + e.getMessage() + "\n");
                             }catch (Exception e1){
                                 out.writeUTF("!" + e.toString() + "\n");
                             }
@@ -80,18 +80,17 @@ public class Server {
                         out.writeUTF("over");
 
                     } catch (IOException i) {
-                        System.out.println(i);
+                        System.out.println("2: " + i);
                         out.writeUTF("over");
-                        System.out.println(i);
+
                     }
 
                 }
                 socket.close();
             }catch (IOException e){
-                System.out.println(e);
-            }
-            catch (DatabaseException e){
-                System.out.println(e);
+                System.out.println("3 " + e);
+            } catch (DatabaseException e){
+                System.out.println("4: " + e);
             }
         }
     }
