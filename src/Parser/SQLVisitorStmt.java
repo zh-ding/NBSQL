@@ -331,8 +331,8 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         {
             Table t = this.db.getTable(n);
             tables.add(t);
-            tableColumnNames.add(t.getColumnName());
-            tableColumnTypes.add(t.getColumnType());
+            tableColumnNames.add(new ArrayList<String>(t.getColumnName().subList(1,t.getColumnName().size())));
+            tableColumnTypes.add(new ArrayList<Integer>(t.getColumnType().subList(1,t.getColumnType().size())));
         }
 
         //获得每一列名称
@@ -421,7 +421,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                         String t = ctx.result_column(i).table_name().accept(new SQLVisitorNames());
                         ArrayList<String> name_temp = tableColumnNames.get(joinCondition.tableNames.indexOf(t));
                         for (String c : name_temp) {
-                            result_output.add(r.get(column_queries.indexOf(c)));
+                            result_output.add(r.get(column_queries.indexOf(t + "." + c)));
                         }
                     } else {
                         DataTypes data = ctx.result_column(i).expr().accept(new SQLVisitorEvalValue(column_queries, column_types_queries, r));
@@ -502,7 +502,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                 ArrayList<String> temp = new ArrayList<>();
                 tableList.add(tableName);
                 ArrayList<ArrayList<String>> columnList = new ArrayList<>();
-                columnList.add(column_names);
+                columnList.add(tableColumnNames);
                 ctx.result_column(i).expr().accept(new SQLVisitorEvalColumns(temp,tableList,columnList,false));
                 column_queries.addAll(temp);
             }
