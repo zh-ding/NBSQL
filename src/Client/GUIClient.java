@@ -14,7 +14,7 @@ public class GUIClient {
 
     JFrame frame;
     JTextField tf;
-    JTextPane tp;
+    JTextPane tp, history;
     Client c = null;
     enum textType  {
         REGULAR,
@@ -85,8 +85,12 @@ public class GUIClient {
         send.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
+                String sql = "";
+                textType tt = textType.REGULAR;
                 try{
-                    c.sendSql(tf.getText());
+                    sql = tf.getText();
+                    c.sendSql(sql);
                     while(true){
                         String text = c.receiveText();
                         System.out.println(text);
@@ -95,6 +99,7 @@ public class GUIClient {
                         if(text.startsWith("@")){
                             appendText(text.substring(1), textType.INFO);
                         }else if(text.startsWith("!")){
+                            tt = textType.ERROR;
                             appendText(text.substring(1), textType.ERROR);
                         }else{
                             appendText(text, textType.REGULAR);
@@ -104,6 +109,8 @@ public class GUIClient {
                     System.out.println(e1);
                     appendText("Connection Error\n", textType.ERROR);
                 }
+
+                appendSql(sql, tt);
             }
         });
         JButton reset = new JButton("Reset");
@@ -119,11 +126,19 @@ public class GUIClient {
         panel.add(send);
         panel.add(reset);
 
+        JPanel center = new JPanel(new GridBagLayout());
+
         this.tp = new JTextPane();
+        JScrollPane jsp1 = new JScrollPane(this.tp);
+
+        this.history = new JTextPane();
+        JScrollPane jsp2 = new JScrollPane(this.history);
 
         this.frame.getContentPane().add(BorderLayout.NORTH, mb);
         this.frame.getContentPane().add(BorderLayout.SOUTH, panel);
-        this.frame.getContentPane().add(BorderLayout.CENTER, this.tp); // Adds Button to content pane of frame
+        this.frame.getContentPane().add(BorderLayout.CENTER, jsp1);
+        this.frame.getContentPane().add(BorderLayout.EAST, jsp2);
+        jsp2.setPreferredSize(new Dimension(frame.getWidth()/3,frame.getHeight()));
         this.frame.setVisible(true);
 
         createConnectDialog();
@@ -174,7 +189,31 @@ public class GUIClient {
                 }
                 break;
             }
+        }
+    }
 
+    void appendSql(String s, textType t){
+        StyledDocument doc = this.history.getStyledDocument();
+        switch (t){
+            case REGULAR: {
+                try {
+                    doc.insertString(doc.getLength(), s + "\n", null);
+                } catch (Exception e1) {
+                    System.out.println(e1);
+                }
+                break;
+            }
+            case ERROR: {
+                SimpleAttributeSet keyWord = new SimpleAttributeSet();
+                StyleConstants.setForeground(keyWord, Color.RED);
+
+                try {
+                    doc.insertString(doc.getLength(), s + "\n", keyWord);
+                } catch (Exception e1) {
+                    System.out.println(e1);
+                }
+                break;
+            }
         }
     }
 
