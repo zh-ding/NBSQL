@@ -643,9 +643,6 @@ public class Table {
         int index = this.column_name.indexOf((String)arr.get(0));
 
         for(int i = 0; i < node.keyNum; ++i){
-            System.out.println(node.keyNum);
-            System.out.println(node.keys);
-            System.out.println(node.pointers);
             key2.set(0, this.file.readData(node.pointers.get(i)).get(index));
             int cmp = node.compare(key1, key2);
             if(cmp == 2)

@@ -11,8 +11,8 @@ import java.util.Set;
 
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException, DatabaseException {
-        
-        int num = 10000; // data to be even
+
+        int num = 1000; // data to be even
         int table_num = 2; // >= 2
 
         Database db = new Database("test");
@@ -48,9 +48,7 @@ public class test {
                 table.InsertRow(arr);
             }
         }
-        long endTime=System.currentTimeMillis();
-        long time = endTime - starTime;
-        System.out.println(Float.toString(time/(1000))+"s");
+
 
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
@@ -67,11 +65,14 @@ public class test {
                 System.out.println("table " + Integer.toString(i) + " insert fail");
             }
         }
+        long endTime=System.currentTimeMillis();
+        long time = endTime - starTime;
+        System.out.println(time+"ms");
 
         System.out.println("----------------------start testing Persistent storage-----------------");
         db.useDB("test_for_use");
         db.useDB("test");
-
+        starTime=System.currentTimeMillis();
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
             Generator<ArrayList> tmp =  table.SelectRows(null, null);
@@ -87,14 +88,14 @@ public class test {
                 System.out.println("table " + Integer.toString(i) + " reload fail");
             }
         }
-
+        endTime=System.currentTimeMillis();
+        time = endTime - starTime;
+        System.out.println(time+"ms");
         //db.tables.get(0).index_forest.get(0).printBPlusTree();
 
 
         System.out.println("----------------------start testing delete-----------------");
-
-
-
+        starTime=System.currentTimeMillis();
 
         ArrayList test = new ArrayList();
         test.add("m_id");
@@ -121,15 +122,16 @@ public class test {
                 System.out.println("table " + Integer.toString(i) + " delete fail");
             }
         }
-
-
+        endTime=System.currentTimeMillis();
+        time = endTime - starTime;
+        System.out.println(time+"ms");
         System.out.println("----------------------start testing update-----------------");
 
 //        ArrayList arr1 = new ArrayList<>();
 //        arr1.add(0);
 //        arr1.add(Integer.toString(0));
 //        db.tables.get(0).InsertRow(arr1);
-
+        starTime=System.currentTimeMillis();
         ArrayList col_name = new ArrayList();
         col_name.add("name");
         ArrayList new_row = new ArrayList();
@@ -167,7 +169,9 @@ public class test {
                 System.out.println("table " + Integer.toString(i) + " update fail");
             }
         }
-
+        endTime=System.currentTimeMillis();
+        time = endTime - starTime;
+        System.out.println(time+"ms");
         for(int i = 0; i<table_num; i++){
             db.dropTable("test_"+Integer.toString(i));
         }
