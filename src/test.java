@@ -9,11 +9,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Set;
 
+
 public class test {
+
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException, DatabaseException {
 
-
-        int num = 1000; // data to be even
+        int num = 16; // data to be even
         int table_num = 2; // >= 2
 
         Database db = new Database("test");
@@ -29,7 +30,6 @@ public class test {
         boolean[] isNotNull = new boolean[2];
         isNotNull[0] = true;
         isNotNull[1] = false;
-
 
         for(int i =0; i<table_num; ++i){
             s[1] = "name";
@@ -72,7 +72,6 @@ public class test {
         System.out.println("----------------------start testing Persistent storage-----------------");
         db.useDB("test_for_use");
         db.useDB("test");
-        starTime=System.currentTimeMillis();
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
             Generator<ArrayList> tmp =  table.SelectRows(null, null);
@@ -88,10 +87,8 @@ public class test {
                 System.out.println("table " + Integer.toString(i) + " reload fail");
             }
         }
-        //db.tables.get(0).index_forest.get(0).printBPlusTree();
 
         System.out.println("----------------------start testing delete-----------------");
-
 
         starTime = System.nanoTime();
 
@@ -125,10 +122,6 @@ public class test {
 
         System.out.println("----------------------start testing update-----------------");
 
-//        ArrayList arr1 = new ArrayList<>();
-//        arr1.add(0);
-//        arr1.add(Integer.toString(0));
-//        db.tables.get(0).InsertRow(arr1);
         starTime=System.currentTimeMillis();
         ArrayList col_name = new ArrayList();
         col_name.add("name");
@@ -136,8 +129,8 @@ public class test {
         new_row.add("test");
         ArrayList test1 = new ArrayList();
         test1.add("m_id");
-        test1.add(1);
-        test1.add(num/2);
+        test1.add(2);
+        test1.add(-1);
         test1.add(true);
         ArrayList<ArrayList> test_test1 = new ArrayList();
         test_test1.add(test1);
@@ -289,6 +282,8 @@ public class test {
         for(int i = 0; i<table_num; i++){
             db.dropTable("test_"+Integer.toString(i));
         }
+
         db.dropDB("test");
+
     }
 }

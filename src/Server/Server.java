@@ -15,12 +15,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 
 public class Server {
-    public static Map<String, Lock> G_lock = new HashMap<>();
+    public static ConcurrentHashMap<String, Lock> G_lock = new ConcurrentHashMap<>();
 
     public static void main(String[] args) throws Exception {
         try (ServerSocket listener = new ServerSocket(59898)) {
@@ -57,7 +58,6 @@ public class Server {
                     try {
                         line = in.readUTF();
                         System.out.println(socket + line);
-
                         SQLLexer lexer = new SQLLexer(CharStreams.fromString(line));
                         lexer.removeErrorListeners();
                         lexer.addErrorListener(new ThrowingErrorListener());
