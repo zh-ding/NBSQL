@@ -11,7 +11,7 @@ import java.util.Set;
 
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException, DatabaseException {
-        
+
         int num = 1000; // data to be even
 
         int table_num = 2; // >= 2
@@ -49,12 +49,9 @@ public class test {
                 table.InsertRow(arr);
             }
         }
-<<<<<<< HEAD
 
-=======
         long endTime=System.nanoTime();
         System.out.println((endTime-starTime)/1000000.0+"ms");
->>>>>>> e3e1dc119624b7249827a39e8755a2819aaa43ba
 
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
@@ -71,9 +68,6 @@ public class test {
                 System.out.println("table " + Integer.toString(i) + " insert fail");
             }
         }
-        long endTime=System.currentTimeMillis();
-        long time = endTime - starTime;
-        System.out.println(time+"ms");
 
         System.out.println("----------------------start testing Persistent storage-----------------");
         db.useDB("test_for_use");
@@ -94,20 +88,14 @@ public class test {
                 System.out.println("table " + Integer.toString(i) + " reload fail");
             }
         }
-        endTime=System.currentTimeMillis();
-        time = endTime - starTime;
-        System.out.println(time+"ms");
+
         //db.tables.get(0).index_forest.get(0).printBPlusTree();
 
 
         System.out.println("----------------------start testing delete-----------------");
-<<<<<<< HEAD
-        starTime=System.currentTimeMillis();
-=======
 
 
         starTime = System.nanoTime();
->>>>>>> e3e1dc119624b7249827a39e8755a2819aaa43ba
 
         ArrayList test = new ArrayList();
         test.add("m_id");
@@ -134,16 +122,9 @@ public class test {
                 System.out.println("table " + Integer.toString(i) + " delete fail");
             }
         }
-<<<<<<< HEAD
-        endTime=System.currentTimeMillis();
-        time = endTime - starTime;
-        System.out.println(time+"ms");
-=======
-
         endTime = System.nanoTime();
         System.out.println((endTime - starTime) / 1000000.0 + "ms");
 
->>>>>>> e3e1dc119624b7249827a39e8755a2819aaa43ba
         System.out.println("----------------------start testing update-----------------");
 
 //        ArrayList arr1 = new ArrayList<>();
@@ -188,9 +169,6 @@ public class test {
                 System.out.println("table " + Integer.toString(i) + " update fail");
             }
         }
-        endTime=System.currentTimeMillis();
-        time = endTime - starTime;
-        System.out.println(time+"ms");
         for(int i = 0; i<table_num; i++){
             db.dropTable("test_"+Integer.toString(i));
         }
