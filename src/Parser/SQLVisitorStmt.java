@@ -214,6 +214,8 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     public Void visitShow_databases_stmt(SQLParser.Show_databases_stmtContext ctx)
     {
         ArrayList<String> dbs = this.db.showDbs();
+        if(dbs.size() == 0)
+            this.writeStr("Empty set");
         for(String s:dbs)
         {
             this.writeStr(s.toUpperCase() + "\t");
@@ -281,6 +283,8 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                     data.add(null);
                 }
             }
+            if(columns.size() != data.size())
+                throw new ParseCancellationException("!Insert Column count mismatch\n");
             dataAll.add(data);
         }
         for(ArrayList data:dataAll) {
