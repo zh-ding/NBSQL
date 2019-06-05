@@ -102,7 +102,7 @@ public class GUIClient {
                     }
                 }catch (IOException e1){
                     System.out.println(e1);
-                    appendText("Connection Error", textType.ERROR);
+                    appendText("Connection Error\n", textType.ERROR);
                 }
             }
         });
@@ -134,7 +134,7 @@ public class GUIClient {
         if(cd.isOK){
             try {
                 this.c = new Client(cd.ip, cd.port);
-                this.appendText("Connected to " + cd.ip + ":" + cd.port, textType.INFO);
+                this.appendText("Connected to " + cd.ip + ":" + cd.port + "\n", textType.INFO);
             }catch (IOException e){
                 this.appendText("Connection refused\n", textType.ERROR);
             }
@@ -157,7 +157,7 @@ public class GUIClient {
                 StyleConstants.setForeground(keyWord, Color.RED);
 
                 try {
-                    doc.insertString(doc.getLength(), s + "\n", keyWord);
+                    doc.insertString(doc.getLength(), s, keyWord);
                 } catch (Exception e1) {
                     System.out.println(e1);
                 }
@@ -168,7 +168,7 @@ public class GUIClient {
                 StyleConstants.setForeground(keyWord, Color.GREEN);
 
                 try {
-                    doc.insertString(doc.getLength(), s + "\n", keyWord);
+                    doc.insertString(doc.getLength(), s, keyWord);
                 } catch (Exception e1) {
                     System.out.println(e1);
                 }

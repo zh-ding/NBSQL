@@ -59,15 +59,16 @@ public class Server {
                         parser.removeErrorListeners();
                         parser.addErrorListener(new ThrowingErrorListener());
                         SQLParser.Sql_stmtContext stmt = parser.sql_stmt();
-                        output = new StringBuffer();
                         SQLVisitorStmt visitor = new SQLVisitorStmt(db, out);
                         stmt.accept(visitor);
-                        out.writeUTF(output.toString());
                         out.writeUTF("over");
 
-                    } catch (IOException i) {
+                    } catch (Exception i) {
                         System.out.println(i);
-                        break;
+                        out.writeUTF(i.getMessage());
+                        out.writeUTF("over");
+                        System.out.println(i);
+                        //break;
                     }
 
                 }
