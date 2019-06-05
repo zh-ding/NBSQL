@@ -11,8 +11,9 @@ import java.util.Set;
 
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException, DatabaseException {
-
+        
         int num = 1000; // data to be even
+
         int table_num = 2; // >= 2
 
         Database db = new Database("test");
@@ -38,7 +39,7 @@ public class test {
         db.useDB("test");
 
         System.out.println("----------------------start testing insert-----------------");
-        long starTime=System.currentTimeMillis();
+        long starTime=System.nanoTime();
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
             for(int j = 0; j<num; j++){
@@ -48,7 +49,12 @@ public class test {
                 table.InsertRow(arr);
             }
         }
+<<<<<<< HEAD
 
+=======
+        long endTime=System.nanoTime();
+        System.out.println((endTime-starTime)/1000000.0+"ms");
+>>>>>>> e3e1dc119624b7249827a39e8755a2819aaa43ba
 
         for(int i = 0; i<table_num; ++i){
             Table table = db.tables.get(i);
@@ -95,7 +101,13 @@ public class test {
 
 
         System.out.println("----------------------start testing delete-----------------");
+<<<<<<< HEAD
         starTime=System.currentTimeMillis();
+=======
+
+
+        starTime = System.nanoTime();
+>>>>>>> e3e1dc119624b7249827a39e8755a2819aaa43ba
 
         ArrayList test = new ArrayList();
         test.add("m_id");
@@ -122,9 +134,16 @@ public class test {
                 System.out.println("table " + Integer.toString(i) + " delete fail");
             }
         }
+<<<<<<< HEAD
         endTime=System.currentTimeMillis();
         time = endTime - starTime;
         System.out.println(time+"ms");
+=======
+
+        endTime = System.nanoTime();
+        System.out.println((endTime - starTime) / 1000000.0 + "ms");
+
+>>>>>>> e3e1dc119624b7249827a39e8755a2819aaa43ba
         System.out.println("----------------------start testing update-----------------");
 
 //        ArrayList arr1 = new ArrayList<>();
