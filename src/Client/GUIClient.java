@@ -16,7 +16,11 @@ public class GUIClient {
     JTextField tf;
     JTextPane tp;
     Client c = null;
-    enum textType  {REGULAR, ERROR};
+    enum textType  {
+        REGULAR,
+        ERROR,
+        INFO
+    }
 
     public GUIClient() {
         this.frame = new JFrame("NBSQL");
@@ -85,9 +89,16 @@ public class GUIClient {
                     c.sendSql(tf.getText());
                     while(true){
                         String text = c.receiveText();
+                        System.out.println(text);
                         if(text.equals("over"))
                             break;
-                        appendText(text, textType.REGULAR);
+                        if(text.startsWith("@")){
+                            appendText(text.substring(1), textType.INFO);
+                        }else if(text.startsWith("!")){
+                            appendText(text.substring(1), textType.ERROR);
+                        }else{
+                            appendText(text, textType.REGULAR);
+                        }
                     }
                 }catch (IOException e1){
                     System.out.println(e1);
@@ -123,6 +134,7 @@ public class GUIClient {
         if(cd.isOK){
             try {
                 this.c = new Client(cd.ip, cd.port);
+                this.appendText("Connected to " + cd.ip + ":" + cd.port, textType.INFO);
             }catch (IOException e){
                 this.appendText("Connection refused\n", textType.ERROR);
             }
@@ -132,24 +144,37 @@ public class GUIClient {
     void appendText(String s, textType t){
         StyledDocument doc = this.tp.getStyledDocument();
         switch (t){
-            case REGULAR:
+            case REGULAR: {
                 try {
-                    doc.insertString(doc.getLength(), s , null);
-                }catch (Exception e1){
+                    doc.insertString(doc.getLength(), s, null);
+                } catch (Exception e1) {
                     System.out.println(e1);
                 }
                 break;
-            case ERROR:
+            }
+            case ERROR: {
                 SimpleAttributeSet keyWord = new SimpleAttributeSet();
                 StyleConstants.setForeground(keyWord, Color.RED);
-                StyleConstants.setBackground(keyWord, Color.YELLOW);
 
                 try {
                     doc.insertString(doc.getLength(), s + "\n", keyWord);
-                }catch (Exception e1) {
+                } catch (Exception e1) {
                     System.out.println(e1);
                 }
                 break;
+            }
+            case INFO: {
+                SimpleAttributeSet keyWord = new SimpleAttributeSet();
+                StyleConstants.setForeground(keyWord, Color.GREEN);
+
+                try {
+                    doc.insertString(doc.getLength(), s + "\n", keyWord);
+                } catch (Exception e1) {
+                    System.out.println(e1);
+                }
+                break;
+            }
+
         }
     }
 
