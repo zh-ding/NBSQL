@@ -33,8 +33,6 @@ public class Table {
     private String database_name;
     private ArrayList<Boolean> column_isNotNull;
 
-
-
     public Table(String[] names, int[] types, String[] primary_key, String table_name, String database_name, boolean[] isNotNull)
         throws IOException {
         this.database_name = database_name;

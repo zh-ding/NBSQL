@@ -20,10 +20,15 @@ public class Database {
     2 - drop
      */
 
-    public void newDB(String db_name){
+    public void newDB(String db_name) throws DatabaseException{
         db_name = this.path + db_name;
         File db = new File(db_name);
-        db.mkdir();
+        if(db.exists()){
+            throw new DatabaseException("database already exists");
+        }
+        else{
+            db.mkdir();
+        }
     }
 
     public void useDB(String db_name) throws IOException{
@@ -101,17 +106,22 @@ public class Database {
         }
     }
 
-    public Database(String db_name) throws IOException{
+    public Database(String db_name) throws IOException, DatabaseException{
         this.tables = new ArrayList<Table>();
         this.newDB(db_name);
         this.useDB(db_name);
     }
 
     public Table createTable (String[] names, int[] types, String[] primary_key, String table_name, boolean[] isNotNull)
-        throws IOException {
-        Table table = new Table(names, types, primary_key, table_name, this.db_name, isNotNull);
-        this.tables.add(table);
-        return table;
+        throws IOException, DatabaseException {
+        if(this.getTable(table_name) != null){
+            throw new DatabaseException("table already exists");
+        }
+        else{
+            Table table = new Table(names, types, primary_key, table_name, this.db_name, isNotNull);
+            this.tables.add(table);
+            return table;
+        }
     }
 
     public Table getTable (String table_name){

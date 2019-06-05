@@ -36,16 +36,20 @@ public class FileManager {
     private ArrayList<ArrayList> keyType = new ArrayList<>();
     private ArrayList valueType = new ArrayList();
     private static final int maxNodeLength = 1000;
-    private Map<Integer, ArrayList> node_cahce = new HashMap<>();
+    private static Map<String, Map<Integer, ArrayList>> node_cache = new HashMap<>();
     /*
     offset, [ boolean, node  ]
     */
     private static final int maxDataCache = 1000;
-    private Map<Integer, ArrayList> data_cahce = new HashMap<>();
-
+    private static Map<String, Map<Integer, ArrayList>> data_cache = new HashMap<>();
 
     public FileManager(String name) throws IOException{
         this.inputFile = name + ".dat";
+        Map<Integer, ArrayList> data_data_cache = new HashMap<>();
+        Map<Integer, ArrayList> node_node_cache = new HashMap<>();
+        this.data_cache.put(inputFile, data_data_cache);
+        this.node_cache.put(inputFile, node_node_cache);
+
         try {
             this.file = new RandomAccessFile(inputFile, "rw");
         } catch (FileNotFoundException e) {
@@ -125,9 +129,9 @@ public class FileManager {
         ArrayList tmpdata = new ArrayList();
         tmpdata.add(false);
         tmpdata.add(value);
-        this.data_cahce.put(pos, tmpdata);
-        if(this.data_cahce.size()>maxDataCache){
-            this.data_cahce.clear();
+        this.data_cache.get(inputFile).put(pos, tmpdata);
+        if(this.data_cache.get(inputFile).size()>maxDataCache){
+            this.data_cache.get(inputFile).clear();
         }
 
         for(int i = 0; i<valueType.size(); i++){
@@ -202,12 +206,12 @@ public class FileManager {
     }
 
     public void resetNodeCache() throws IOException{
-        for(Integer offset: this.node_cahce.keySet()){
-            if((boolean)this.node_cahce.get(offset).get(0)){
-                this.resetNode((BPlusTreeNode) this.node_cahce.get(offset).get(1));
+        for(Integer offset: this.node_cache.get(inputFile).keySet()){
+            if((boolean)this.node_cache.get(inputFile).get(offset).get(0)){
+                this.resetNode((BPlusTreeNode) this.node_cache.get(inputFile).get(offset).get(1));
             }
         }
-        this.node_cahce.clear();
+        this.node_cache.get(inputFile).clear();
     }
 
     private void resetNode(BPlusTreeNode node) throws IOException{
@@ -258,7 +262,7 @@ public class FileManager {
 
     public void updateNode(BPlusTreeNode node) throws IOException{
 
-        if(!this.node_cahce.containsKey(node.location)) {
+        if(!this.node_cache.get(inputFile).containsKey(node.location)) {
             this.resetNode(node);
             /*
             cache
@@ -266,8 +270,8 @@ public class FileManager {
             ArrayList data = new ArrayList();
             data.add(false);
             data.add(node);
-            this.node_cahce.put(node.location, data);
-            if(this.node_cahce.size() > maxNodeLength){
+            this.node_cache.get(inputFile).put(node.location, data);
+            if(this.node_cache.get(inputFile).size() > maxNodeLength){
                 this.resetNodeCache();
             }
         }
@@ -275,8 +279,8 @@ public class FileManager {
             ArrayList data = new ArrayList();
             data.add(0, true);
             data.add(1, node);
-            this.node_cahce.remove(node.location);
-            this.node_cahce.put(node.location, data);
+            this.node_cache.get(inputFile).remove(node.location);
+            this.node_cache.get(inputFile).put(node.location, data);
         }
     }
 
@@ -440,7 +444,7 @@ public class FileManager {
     }
 
     public BPlusTreeNode readNode(int offset, int id) throws IOException{
-        if(!this.node_cahce.containsKey(offset)){
+        if(!this.node_cache.get(inputFile).containsKey(offset)){
             if(offset == -1){
                 return null;
             }
@@ -504,14 +508,14 @@ public class FileManager {
             ArrayList data = new ArrayList();
             data.add(false);
             data.add(node);
-            this.node_cahce.put(node.location, data);
-            if(this.node_cahce.size() > maxNodeLength){
+            this.node_cache.get(inputFile).put(node.location, data);
+            if(this.node_cache.get(inputFile).size() > maxNodeLength){
                 this.resetNodeCache();
             }
             return node;
         }
         else {
-            return (BPlusTreeNode)(this.node_cahce.get(offset).get(1));
+            return (BPlusTreeNode)(this.node_cache.get(inputFile).get(offset).get(1));
         }
     }
 
@@ -532,7 +536,7 @@ public class FileManager {
         if(offset == -1){
             return null;
         }
-        if(!this.data_cahce.containsKey(offset)){
+        if(!this.data_cache.get(inputFile).containsKey(offset)){
             ArrayList<Integer> valueType = this.getValueType();
             ArrayList data = new ArrayList();
             this.file.seek(offset);
@@ -591,14 +595,14 @@ public class FileManager {
             ArrayList tmpdata = new ArrayList();
             tmpdata.add(false);
             tmpdata.add(data);
-            this.data_cahce.put(offset, tmpdata);
-            if(this.data_cahce.size()>maxDataCache){
-                this.data_cahce.clear();
+            this.data_cache.get(inputFile).put(offset, tmpdata);
+            if(this.data_cache.get(inputFile).size()>maxDataCache){
+                this.data_cache.get(inputFile).clear();
             }
             return data;
         }
         else{
-            return (ArrayList)(this.data_cahce.get(offset).get(1));
+            return (ArrayList)(this.data_cache.get(inputFile).get(offset).get(1));
         }
     }
 
@@ -690,8 +694,8 @@ public class FileManager {
     }
 
     public void deleteNode(int offset, int id) throws IOException{
-        if(this.node_cahce.containsKey(offset)){
-            this.node_cahce.remove(offset);
+        if(this.node_cache.get(inputFile).containsKey(offset)){
+            this.node_cache.remove(offset);
         }
         ArrayList<Integer> keyType = getKeyType(id);
         ArrayList<Integer> node_len = this.calNodeLen(keyType);
@@ -700,8 +704,8 @@ public class FileManager {
     }
 
     public void deleteValue(int offset) throws IOException{
-        if(this.data_cahce.containsKey(offset)){
-            this.data_cahce.remove(offset);
+        if(this.data_cache.get(inputFile).containsKey(offset)){
+            this.data_cache.get(inputFile).remove(offset);
         }
         ArrayList<Integer> valueType = getValueType();
         ArrayList<Integer> node_len = this.calNodeLen(valueType);
@@ -713,7 +717,9 @@ public class FileManager {
     public void deleteFile(){
         try {
             this.resetNodeCache();
-            this.data_cahce.clear();
+            this.data_cache.get(inputFile).clear();
+            this.data_cache.remove(inputFile);
+            this.node_cache.remove(inputFile);
             file.close();
         } catch (IOException e) {
             e.printStackTrace();
