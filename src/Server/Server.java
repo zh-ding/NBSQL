@@ -2,6 +2,7 @@
 package Server;
 
 import Database.Database;
+import Exceptions.DatabaseException;
 import Parser.SQLLexer;
 import Parser.SQLParser;
 import Parser.SQLVisitorStmt;
@@ -12,10 +13,15 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
 
 public class Server {
+    public static Map<String, Lock> G_lock = new HashMap<>();
+
     public static void main(String[] args) throws Exception {
         try (ServerSocket listener = new ServerSocket(59898)) {
             System.out.println("The capitalization server is running...");
@@ -82,6 +88,9 @@ public class Server {
                 }
                 socket.close();
             }catch (IOException e){
+                System.out.println(e);
+            }
+            catch (DatabaseException e){
                 System.out.println(e);
             }
         }

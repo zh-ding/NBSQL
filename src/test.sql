@@ -21,7 +21,6 @@
 ----insert into test1 values(2,2,2,2,'abcabcabcabc');
 --insert into test1 values (2,2,2,2,'abc'),(3,3,3,3,'abc'),(4,4,4,4,'abc'),(5,5,5,5,'def'),(6,6,6,6,'def');
 --select * from test1;
---update
 ----select a+2, b*3, (b+c)*a as f, d/2 from test1;
 ----select * from test1 where (a < 3 OR b >=4) AND (e <> 'def' OR d=6);
 --create table test2(a int primary key, b long, c float, d double, e string(10));

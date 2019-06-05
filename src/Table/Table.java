@@ -12,6 +12,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import Server.Server;
 
 public class Table {
     private ArrayList<String> column_name;
@@ -32,13 +36,23 @@ public class Table {
     public String table_name;
     private String database_name;
     private ArrayList<Boolean> column_isNotNull;
-
+    private String lock_name;
 
 
     public Table(String[] names, int[] types, String[] primary_key, String table_name, String database_name, boolean[] isNotNull)
         throws IOException {
+
         this.database_name = database_name;
         this.table_name = table_name;
+        /*
+        lock
+         */
+        this.lock_name = this.database_name+"@"+this.table_name;
+        if(!Server.G_lock.containsKey(lock_name)){
+            Lock my_lock = new ReentrantLock();
+            Server.G_lock.put(lock_name, my_lock);
+        }
+
         table_name = "./dat/"+database_name+"/"+table_name;
         this.file = new FileManager(table_name);
 
@@ -77,6 +91,10 @@ public class Table {
         throws IOException{
         this.database_name = database_name;
         this.table_name = table_name;
+        /*
+        lock
+         */
+        this.lock_name = this.database_name+"@"+this.table_name;
         table_name = "./dat/"+database_name+"/"+table_name;
         this.file = new FileManager(table_name);
         this.index_key = new ArrayList<>();
@@ -115,30 +133,37 @@ public class Table {
 
     public void InsertRow(ArrayList row)
             throws IOException, BPlusTreeException, TableException {
-
-        this.auto_id ++;
-        if(row.size() != this.column_name.size())
-            row.add(0, this.auto_id);
-        for(int i = 0; i<row.size(); i++){
-            if(row.get(i) == null && this.column_isNotNull.get(i)){
-                throw new TableException("value can't be null");
+        Server.G_lock.get(this.lock_name).lock();
+        try {
+            this.auto_id ++;
+            if(row.size() != this.column_name.size())
+                row.add(0, this.auto_id);
+            for(int i = 0; i<row.size(); i++){
+                if(row.get(i) == null && this.column_isNotNull.get(i)){
+                    throw new TableException("value can't be null");
+                }
             }
+            int offset = file.writeValue(row);
+            for(int i = 0; i < this.index_forest.size(); ++i){
+                ArrayList key = new ArrayList();
+                for(int j = 0; j < this.index_key.get(i).size(); ++j)
+                    key.add(row.get(this.index_key.get(i).get(j)));
+                index_forest.get(i).insert(key, offset);
+            }
+        }finally {
+            Server.G_lock.get(this.lock_name).unlock();
         }
-        int offset = file.writeValue(row);
-        for(int i = 0; i < this.index_forest.size(); ++i){
-            ArrayList key = new ArrayList();
-            for(int j = 0; j < this.index_key.get(i).size(); ++j)
-                key.add(row.get(this.index_key.get(i).get(j)));
-            index_forest.get(i).insert(key, offset);
-        }
-//        this.file.resetNodeCache();
     }
 
     public void DeleteRows(ArrayList<ArrayList<ArrayList>> conditions) throws IOException, BPlusTreeException{
-        for(ArrayList row: SelectRows(conditions, null)){
-            this.DeleteRow(row);
+        Server.G_lock.get(this.lock_name).lock();
+        try{
+            for(ArrayList row: SelectRows(conditions, null)){
+                this.DeleteRow(row);
+            }
+        }finally {
+            Server.G_lock.get(this.lock_name).unlock();
         }
-//        this.file.resetNodeCache();
     }
 
     public void DeleteRow(ArrayList row)throws IOException, BPlusTreeException{
@@ -156,21 +181,25 @@ public class Table {
     }
 
     public void UpdateRow(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_name, ArrayList newRow) throws IOException, BPlusTreeException, TableException{
-        ArrayList<Integer> index = new ArrayList<>();
-        for(int k = 0; k<column_name.size(); ++k){
-            for(int j = 0; j<this.column_name.size(); ++j){
-                if(this.column_name.get(j).compareTo(column_name.get(k).toString()) == 0){
-                    index.add(j);
+        Server.G_lock.get(this.lock_name).lock();
+        try {
+            ArrayList<Integer> index = new ArrayList<>();
+            for(int k = 0; k<column_name.size(); ++k){
+                for(int j = 0; j<this.column_name.size(); ++j){
+                    if(this.column_name.get(j).compareTo(column_name.get(k).toString()) == 0){
+                        index.add(j);
+                    }
                 }
             }
-        }
-//        this.file.resetNodeCache();
-        for(ArrayList row: SelectRows(conditions, this.column_name)){
-            this.DeleteRow(row);
-            for(int k = 0; k<column_name.size(); ++k){
-                row.set(index.get(k), newRow.get(k));
+            for(ArrayList row: SelectRows(conditions, this.column_name)){
+                this.DeleteRow(row);
+                for(int k = 0; k<column_name.size(); ++k){
+                    row.set(index.get(k), newRow.get(k));
+                }
+                this.InsertRow(row);
             }
-            this.InsertRow(row);
+        }finally {
+            Server.G_lock.get(this.lock_name).unlock();
         }
     }
 

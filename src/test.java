@@ -88,9 +88,7 @@ public class test {
                 System.out.println("table " + Integer.toString(i) + " reload fail");
             }
         }
-
         //db.tables.get(0).index_forest.get(0).printBPlusTree();
-
 
         System.out.println("----------------------start testing delete-----------------");
 
