@@ -146,7 +146,13 @@ public class Table {
                 if(row.get(i) == null && this.column_isNotNull.get(i)){
                     throw new TableException("value can't be null");
                 }
+                if(column_type.get(i) >= 0){
+                    if(column_type.get(i) < row.get(i).toString().length()){
+                        throw new TableException("string is too long");
+                    }
+                }
             }
+
             int offset = file.writeValue(row);
             for(int i = 0; i < this.index_forest.size(); ++i){
                 ArrayList key = new ArrayList();

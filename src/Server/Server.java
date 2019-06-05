@@ -87,6 +87,7 @@ public class Server {
                                 out.writeUTF("!" + e.toString() + "\n");
                             }
                         }
+
                         out.writeUTF("over");
 
                     } catch (IOException i) {
