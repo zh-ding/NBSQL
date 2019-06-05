@@ -93,14 +93,44 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
             if(ctx.expr(0).column_name() != null)
             {
                 if(ctx.expr(0).table_name() != null)
+                {
                     table_name1 = ctx.expr(0).table_name().accept(new SQLVisitorNames());
+                    if(tableNames.indexOf(table_name1) < 0)
+                        throw new ParseCancellationException("!Table " + table_name1 + " doesn't exist\n");
+                }
                 column_name1 = ctx.expr(0).column_name().accept(new SQLVisitorNames());
+                if(isMulti)
+                {
+                    ArrayList<String> n = columnNamesMulti.get(tableNames.indexOf(table_name1));
+                    if(n.indexOf(column_name1) < 0)
+                        throw new ParseCancellationException("!Column " + column_name1 + " doesn't exist\n");
+                }
+                else
+                {
+                    if(columnNames.indexOf(column_name1) < 0)
+                        throw new ParseCancellationException("!Column " + column_name1 + " doesn't exist\n");
+                }
             }
             if(ctx.expr(1).column_name() != null)
             {
                 if(ctx.expr(1).table_name() != null)
+                {
                     table_name2 = ctx.expr(1).table_name().accept(new SQLVisitorNames());
+                    if(tableNames.indexOf(table_name2) < 0)
+                        throw new ParseCancellationException("!Table " + table_name2 + " doesn't exist\n");
+                }
                 column_name2 = ctx.expr(1).column_name().accept(new SQLVisitorNames());
+                if(isMulti)
+                {
+                    ArrayList<String> n = columnNamesMulti.get(tableNames.indexOf(table_name2));
+                    if(n.indexOf(column_name2) < 0)
+                        throw new ParseCancellationException("!Column " + column_name2 + " doesn't exist\n");
+                }
+                else
+                {
+                    if(columnNames.indexOf(column_name2) < 0)
+                        throw new ParseCancellationException("!Column " + column_name2 + " doesn't exist\n");
+                }
             }
             if(ctx.expr(0).literal_value() != null)
             {

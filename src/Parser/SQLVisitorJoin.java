@@ -20,6 +20,10 @@ public class SQLVisitorJoin extends SQLBaseVisitor<SQLVisitorJoinConditions>{
         tableNames.add(ctx.table_name().getText().toUpperCase());
         ArrayList<ArrayList<String>> columnNames = new ArrayList<>();
         ArrayList<ArrayList<Integer>> columnTypes = new ArrayList<>();
+        if(db.getTable(tableNames.get(0)) == null)
+        {
+            throw new ParseCancellationException("!Table " + tableNames.get(0) + " doesn't exist\n");
+        }
         columnNames.add(db.getTable(tableNames.get(0)).getColumnName());
         columnTypes.add(db.getTable(tableNames.get(0)).getColumnType());
         ArrayList<Integer> joinTypes = new ArrayList<>();
@@ -28,6 +32,10 @@ public class SQLVisitorJoin extends SQLBaseVisitor<SQLVisitorJoinConditions>{
         {
             String name = c.table_name().getText().toUpperCase();
             tableNames.add(name);
+            if(db.getTable(name) == null)
+            {
+                throw new ParseCancellationException("!Table " + name + " doesn't exist\n");
+            }
             columnNames.add(db.getTable(name).getColumnName());
             columnTypes.add(db.getTable(name).getColumnType());
             if(c.K_OUTER() != null)

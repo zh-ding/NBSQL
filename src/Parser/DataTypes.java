@@ -1,6 +1,6 @@
 package Parser;
 
-import Exceptions.ParserException;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 public class DataTypes {
     int type;
@@ -51,7 +51,7 @@ public class DataTypes {
         this.bool_data = data;
     }
 
-    public DataTypes add(DataTypes b) throws ParserException
+    public DataTypes add(DataTypes b) throws ParseCancellationException
     {
         if(this.type == -1 || b.type == -1)
             return new DataTypes(null);
@@ -69,7 +69,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.int_data + b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 1:
@@ -84,7 +84,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.long_data + b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 2:
@@ -99,7 +99,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.float_data + b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 3:
@@ -114,15 +114,15 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.double_data + b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             default:
-                throw new ParserException("invalid expression");
+                throw new ParseCancellationException("invalid expression");
         }
     }
 
-    public DataTypes minus(DataTypes b) throws ParserException
+    public DataTypes minus(DataTypes b) throws ParseCancellationException
     {
         if(this.type == -1 || b.type == -1)
             return new DataTypes(null);
@@ -140,7 +140,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.int_data - b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 1:
@@ -155,7 +155,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.long_data - b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 2:
@@ -170,7 +170,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.float_data - b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 3:
@@ -185,15 +185,15 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.double_data - b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             default:
-                throw new ParserException("invalid expression");
+                throw new ParseCancellationException("invalid expression");
         }
     }
 
-    public DataTypes multiply(DataTypes b) throws ParserException
+    public DataTypes multiply(DataTypes b) throws ParseCancellationException
     {
         if(this.type == -1 || b.type == -1)
             return new DataTypes(null);
@@ -211,7 +211,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.int_data * b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 1:
@@ -226,7 +226,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.long_data * b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 2:
@@ -241,7 +241,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.float_data * b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 3:
@@ -256,15 +256,15 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.double_data * b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             default:
-                throw new ParserException("invalid expression");
+                throw new ParseCancellationException("invalid expression");
         }
     }
 
-    public DataTypes divide(DataTypes b) throws ParserException
+    public DataTypes divide(DataTypes b) throws ParseCancellationException
     {
         if(this.type == -1 || b.type == -1)
             return new DataTypes(null);
@@ -282,7 +282,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.int_data / b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 1:
@@ -297,7 +297,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.long_data / b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 2:
@@ -312,7 +312,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.float_data / b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 3:
@@ -327,15 +327,15 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.double_data / b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             default:
-                throw new ParserException("invalid expression");
+                throw new ParseCancellationException("invalid expression");
         }
     }
 
-    public DataTypes mod(DataTypes b) throws ParserException
+    public DataTypes mod(DataTypes b) throws ParseCancellationException
     {
         if(this.type == -1 || b.type == -1)
             return new DataTypes(null);
@@ -353,7 +353,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.int_data % b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
             case 1:
                 switch (b.type)
@@ -367,7 +367,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.long_data % b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 2:
@@ -382,7 +382,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.float_data % b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 3:
@@ -397,15 +397,15 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.double_data % b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             default:
-                throw new ParserException("invalid expression");
+                throw new ParseCancellationException("invalid expression");
         }
     }
 
-    public DataTypes notEqual(DataTypes b) throws ParserException
+    public DataTypes notEqual(DataTypes b) throws ParseCancellationException
     {
         if(this.type == -1 || b.type == -1)
             return new DataTypes(false);
@@ -423,7 +423,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.int_data != b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 1:
@@ -438,7 +438,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.long_data != b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 2:
@@ -453,7 +453,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.float_data != b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 3:
@@ -468,7 +468,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.double_data != b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
             case 4:
                 switch (b.type)
@@ -476,7 +476,7 @@ public class DataTypes {
                     case 4:
                         return new DataTypes(!this.string_data.equals(b.string_data));
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
             case 5:
                 switch (b.type)
@@ -484,14 +484,14 @@ public class DataTypes {
                     case 5:
                         return new DataTypes(this.bool_data != b.bool_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
             default:
-                throw new ParserException("invalid expression");
+                throw new ParseCancellationException("invalid expression");
         }
     }
 
-    public DataTypes equal(DataTypes b) throws ParserException
+    public DataTypes equal(DataTypes b) throws ParseCancellationException
     {
         if(this.type == -1 || b.type == -1)
             return new DataTypes(false);
@@ -509,7 +509,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.int_data == b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 1:
@@ -524,7 +524,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.long_data == b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 2:
@@ -539,7 +539,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.float_data == b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 3:
@@ -554,7 +554,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.double_data == b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
             case 4:
                 switch (b.type)
@@ -562,7 +562,7 @@ public class DataTypes {
                     case 4:
                         return new DataTypes(this.string_data.equals(b.string_data));
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
             case 5:
                 switch (b.type)
@@ -570,14 +570,14 @@ public class DataTypes {
                     case 5:
                         return new DataTypes(this.bool_data == b.bool_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
             default:
-                throw new ParserException("invalid expression");
+                throw new ParseCancellationException("invalid expression");
         }
     }
 
-    public DataTypes greaterEqual(DataTypes b) throws ParserException
+    public DataTypes greaterEqual(DataTypes b) throws ParseCancellationException
     {
         if(this.type == -1 || b.type == -1)
             return new DataTypes(false);
@@ -595,7 +595,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.int_data >= b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 1:
@@ -610,7 +610,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.long_data >= b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 2:
@@ -625,7 +625,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.float_data >= b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 3:
@@ -640,7 +640,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.double_data >= b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
             case 4:
                 switch (b.type)
@@ -648,14 +648,14 @@ public class DataTypes {
                     case 4:
                         return new DataTypes(this.string_data.compareTo(b.string_data)>=0);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
             default:
-                throw new ParserException("invalid expression");
+                throw new ParseCancellationException("invalid expression");
         }
     }
 
-    public DataTypes greater(DataTypes b) throws ParserException
+    public DataTypes greater(DataTypes b) throws ParseCancellationException
     {
         if(this.type == -1 || b.type == -1)
             return new DataTypes(false);
@@ -673,7 +673,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.int_data > b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 1:
@@ -688,7 +688,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.long_data > b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 2:
@@ -703,7 +703,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.float_data > b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 3:
@@ -718,7 +718,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.double_data > b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
             case 4:
                 switch (b.type)
@@ -726,14 +726,14 @@ public class DataTypes {
                     case 4:
                         return new DataTypes(this.string_data.compareTo(b.string_data)>0);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
             default:
-                throw new ParserException("invalid expression");
+                throw new ParseCancellationException("invalid expression");
         }
     }
 
-    public DataTypes lower(DataTypes b) throws ParserException
+    public DataTypes lower(DataTypes b) throws ParseCancellationException
     {
         if(this.type == -1 || b.type == -1)
             return new DataTypes(false);
@@ -751,7 +751,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.int_data < b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 1:
@@ -766,7 +766,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.long_data < b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 2:
@@ -781,7 +781,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.float_data < b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 3:
@@ -796,7 +796,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.double_data < b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
             case 4:
                 switch (b.type)
@@ -804,14 +804,14 @@ public class DataTypes {
                     case 4:
                         return new DataTypes(this.string_data.compareTo(b.string_data)<0);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
             default:
-                throw new ParserException("invalid expression");
+                throw new ParseCancellationException("invalid expression");
         }
     }
 
-    public DataTypes lowerEqual(DataTypes b) throws ParserException
+    public DataTypes lowerEqual(DataTypes b) throws ParseCancellationException
     {
         if(this.type == -1 || b.type == -1)
             return new DataTypes(false);
@@ -829,7 +829,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.int_data <= b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 1:
@@ -844,7 +844,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.long_data <= b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 2:
@@ -859,7 +859,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.float_data <= b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
 
             case 3:
@@ -874,7 +874,7 @@ public class DataTypes {
                     case 3:
                         return new DataTypes(this.double_data <= b.double_data);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
             case 4:
                 switch (b.type)
@@ -882,14 +882,14 @@ public class DataTypes {
                     case 4:
                         return new DataTypes(this.string_data.compareTo(b.string_data)<=0);
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
             default:
-                throw new ParserException("invalid expression");
+                throw new ParseCancellationException("invalid expression");
         }
     }
 
-    public Void neg() throws ParserException
+    public Void neg() throws ParseCancellationException
     {
         switch(this.type)
         {
@@ -911,7 +911,7 @@ public class DataTypes {
                 this.bool_data = !this.bool_data;
                 break;
             default:
-                throw new ParserException("invalid expression");
+                throw new ParseCancellationException("invalid expression");
         }
         return null;
     }
@@ -922,7 +922,7 @@ public class DataTypes {
         return null;
     }
 
-    public DataTypes and(DataTypes b) throws ParserException
+    public DataTypes and(DataTypes b) throws ParseCancellationException
     {
         switch(this.type)
         {
@@ -932,14 +932,14 @@ public class DataTypes {
                     this.bool_data = this.bool_data && b.bool_data;
                     break;
                 default:
-                    throw new ParserException("invalid expression");
+                    throw new ParseCancellationException("invalid expression");
             }
             default:
-                throw new ParserException("invalid expression");
+                throw new ParseCancellationException("invalid expression");
         }
     }
 
-    public DataTypes or(DataTypes b) throws ParserException
+    public DataTypes or(DataTypes b) throws ParseCancellationException
     {
         switch(this.type)
         {
@@ -949,10 +949,10 @@ public class DataTypes {
                         this.bool_data = this.bool_data || b.bool_data;
                         break;
                     default:
-                        throw new ParserException("invalid expression");
+                        throw new ParseCancellationException("invalid expression");
                 }
             default:
-                throw new ParserException("invalid expression");
+                throw new ParseCancellationException("invalid expression");
         }
     }
 }

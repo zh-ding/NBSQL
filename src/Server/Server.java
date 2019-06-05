@@ -58,32 +58,41 @@ public class Server {
                     try {
                         line = in.readUTF();
                         System.out.println(socket + line);
-                        SQLLexer lexer = new SQLLexer(CharStreams.fromString(line));
-                        lexer.removeErrorListeners();
-                        lexer.addErrorListener(new ThrowingErrorListener());
-                        SQLParser parser = new SQLParser(new CommonTokenStream(lexer));
-                        parser.removeErrorListeners();
-                        parser.addErrorListener(new ThrowingErrorListener());
-                        SQLParser.Sql_stmtContext stmt = parser.sql_stmt();
-                        SQLVisitorStmt visitor = new SQLVisitorStmt(db, out);
-                        stmt.accept(visitor);
+
+                        try {
+
+                            SQLLexer lexer = new SQLLexer(CharStreams.fromString(line));
+                            lexer.removeErrorListeners();
+                            lexer.addErrorListener(new ThrowingErrorListener());
+                            SQLParser parser = new SQLParser(new CommonTokenStream(lexer));
+                            parser.removeErrorListeners();
+                            parser.addErrorListener(new ThrowingErrorListener());
+                            SQLParser.Sql_stmtContext stmt = parser.sql_stmt();
+                            SQLVisitorStmt visitor = new SQLVisitorStmt(db, out);
+                            stmt.accept(visitor);
+                        }catch (Exception e){
+                            try {
+                                System.out.println("1: " + e.toString());
+                                out.writeUTF("!" + e.getMessage() + "\n");
+                            }catch (Exception e1){
+                                out.writeUTF("!" + e.toString() + "\n");
+                            }
+                        }
+
                         out.writeUTF("over");
 
-                    } catch (Exception i) {
-                        System.out.println(i);
-                        out.writeUTF(i.getMessage());
+                    } catch (IOException i) {
+                        System.out.println("2: " + i);
                         out.writeUTF("over");
-                        System.out.println(i);
-                        //break;
+
                     }
 
                 }
                 socket.close();
             }catch (IOException e){
-                System.out.println(e);
-            }
-            catch (DatabaseException e){
-                System.out.println(e);
+                System.out.println("3 " + e);
+            } catch (DatabaseException e){
+                System.out.println("4: " + e);
             }
         }
     }

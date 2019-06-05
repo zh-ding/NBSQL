@@ -1,6 +1,5 @@
 package Parser;
 
-import Exceptions.ParserException;
 import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.util.ArrayList;
@@ -108,7 +107,7 @@ public class SQLVisitorEvalValue extends SQLBaseVisitor<DataTypes>{
             else if(ctx.K_OR() != null)
                 return a.or(b);
 
-        }catch (ParserException e)
+        }catch (Exception e)
         {
             throw new ParseCancellationException("!" + e.getMessage() + "\n");
         }
