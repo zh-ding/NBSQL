@@ -12,8 +12,8 @@ import java.util.Set;
 public class test {
     public static void main(String[] args) throws BPlusTreeException,IOException, TableException, DatabaseException {
 
-        int num = 1000; // data to be even
 
+        int num = 1000; // data to be even
         int table_num = 2; // >= 2
 
         Database db = new Database("test");

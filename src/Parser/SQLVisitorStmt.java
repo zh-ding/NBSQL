@@ -22,7 +22,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     private Void writeStr(String s)
     {
         try {
-            output.writeBytes(s);
+            output.writeUTF(s);
         }
         catch (IOException e)
         {
