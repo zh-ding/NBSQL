@@ -640,7 +640,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         conditions.add(new ArrayList<ArrayList>());
 
         if(ctx.K_WHERE() != null) {
-            ctx.expr().get(ctx.expr().size() - 1).accept(new SQLVisitorWhereClause(tableColumnNames, tableColumnTypes));
+            conditions = ctx.expr().get(ctx.expr().size() - 1).accept(new SQLVisitorWhereClause(tableColumnNames, tableColumnTypes));
         }
         else
         {

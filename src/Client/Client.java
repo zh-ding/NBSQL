@@ -43,6 +43,8 @@ public class Client {
                 String sql = "";
                 while (fis.available() > 0) {
                     current = (char) fis.read();
+                    if(current == '\n')
+                        continue;
                     sql = sql + current;
                     if (current == ';')
                         break;

@@ -1,5 +1,30 @@
-use database DB1 successID	NAME	
-1	qwerty                                                                                                                                                                                                                                                          	
-4	qaz                                                                                                                                                                                                                                                             	
-2	as                                                                                                                                                                                                                                                              	
-3	asdfg                                                                                                                                                                                                                                                           	
+@create table AVENGERS success
+@drop table success
+@create table AVENGERS success
+@Insert success
+@Insert success
+@Insert success
+@Insert success
+@Insert success
+@delete rows success
+@update rows success
+@create table VILLAIN success
+@Insert success
+@Insert success
+@Insert success
+@Insert success
+ID	INT
+NAME	STRING(32)
+POWER	INT
+WEIGHT	FLOAT
+HEIGHT	DOUBLE
+AVENGERS.NAME	VILLAIN.NAME	VILLAIN.POWER	
+Hella	Thor	90	
+ID	NAME	POWER	WEIGHT	HEIGHT	
+10	Captain	50	78.1	1.85	
+3	Thor	90	92.1	1.89	
+7	IronMan	85	82.1	1.76	
+4	rocket	40	42.1	0.76	
+5	Groot	10	182.1	2.76	
+ID	NAME	
+4	rocket	

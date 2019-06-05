@@ -4,6 +4,7 @@ import BPlusTree.BPlusTree;
 import BPlusTree.BPlusTreeInnerNode;
 import BPlusTree.BPlusTreeLeafNode;
 import BPlusTree.BPlusTreeNode;
+import Server.Server;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -35,20 +36,20 @@ public class FileManager {
     */
     private ArrayList<ArrayList> keyType = new ArrayList<>();
     private ArrayList valueType = new ArrayList();
-    private static final int maxNodeLength = 1000;
-    private static Map<String, Map<Integer, ArrayList>> node_cache = new HashMap<>();
-    /*
-    offset, [ boolean, node  ]
-    */
-    private static final int maxDataCache = 1000;
-    private static Map<String, Map<Integer, ArrayList>> data_cache = new HashMap<>();
+
 
     public FileManager(String name) throws IOException{
         this.inputFile = name + ".dat";
-        Map<Integer, ArrayList> data_data_cache = new HashMap<>();
-        Map<Integer, ArrayList> node_node_cache = new HashMap<>();
-        this.data_cache.put(inputFile, data_data_cache);
-        this.node_cache.put(inputFile, node_node_cache);
+        if(!Server.node_cache.containsKey(inputFile)){
+            Map<Integer, ArrayList> node_node_cache = new HashMap<>();
+            Server.node_cache.put(inputFile, node_node_cache);
+        }
+        if(!Server.data_cache.containsKey(inputFile)){
+            Map<Integer, ArrayList> data_data_cache = new HashMap<>();
+            Server.data_cache.put(inputFile, data_data_cache);
+        }
+
+
 
         try {
             this.file = new RandomAccessFile(inputFile, "rw");
@@ -129,9 +130,9 @@ public class FileManager {
         ArrayList tmpdata = new ArrayList();
         tmpdata.add(false);
         tmpdata.add(value);
-        this.data_cache.get(inputFile).put(pos, tmpdata);
-        if(this.data_cache.get(inputFile).size()>maxDataCache){
-            this.data_cache.get(inputFile).clear();
+        Server.data_cache.get(inputFile).put(pos, tmpdata);
+        if(Server.data_cache.get(inputFile).size()>Server.maxDataCache){
+            Server.data_cache.get(inputFile).clear();
         }
 
         for(int i = 0; i<valueType.size(); i++){
@@ -206,12 +207,12 @@ public class FileManager {
     }
 
     public void resetNodeCache() throws IOException{
-        for(Integer offset: this.node_cache.get(inputFile).keySet()){
-            if((boolean)this.node_cache.get(inputFile).get(offset).get(0)){
-                this.resetNode((BPlusTreeNode) this.node_cache.get(inputFile).get(offset).get(1));
+        for(Integer offset: Server.node_cache.get(inputFile).keySet()){
+            if((boolean)Server.node_cache.get(inputFile).get(offset).get(0)){
+                this.resetNode((BPlusTreeNode) Server.node_cache.get(inputFile).get(offset).get(1));
             }
         }
-        this.node_cache.get(inputFile).clear();
+        Server.node_cache.get(inputFile).clear();
     }
 
     private void resetNode(BPlusTreeNode node) throws IOException{
@@ -262,7 +263,7 @@ public class FileManager {
 
     public void updateNode(BPlusTreeNode node) throws IOException{
 
-        if(!this.node_cache.get(inputFile).containsKey(node.location)) {
+        if(!Server.node_cache.get(inputFile).containsKey(node.location)) {
             this.resetNode(node);
             /*
             cache
@@ -270,8 +271,8 @@ public class FileManager {
             ArrayList data = new ArrayList();
             data.add(false);
             data.add(node);
-            this.node_cache.get(inputFile).put(node.location, data);
-            if(this.node_cache.get(inputFile).size() > maxNodeLength){
+            Server.node_cache.get(inputFile).put(node.location, data);
+            if(Server.node_cache.get(inputFile).size() > Server.maxNodeLength){
                 this.resetNodeCache();
             }
         }
@@ -279,8 +280,8 @@ public class FileManager {
             ArrayList data = new ArrayList();
             data.add(0, true);
             data.add(1, node);
-            this.node_cache.get(inputFile).remove(node.location);
-            this.node_cache.get(inputFile).put(node.location, data);
+            Server.node_cache.get(inputFile).remove(node.location);
+            Server.node_cache.get(inputFile).put(node.location, data);
         }
     }
 
@@ -444,7 +445,8 @@ public class FileManager {
     }
 
     public BPlusTreeNode readNode(int offset, int id) throws IOException{
-        if(!this.node_cache.get(inputFile).containsKey(offset)){
+        System.out.println(inputFile);
+        if(!Server.node_cache.get(inputFile).containsKey(offset)){
             if(offset == -1){
                 return null;
             }
@@ -508,14 +510,14 @@ public class FileManager {
             ArrayList data = new ArrayList();
             data.add(false);
             data.add(node);
-            this.node_cache.get(inputFile).put(node.location, data);
-            if(this.node_cache.get(inputFile).size() > maxNodeLength){
+            Server.node_cache.get(inputFile).put(node.location, data);
+            if(Server.node_cache.get(inputFile).size() > Server.maxNodeLength){
                 this.resetNodeCache();
             }
             return node;
         }
         else {
-            return (BPlusTreeNode)(this.node_cache.get(inputFile).get(offset).get(1));
+            return (BPlusTreeNode)(Server.node_cache.get(inputFile).get(offset).get(1));
         }
     }
 
@@ -536,7 +538,7 @@ public class FileManager {
         if(offset == -1){
             return null;
         }
-        if(!this.data_cache.get(inputFile).containsKey(offset)){
+        if(!Server.data_cache.get(inputFile).containsKey(offset)){
             ArrayList<Integer> valueType = this.getValueType();
             ArrayList data = new ArrayList();
             this.file.seek(offset);
@@ -595,14 +597,14 @@ public class FileManager {
             ArrayList tmpdata = new ArrayList();
             tmpdata.add(false);
             tmpdata.add(data);
-            this.data_cache.get(inputFile).put(offset, tmpdata);
-            if(this.data_cache.get(inputFile).size()>maxDataCache){
-                this.data_cache.get(inputFile).clear();
+            Server.data_cache.get(inputFile).put(offset, tmpdata);
+            if(Server.data_cache.get(inputFile).size()>Server.maxDataCache){
+                Server.data_cache.get(inputFile).clear();
             }
             return data;
         }
         else{
-            return (ArrayList)(this.data_cache.get(inputFile).get(offset).get(1));
+            return (ArrayList)(Server.data_cache.get(inputFile).get(offset).get(1));
         }
     }
 
@@ -694,8 +696,8 @@ public class FileManager {
     }
 
     public void deleteNode(int offset, int id) throws IOException{
-        if(this.node_cache.get(inputFile).containsKey(offset)){
-            this.node_cache.remove(offset);
+        if(Server.node_cache.get(inputFile).containsKey(offset)){
+            Server.node_cache.remove(offset);
         }
         ArrayList<Integer> keyType = getKeyType(id);
         ArrayList<Integer> node_len = this.calNodeLen(keyType);
@@ -704,8 +706,8 @@ public class FileManager {
     }
 
     public void deleteValue(int offset) throws IOException{
-        if(this.data_cache.get(inputFile).containsKey(offset)){
-            this.data_cache.get(inputFile).remove(offset);
+        if(Server.data_cache.get(inputFile).containsKey(offset)){
+            Server.data_cache.get(inputFile).remove(offset);
         }
         ArrayList<Integer> valueType = getValueType();
         ArrayList<Integer> node_len = this.calNodeLen(valueType);
@@ -716,10 +718,12 @@ public class FileManager {
 
     public void deleteFile(){
         try {
+            this.file.seek(0);
+            this.file.writeInt(Server.auto_id.get(this.inputFile));
             this.resetNodeCache();
-            this.data_cache.get(inputFile).clear();
-            this.data_cache.remove(inputFile);
-            this.node_cache.remove(inputFile);
+            Server.data_cache.get(inputFile).clear();
+            Server.data_cache.remove(inputFile);
+            Server.node_cache.remove(inputFile);
             file.close();
         } catch (IOException e) {
             e.printStackTrace();

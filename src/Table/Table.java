@@ -5,6 +5,7 @@ import BPlusTree.BPlusTreeLeafNode;
 import BPlusTree.BPlusTreeNode;
 import Exceptions.BPlusTreeException;
 import Exceptions.TableException;
+import Server.Server;
 import Utils.FileManager;
 import generator.Generator;
 
@@ -14,8 +15,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-
-import Server.Server;
 
 public class Table {
     private ArrayList<String> column_name;
@@ -29,7 +28,6 @@ public class Table {
     private ArrayList<ArrayList<Integer>> index_key;
     public ArrayList<BPlusTree> index_forest;
     private ArrayList<Integer> column_type;
-    private int auto_id = 0;
     private int col_num = 0;
     private int index_num = 1;
     public FileManager file;
@@ -55,6 +53,9 @@ public class Table {
 
         table_name = "./dat/"+database_name+"/"+table_name;
         this.file = new FileManager(table_name);
+        if(!Server.auto_id.containsKey(table_name+".dat")){
+            Server.auto_id.put(table_name+".dat", 0);
+        }
 
         this.col_num = names.length+1;
         this.index_key = new ArrayList<>();
@@ -82,7 +83,7 @@ public class Table {
             tmp.add(0);
         }
         this.index_key.add(tmp);
-        int pos = this.file.writeTableHeader(this.col_num, this.index_num, tmp.size() ,column_name, column_type, tmp, auto_id, this.column_isNotNull);
+        int pos = this.file.writeTableHeader(this.col_num, this.index_num, tmp.size() ,column_name, column_type, tmp, Server.auto_id.get(table_name+".dat"), this.column_isNotNull);
         BPlusTree index_tree = new BPlusTree(file, pos, true, 0);
         index_forest.add(index_tree);
     }
@@ -103,7 +104,9 @@ public class Table {
         this.column_type = new ArrayList<Integer>();
         this.column_isNotNull = new ArrayList<>();
         ArrayList<Integer> m_num= this.file.readTableHeader(this.column_name, this.column_type, this.column_isNotNull);
-        this.auto_id = m_num.get(0);
+        if(!Server.auto_id.containsKey(table_name+".dat")){
+            Server.auto_id.put(table_name+".dat", m_num.get(0));
+        }
         this.col_num = m_num.get(1);
         ArrayList<Integer> tmp = this.file.readIndexForest();
         this.index_num = tmp.get(0);
@@ -135,9 +138,10 @@ public class Table {
             throws IOException, BPlusTreeException, TableException {
         Server.G_lock.get(this.lock_name).lock();
         try {
-            this.auto_id ++;
+            int auto_id_tmp = Server.auto_id.get("./dat/"+database_name+"/"+table_name+".dat");
+            Server.auto_id.put("./dat/"+database_name+"/"+table_name+".dat", auto_id_tmp+1);
             if(row.size() != this.column_name.size())
-                row.add(0, this.auto_id);
+                row.add(0, Server.auto_id.get("./dat/"+database_name+"/"+table_name+".dat"));
             for(int i = 0; i<row.size(); i++){
                 if(row.get(i) == null && this.column_isNotNull.get(i)){
                     throw new TableException("value can't be null");
@@ -181,7 +185,9 @@ public class Table {
     }
 
     public void UpdateRow(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_name, ArrayList newRow) throws IOException, BPlusTreeException, TableException{
+
         Server.G_lock.get(this.lock_name).lock();
+        System.out.println(newRow);
         try {
             ArrayList<Integer> index = new ArrayList<>();
             for(int k = 0; k<column_name.size(); ++k){
@@ -199,6 +205,7 @@ public class Table {
                 this.InsertRow(row);
             }
         }finally {
+            System.out.println("____________________________________________"+newRow.get(0).toString());
             Server.G_lock.get(this.lock_name).unlock();
         }
     }

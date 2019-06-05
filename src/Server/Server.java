@@ -13,14 +13,24 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 
 public class Server {
-    public static Map<String, Lock> G_lock = new HashMap<>();
+    public static ConcurrentHashMap<String, Lock> G_lock = new ConcurrentHashMap<>();
+    public static final int maxNodeLength = 10000;
+    public static ConcurrentHashMap<String, Map<Integer, ArrayList>> node_cache = new ConcurrentHashMap<>();
+    /*
+    offset, [ boolean, node  ]
+    */
+    public static final int maxDataCache = 10000;
+    public static ConcurrentHashMap<String, Map<Integer, ArrayList>> data_cache = new ConcurrentHashMap<>();
+
+    public static ConcurrentHashMap<String, Integer> auto_id = new ConcurrentHashMap<>();
 
     public static void main(String[] args) throws Exception {
         try (ServerSocket listener = new ServerSocket(59898)) {

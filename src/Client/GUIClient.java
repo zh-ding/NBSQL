@@ -8,6 +8,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 
 public class GUIClient {
@@ -72,8 +73,48 @@ public class GUIClient {
                 chooser.showOpenDialog(frame);
                 String filePath = chooser.getSelectedFile().getAbsolutePath();
 
-                File file = new File(filePath);
-                c.importFile(file);
+                File f = new File(filePath);
+
+                try {
+                    FileInputStream fis = new FileInputStream(f);
+                    char current;
+                    while(fis.available() > 0) {
+                        String sql = "";
+                        while (fis.available() > 0) {
+                            current = (char) fis.read();
+                            if(current == '\n')
+                                continue;
+                            sql = sql + current;
+                            if (current == ';')
+                                break;
+                        }
+                        c.sendSql(sql);
+                        textType tt = textType.REGULAR;
+                        while(true){
+                            try {
+                                String text = c.receiveText();
+                                if(text.equals("over"))
+                                    break;
+                                if(text.equals("over"))
+                                    break;
+                                if(text.startsWith("@")){
+                                    appendText(text.substring(1), textType.INFO);
+                                }else if(text.startsWith("!")){
+                                    tt = textType.ERROR;
+                                    appendText(text.substring(1), textType.ERROR);
+                                }else{
+                                    appendText(text, textType.REGULAR);
+                                }
+                            }catch (IOException e2){
+                                System.out.println(e2);
+                            }
+                        }
+
+                        appendSql(sql, tt);
+                    }
+                } catch (IOException e3) {
+                    e3.printStackTrace();
+                }
             }
         });
 
