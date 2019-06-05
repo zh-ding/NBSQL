@@ -3,6 +3,8 @@ package Parser;
 import Database.Database;
 import Table.Table;
 import generator.Generator;
+import org.antlr.v4.runtime.misc.ParseCancellationException;
+
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -224,9 +226,14 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     public Void visitInsert_stmt(SQLParser.Insert_stmtContext ctx){
         String tableName = ctx.table_name().getText().toUpperCase();
         Table t = this.db.getTable(tableName);
-        ArrayList<String> column_names = this.db.getTable(tableName).getColumnName();
+        if(t == null)
+        {
+            this.writeStr("!Table " + tableName + " doesn't exists\n");
+            return null;
+        }
+        ArrayList<String> column_names = t.getColumnName();
         column_names = new ArrayList<String>(column_names.subList(1,column_names.size()));
-        ArrayList<Integer> column_types = this.db.getTable(tableName).getColumnType();
+        ArrayList<Integer> column_types = t.getColumnType();
         column_types = new ArrayList<Integer>(column_types.subList(1,column_types.size()));
 
         ArrayList<String> columns = new ArrayList<String>();
@@ -243,7 +250,12 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         {
             ArrayList data = new ArrayList();
             for(int j = 0; j < ctx.insert_values(i).expr().size(); j++) {
-                int type = column_types.get(column_names.indexOf(columns.get(j)));
+                int index = column_names.indexOf(columns.get(j));
+                if(index < 0)
+                {
+                    throw new ParseCancellationException("!column " + columns.get(j) + "doesn't exist\n");
+                }
+                int type = column_types.get(index);
                 DataTypes dataTmp = ctx.insert_values(i).expr(j).literal_value().accept(new SQLVisitorLiteralValue(type));
                 if (dataTmp != null) {
                     switch (dataTmp.type) {
@@ -335,6 +347,8 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                 else
                     table_temp = joinCondition.tableNames;
                 for(String t:table_temp) {
+                    if(joinCondition.tableNames.indexOf(t) < 0)
+                        throw new ParseCancellationException("!Table " + t + " doesn't exist\n");
                     ArrayList<String> name_temp = tableColumnNames.get(joinCondition.tableNames.indexOf(t));
                     for (String c : name_temp) {
                         c = t + "." + c;
@@ -353,17 +367,24 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         for(int i = 0; i < ctx.result_column().size(); i++) {
             if (ctx.result_column(i).STAR() != null)
             {
-                String t = ctx.result_column(i).table_name().accept(new SQLVisitorNames());
-                ArrayList<String> name_temp = tableColumnNames.get(joinCondition.tableNames.indexOf(t));
-                for(String c:name_temp)
-                {
-                    c = t + "." + c;
-                    column_names.add(c);
+                ArrayList<String> table_temp = new ArrayList<>();
+                if(ctx.result_column(i).table_name() != null)
+                    table_temp.add(ctx.result_column(i).table_name().accept(new SQLVisitorNames()));
+                else
+                    table_temp = joinCondition.tableNames;
+                for(String t:table_temp) {
+                    if(joinCondition.tableNames.indexOf(t) < 0)
+                        throw new ParseCancellationException("!Table " + t + " doesn't exist\n");
+                    ArrayList<String> name_temp = tableColumnNames.get(joinCondition.tableNames.indexOf(t));
+                    for (String c : name_temp) {
+                        c = t + "." + c;
+                        column_queries.add(c);
+                    }
                 }
             }
             else {
                 ArrayList<String> temp = new ArrayList<>();
-                ctx.result_column(i).expr().accept(new SQLVisitorEvalColumns(temp));
+                ctx.result_column(i).expr().accept(new SQLVisitorEvalColumns(temp,joinCondition.tableNames,tableColumnNames,true));
                 column_queries.addAll(temp);
             }
         }
@@ -451,9 +472,12 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
 
     private Void simple_Select(SQLParser.Select_stmtContext ctx) {
         String tableName = ctx.table_name().getText().toUpperCase();
-        ArrayList<String> tableColumnNames = this.db.getTable(tableName).getColumnName();
+        Table t = this.db.getTable(tableName);
+        if(t == null)
+            throw new ParseCancellationException("!Table " + tableName + " doesn't exist\n");
+        ArrayList<String> tableColumnNames = t.getColumnName();
         tableColumnNames = new ArrayList<String>(tableColumnNames.subList(1,tableColumnNames.size()));
-        ArrayList<Integer> tableColumnTypes = this.db.getTable(tableName).getColumnType();
+        ArrayList<Integer> tableColumnTypes = t.getColumnType();
         tableColumnTypes = new ArrayList<Integer>(tableColumnTypes.subList(1,tableColumnTypes.size()));
         //获得每一列名称
         ArrayList<String> column_names = new ArrayList<String>();
@@ -474,8 +498,12 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             if (ctx.result_column(i).STAR() != null) {
                 column_queries.addAll(tableColumnNames);
             } else {
+                ArrayList<String> tableList = new ArrayList<>();
                 ArrayList<String> temp = new ArrayList<>();
-                ctx.result_column(i).expr().accept(new SQLVisitorEvalColumns(temp));
+                tableList.add(tableName);
+                ArrayList<ArrayList<String>> columnList = new ArrayList<>();
+                columnList.add(column_names);
+                ctx.result_column(i).expr().accept(new SQLVisitorEvalColumns(temp,tableList,columnList,false));
                 column_queries.addAll(temp);
             }
         }
@@ -565,9 +593,12 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     @Override
     public Void visitDelete_stmt(SQLParser.Delete_stmtContext ctx) {
         String tableName = ctx.table_name().getText().toUpperCase();
-        ArrayList<String> tableColumnNames = this.db.getTable(tableName).getColumnName();
+        Table t = this.db.getTable(tableName);
+        if(t == null)
+            throw new ParseCancellationException("!Table " + tableName + " doesn't exist\n");
+        ArrayList<String> tableColumnNames = t.getColumnName();
         tableColumnNames = new ArrayList<String>(tableColumnNames.subList(1,tableColumnNames.size()));
-        ArrayList<Integer> tableColumnTypes = this.db.getTable(tableName).getColumnType();
+        ArrayList<Integer> tableColumnTypes = t.getColumnType();
         tableColumnTypes = new ArrayList<Integer>(tableColumnTypes.subList(1,tableColumnTypes.size()));
 
         ArrayList<ArrayList<ArrayList>> conditions = new ArrayList<ArrayList<ArrayList>>();
@@ -591,9 +622,12 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     @Override
     public Void visitUpdate_stmt(SQLParser.Update_stmtContext ctx) {
         String tableName = ctx.table_name().getText().toUpperCase();
-        ArrayList<String> tableColumnNames = this.db.getTable(tableName).getColumnName();
+        Table t = this.db.getTable(tableName);
+        if(t == null)
+            throw new ParseCancellationException("!Table " + tableName + " doesn't exist\n");
+        ArrayList<String> tableColumnNames = t.getColumnName();
         tableColumnNames = new ArrayList<String>(tableColumnNames.subList(1,tableColumnNames.size()));
-        ArrayList<Integer> tableColumnTypes = this.db.getTable(tableName).getColumnType();
+        ArrayList<Integer> tableColumnTypes = t.getColumnType();
         tableColumnTypes = new ArrayList<Integer>(tableColumnTypes.subList(1,tableColumnTypes.size()));
 
         ArrayList<String> column_names = new ArrayList<>();
@@ -612,7 +646,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         for(int i = 0; i < ctx.column_name().size(); i++)
         {
             String columnName = ctx.column_name(i).getText().toUpperCase();
-            int columnType = tableColumnTypes.get(tableColumnNames.indexOf(columnName));
+            int index = tableColumnNames.indexOf(columnName);
+            if(index < 0)
+                throw new ParseCancellationException("!Column " + columnName + " doesn't exist\n");
+            int columnType = tableColumnTypes.get(index);
             column_names.add(columnName);
             DataTypes dataTmp = ctx.expr(i).accept(new SQLVisitorLiteralValue(columnType));
             if(dataTmp != null)
