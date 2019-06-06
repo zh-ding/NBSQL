@@ -9,7 +9,7 @@ import java.util.ArrayList;
 public class BPlusTree {
 
     private BPlusTreeNode root;
-    public static final int M = 4;
+    public static final int M = 20;
     public FileManager fm;
     public int ID;
 

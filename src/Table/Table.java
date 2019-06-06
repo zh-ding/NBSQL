@@ -193,7 +193,6 @@ public class Table {
     public void UpdateRow(ArrayList<ArrayList<ArrayList>> conditions, ArrayList column_name, ArrayList newRow) throws IOException, BPlusTreeException, TableException{
 
         Server.G_lock.get(this.lock_name).lock();
-        System.out.println(newRow);
         try {
             ArrayList<Integer> index = new ArrayList<>();
             for(int k = 0; k<column_name.size(); ++k){
@@ -211,7 +210,6 @@ public class Table {
                 this.InsertRow(row);
             }
         }finally {
-            System.out.println("____________________________________________"+newRow.get(0).toString());
             Server.G_lock.get(this.lock_name).unlock();
         }
     }
