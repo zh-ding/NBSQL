@@ -14,25 +14,32 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Map;
+import java.util.Timer;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 
+import Utils.CacheTimer;
+
 public class Server {
     public static ConcurrentHashMap<String, Lock> G_lock = new ConcurrentHashMap<>();
+
     public static final int maxNodeLength = 10000;
     public static ConcurrentHashMap<String, Map<Integer, ArrayList>> node_cache = new ConcurrentHashMap<>();
-    /*
-    offset, [ boolean, node  ]
-    */
+
     public static final int maxDataCache = 10000;
     public static ConcurrentHashMap<String, Map<Integer, ArrayList>> data_cache = new ConcurrentHashMap<>();
-
     public static ConcurrentHashMap<String, Integer> auto_id = new ConcurrentHashMap<>();
 
+    private static final long interval = 600*1000;
+
     public static void main(String[] args) throws Exception {
+        CacheTimer task = new CacheTimer();
+        Timer timer = new Timer();
+        timer.schedule(task, new Date(), interval);
         try (ServerSocket listener = new ServerSocket(59898)) {
             System.out.println("The capitalization server is running...");
             ExecutorService pool = Executors.newFixedThreadPool(20);
@@ -68,9 +75,7 @@ public class Server {
                     try {
                         line = in.readUTF();
                         System.out.println(socket + line);
-
                         try {
-
                             SQLLexer lexer = new SQLLexer(CharStreams.fromString(line));
                             lexer.removeErrorListeners();
                             lexer.addErrorListener(new ThrowingErrorListener());
@@ -102,6 +107,7 @@ public class Server {
             } catch (DatabaseException e){
                 System.out.println("4: " + e);
             }finally {
+
                 db.quitDB();
             }
         }
