@@ -19,9 +19,11 @@ public class BPlusTree {
 
         if(is_empty){
             this.root = new BPlusTreeLeafNode(fm, ID);
+            fm.updateNode(this.root);
         }else {
             this.root = fm.readNode(offset, this.ID);
         }
+
     }
 
     public void insert(ArrayList key, int data)throws IOException, BPlusTreeException {
