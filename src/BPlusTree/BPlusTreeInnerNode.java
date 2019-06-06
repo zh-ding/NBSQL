@@ -27,6 +27,15 @@ public class BPlusTreeInnerNode extends BPlusTreeNode {
         return fm.readNode(this.pointers.get(this.keyNum), this.id);
     }
 
+    public BPlusTreeNode searchOne(FileManager fm, ArrayList key)throws IOException, BPlusTreeException{
+        for(int i = 0; i < this.keyNum; ++i){
+            int cmp = this.compareOne(key, this.keys.get(i));
+            if(cmp == -1)
+                return fm.readNode(this.pointers.get(i), this.id);
+        }
+        return fm.readNode(this.pointers.get(this.keyNum), this.id);
+    }
+
     public BPlusTreeNode insert(FileManager fm, ArrayList key, BPlusTreeNode node)throws BPlusTreeException, IOException {
 
         int i;

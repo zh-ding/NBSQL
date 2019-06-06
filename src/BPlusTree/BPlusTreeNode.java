@@ -126,4 +126,42 @@ public abstract class BPlusTreeNode {
 
         return 0;
     }
+
+    public int compareOne(ArrayList key1, ArrayList key2)
+            throws BPlusTreeException {
+
+        Object k1 = key1.get(0);
+        Object k2 = key2.get(0);
+        if(k1 == null || k2 == null)
+            return 2;
+        if(k1 instanceof Integer && k2 instanceof Integer){
+            if((Integer)k1 < (Integer)k2)
+                return -1;
+            else if((Integer)k1 > (Integer)k2)
+                return 1;
+        }else if(k1 instanceof Long && k2 instanceof Long){
+            if((Long)k1 < (Long)k2)
+                return -1;
+            else if((Long)k1 > (Long)k2)
+                return 1;
+        }else if(k1 instanceof Float && k2 instanceof Float){
+            if((Float)k1 < (Float) k2)
+                return -1;
+            else if((Float)k1 > (Float) k2)
+                return 1;
+        }else if(k1 instanceof Double && k2 instanceof Double){
+            if((Double)k1 < (Double) k2)
+                return -1;
+            else if((Double)k1 > (Double)k2)
+                return 1;
+        }else if(k1 instanceof String && k2 instanceof String){
+            if(((String)k1).compareTo((String)k2) < 0)
+                return -1;
+            else if(((String)k1).compareTo((String)k2) > 0)
+                return 1;
+        }else
+            throw new BPlusTreeException("cmp: key type not match");
+
+        return 0;
+    }
 }
