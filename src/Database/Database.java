@@ -236,10 +236,11 @@ public class Database {
 //                        schema_type.add(tabs.get(j).getColumnType().get(i));
                         }
                     }
-                    for(int len = 0; len<schema.size(); len++){
-                        for(int k = 0; k<mycolNames.size(); k++) {
-                            if (mycolNames.get(k).toString().compareTo(schema.get(len)) == 0){
-                                index.add(len);
+
+                    for(int len = 0; len<mycolNames.size(); len++){
+                        for(int k = 0; k<schema.size(); k++) {
+                            if (mycolNames.get(len).toString().compareTo(schema.get(k)) == 0){
+                                index.add(k);
                             }
                         }
                     }
