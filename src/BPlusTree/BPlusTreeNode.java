@@ -39,6 +39,7 @@ public abstract class BPlusTreeNode {
         leftSibling = -1;
         rightSibling = -1;
         this.isLeafNode = isLeafNode;
+        this.id = id;
         this.location = fm.writeNewNode(id, isLeafNode);
     }
 

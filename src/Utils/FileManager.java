@@ -250,9 +250,9 @@ public class FileManager {
                         len += 8;
                         break;
                     default:
-                        this.file.writeUTF(formatStr(node.keys.get(i).get(j).toString(), valueType.get(i)));
+                        this.file.writeUTF(formatStr(node.keys.get(i).get(j).toString(), valueType.get(j)));
                         len += 2;
-                        len += valueType.get(i);
+                        len += valueType.get(j);
                         break;
                 }
             }
@@ -337,6 +337,32 @@ public class FileManager {
             this.file.writeInt(key_index.get(i));
         }
         return pos;
+    }
+
+    public void addIndex(int pos, ArrayList<Integer> keyindex) throws IOException{
+        int offset = 2*page_size;
+        this.file.seek(2*page_size);
+        int index_num = this.file.readInt();
+        this.file.seek(2*page_size);
+        this.file.writeInt(index_num+1);
+
+        offset += 4;
+        for(int i = 0; i<index_num; i++){
+            this.file.readInt();
+            int tmp = this.file.readInt();
+            for(int j = 0; j<tmp; j++){
+                this.file.readInt();
+            }
+            offset += 8;
+            offset += tmp*4;
+            this.file.seek(offset);
+        }
+        this.file.writeInt(pos);
+        this.file.writeInt(keyindex.size());
+        for(Integer key: keyindex){
+            this.file.writeInt(key);
+        }
+
     }
 
     private ArrayList<Integer> getKeyType(int id) throws IOException{
