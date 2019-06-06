@@ -25,16 +25,17 @@ insert into scores values (2,101,100),(2,102,100),(2,104,100),(2,105,100);
 insert into scores values (3,101,100),(3,102,100),(3,104,100),(3,105,100);
 insert into scores values (4,102,59),(4,103,9),(4,104,89);
 insert into scores values (5,101,60),(5,103,70),(5,106,80);
---select * from scores where (student_id=4 OR student_id=1) AND (score <= 89 OR score > 95);
+--insert fail: primary key
+insert into scores values (1,101,100);
+--insert fail: not null
+insert into student(student_id,dept_name) values(10,'thss');
 select * from teacher natural join course;
---select student.name, course.id, teacher.name, scores.score from student left outer join scores on student.ID=scores.student_id join course on scores.course_id=course.ID right outer join teacher on course.teacher_id=teacher.ID where (teacher.ID=16 OR scores.score>=95) AND (teacher.name='tuixiu' OR scores.score <= 100);
-----insert fail: primary key
---insert into scores values (1,101,100);
-----insert fail: not null
---insert into student(ID,dept_name) values(10,'thss');
---select student.*, scores.* from student left outer join scores on student.dept_name=scores.student_id where student.id = 6;
---select student.*, course.* from course outer join student on student.dept_name=course.dept_name where course.dept_name <> 'thss';
---select student_id+(2016*1000000) as id, course_id%100, score, score>=60 as pass, (score+10)>=60 as tiaofen_pass from scores where (student_id=4 OR student_id=1) AND (score <= 89 OR score > 95);
+select student.name, course.course_id, teacher.name, scores.score from student left outer join scores on student.student_id=scores.student_id join course on scores.course_id=course.course_id right outer join teacher on course.teacher_id=teacher.teacher_id where (teacher.teacher_id=16 OR scores.score>=95) AND (teacher.name='tuixiu' OR scores.score <= 100);
+select student.*, scores.* from student left outer join scores on student.dept_name=scores.student_id where student.student_id = 6;
+select student.*, course.* from course outer join student on student.dept_name=course.dept_name where course.dept_name <> 'thss';
+select student_id+(2016*1000000) as id, course_id%100, score, score>=60 as pass, (score+10)>=60 as tiaofen_pass from scores where (student_id=4 OR student_id=1) AND (score <= 89 OR score > 95);
+update course set dept_name='ss',teacher_id=0 where dept_name='thss' and teacher_id >= 15;
+select * from course;
 drop table course;
 drop table teacher;
 drop table student;
