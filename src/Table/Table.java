@@ -74,7 +74,7 @@ public class Table {
             this.column_isNotNull.add(isNotNull[i]);
 
             for(int j = 0; j<primary_key.length; j++){
-                if(names[i] == primary_key[j]){
+                if(names[i].equals(primary_key[j])){
                     tmp.add(i+1);
                 }
             }
@@ -347,7 +347,7 @@ public class Table {
                             if(isPrimitive && relation != 5){
                                 int col = column_name.indexOf(attr1);
                                 for(index = 0; index < table.index_key.size(); ++index)
-                                    if(attr1 == table.column_name.get(table.index_key.get(index).get(0)))
+                                    if(attr1.equals(table.column_name.get(table.index_key.get(index).get(0))))
                                         break;
 
                                 if(index < table.index_key.size()){
