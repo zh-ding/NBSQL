@@ -108,38 +108,43 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     {
         if(this.db != null)
         {
-            String tableName = ctx.table_name().getText().toUpperCase();
-            Table t = this.db.getTable(tableName);
-            if(t != null) {
-                ArrayList<String> column_names = t.getColumnName();
-                ArrayList<Integer> column_types = t.getColumnType();
-                for (int i = 1; i < column_names.size(); i++) {
-                    writeStr(column_names.get(i) + "\t");
-                    switch (column_types.get(i))
-                    {
-                        case -1:
-                            writeStr("INT");
-                            break;
-                        case -2:
-                            writeStr("LONG");
-                            break;
-                        case -3:
-                            writeStr("FLOAT");
-                            break;
-                        case -4:
-                            writeStr("DOUBLE");
-                            break;
-                        default:
-                            writeStr("STRING(" + column_types.get(i) + ")");
-                            break;
+            try {
+                String tableName = ctx.table_name().getText().toUpperCase();
+                Table t = this.db.getTable(tableName);
+                if(t != null) {
+                    ArrayList<String> column_names = t.getColumnName();
+                    ArrayList<Integer> column_types = t.getColumnType();
+                    for (int i = 1; i < column_names.size(); i++) {
+                        writeStr(column_names.get(i) + "\t");
+                        switch (column_types.get(i))
+                        {
+                            case -1:
+                                writeStr("INT");
+                                break;
+                            case -2:
+                                writeStr("LONG");
+                                break;
+                            case -3:
+                                writeStr("FLOAT");
+                                break;
+                            case -4:
+                                writeStr("DOUBLE");
+                                break;
+                            default:
+                                writeStr("STRING(" + column_types.get(i) + ")");
+                                break;
+                        }
+                        writeStr("\n");
                     }
-                    writeStr("\n");
                 }
+                else
+                {
+                    writeStr("!Table does not exist\n");
+                }
+            }catch (IOException e){
+                System.out.println(e);
             }
-            else
-            {
-                writeStr("!Table does not exist\n");
-            }
+
         }
         return null;
     }
@@ -227,7 +232,13 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     @Override
     public Void visitInsert_stmt(SQLParser.Insert_stmtContext ctx){
         String tableName = ctx.table_name().getText().toUpperCase();
-        Table t = this.db.getTable(tableName);
+        Table t = null;
+        try {
+            t = this.db.getTable(tableName);
+        }catch (IOException e){
+            System.out.println(e);
+        }
+
         if(t == null)
         {
             this.writeStr("!Table " + tableName + " doesn't exists\n");
@@ -333,7 +344,13 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         ArrayList<ArrayList<Integer>> tableColumnTypes = new ArrayList<>();
         for(String n:joinCondition.tableNames)
         {
-            Table t = this.db.getTable(n);
+            Table t = null;
+            try {
+                t = this.db.getTable(n);
+            }catch (IOException e){
+                System.out.println(e);
+            }
+
             tables.add(t);
             tableColumnNames.add(new ArrayList<String>(t.getColumnName().subList(1,t.getColumnName().size())));
             tableColumnTypes.add(new ArrayList<Integer>(t.getColumnType().subList(1,t.getColumnType().size())));
@@ -476,7 +493,13 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
 
     private Void simple_Select(SQLParser.Select_stmtContext ctx) {
         String tableName = ctx.table_name().getText().toUpperCase();
-        Table t = this.db.getTable(tableName);
+        Table t = null;
+        try {
+            t = this.db.getTable(tableName);
+        }catch (IOException e){
+            System.out.println(e);
+        }
+
         if(t == null)
             throw new ParseCancellationException("!Table " + tableName + " doesn't exist\n");
         ArrayList<String> tableColumnNames = t.getColumnName();
@@ -597,7 +620,13 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     @Override
     public Void visitDelete_stmt(SQLParser.Delete_stmtContext ctx) {
         String tableName = ctx.table_name().getText().toUpperCase();
-        Table t = this.db.getTable(tableName);
+        Table t = null;
+        try {
+            t = this.db.getTable(tableName);
+        }catch (IOException e){
+            System.out.println(e);
+        }
+
         if(t == null)
             throw new ParseCancellationException("!Table " + tableName + " doesn't exist\n");
         ArrayList<String> tableColumnNames = t.getColumnName();
@@ -626,7 +655,13 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     @Override
     public Void visitUpdate_stmt(SQLParser.Update_stmtContext ctx) {
         String tableName = ctx.table_name().getText().toUpperCase();
-        Table t = this.db.getTable(tableName);
+        Table t = null;
+        try {
+            t = this.db.getTable(tableName);
+        }catch (IOException e){
+            System.out.println(e);
+        }
+
         if(t == null)
             throw new ParseCancellationException("!Table " + tableName + " doesn't exist\n");
         ArrayList<String> tableColumnNames = t.getColumnName();
