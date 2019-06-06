@@ -51,13 +51,14 @@ public class Server {
 
         @Override
         public void run() {
+            Database db = null;
             try {
                 System.out.println("Connected: " + socket);
 
                 DataInputStream in = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
                 DataOutputStream out = new DataOutputStream(socket.getOutputStream());
 
-                Database db = new Database("TEST");
+                db = new Database("TEST");
                 BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
                 StringBuffer output = new StringBuffer();
                 StringBuffer dbName = new StringBuffer("TEST");
@@ -93,15 +94,15 @@ public class Server {
                     } catch (IOException i) {
                         System.out.println("2: " + i);
                         out.writeUTF("over");
-
                     }
-
                 }
                 socket.close();
             }catch (IOException e){
                 System.out.println("3 " + e);
             } catch (DatabaseException e){
                 System.out.println("4: " + e);
+            }finally {
+                db.quitDB();
             }
         }
     }

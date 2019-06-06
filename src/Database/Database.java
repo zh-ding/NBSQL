@@ -14,11 +14,12 @@ public class Database {
     public ArrayList<Table> tables;
     private String db_name;
     private static String path = "./dat/";
-    /*
-    0 - new
-    1 - use
-    2 - drop
-     */
+
+    public void quitDB(){
+        for(Table tmp : this.tables){
+            tmp.file.deleteFile();
+        }
+    }
 
     public void newDB(String db_name) throws DatabaseException{
         db_name = this.path + db_name;
