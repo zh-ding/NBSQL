@@ -12,12 +12,15 @@ import java.util.*;
 
 public class Database {
     public ArrayList<Table> tables;
+
     private String db_name;
     private static String path = "./dat/";
 
     public void quitDB(){
-        for(Table tmp : this.tables){
-            tmp.file.deleteFile();
+        if(tables != null){
+            for(Table tmp : this.tables){
+                tmp.file.deleteFile();
+            }
         }
     }
 
@@ -129,7 +132,29 @@ public class Database {
         }
     }
 
-    public Table getTable (String table_name){
+    public Table getTable (String table_name) throws IOException{
+        String db_name_path = this.path + db_name;
+        File db = new File(db_name_path);
+        File[] tmplist = db.listFiles();
+        if(tmplist != null)
+        {
+            for(File f:tmplist){
+                String tmp = f.getName();
+                String tmpname = "";
+                tmpname = tmp.substring(0, tmp.lastIndexOf("."));
+                boolean flag = true;
+                for(Table tmptb : tables){
+                    if(tmptb.table_name.compareTo(tmpname) == 0){
+                        flag = false;
+                        break;
+                    }
+                }
+                if(flag){
+                    Table tmpTable = new Table(tmpname, this.db_name);
+                    this.tables.add(tmpTable);
+                }
+            }
+        }
         for(int i = 0; i<tables.size(); i++){
             if(tables.get(i).table_name.compareTo(table_name) == 0){
                 return tables.get(i);
