@@ -480,9 +480,22 @@ public class Database {
         Map<Integer, ArrayList<ArrayList>> res = new HashMap<>();
         for (ArrayList tmp : tmpRes) {
             String  key = "";
+            boolean flag = true;
             for(int i = 0; i<index.size(); ++i){
-                if(tabs.get((int)index.get(i).get(0)).file.readData((int)tmp.get((int)index.get(i).get(0))).get((int)index.get(i).get(1)) != null)
-                    key += tabs.get((int)index.get(i).get(0)).file.readData((int)tmp.get((int)index.get(i).get(0))).get((int)index.get(i).get(1));
+                if((int)tmp.get((int)index.get(i).get(0)) == -1){
+                    flag = false;
+                    break;
+                }
+                if(tabs.get((int)index.get(i).get(0)).file.readData((int)tmp.get((int)index.get(i).get(0))).get((int)index.get(i).get(1)) != null){
+                    key += tabs.get((int)index.get(i).get(0)).file.readData((int)tmp.get((int)index.get(i).get(0))).get((int)index.get(i).get(1)).toString();
+                }
+                else{
+                    flag = false;
+                    break;
+                }
+            }
+            if(!flag){
+                continue;
             }
             int finalkey = key.hashCode();
             ArrayList<ArrayList> tmpHash;
@@ -801,7 +814,7 @@ public class Database {
                             if(!hashtmp1.containsKey(key)){
                                 for(int l = 0; l<(hashtmp2.get(key).size()); ++l){
                                     ArrayList tmpkeylist = new ArrayList();
-                                    for(int s = 0; s<tabs.size(); i++){
+                                    for(int s = 0; s<tabs.size(); s++){
                                         tmpkeylist.add(-1);
                                     }
                                     ArrayList<ArrayList> tmp1value = getValues(tabs, tmpkeylist);
@@ -990,10 +1003,22 @@ public class Database {
                 int offset = node.pointers.get(i);
                 ArrayList tmp = a.file.readData(offset);
                 String key = "";
+                boolean flag = true;
                 for(int j = 0; j<index.size(); ++j){
+                    if((int)index.get(j) == -1){
+                        flag = false;
+                        break;
+                    }
                     if(tmp.get(index.get(j)) != null){
                         key += tmp.get(index.get(j)).toString();
                     }
+                    else{
+                        flag = false;
+                        break;
+                    }
+                }
+                if(!flag){
+                    continue;
                 }
                 int finalkey = key.hashCode();
 
