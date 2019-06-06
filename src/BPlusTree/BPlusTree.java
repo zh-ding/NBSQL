@@ -26,6 +26,8 @@ public class BPlusTree {
 
     public void insert(ArrayList key, int data)throws IOException, BPlusTreeException {
 
+        this.root = fm.readNode(this.root.location, this.ID);
+
         BPlusTreeLeafNode leaf = this.findLeafNode(key);
 
         for (ArrayList arr: leaf.keys)
@@ -45,6 +47,9 @@ public class BPlusTree {
     }
 
     public void delete(ArrayList key, int id)throws IOException, BPlusTreeException{
+
+        this.root = fm.readNode(this.root.location, this.ID);
+
         BPlusTreeLeafNode leaf = this.findLeafNode(key);
         BPlusTreeNode n = leaf.delete(fm, key);
         this.root = fm.readNode(this.root.location, this.ID);
@@ -58,6 +63,8 @@ public class BPlusTree {
 
     public int search(ArrayList key)
             throws BPlusTreeException, IOException{
+
+        this.root = fm.readNode(this.root.location, this.ID);
         BPlusTreeLeafNode leaf = this.findLeafNode(key);
 
         return leaf.location;
@@ -65,6 +72,8 @@ public class BPlusTree {
 
     public BPlusTreeLeafNode getMostLeftLeafNode()
             throws IOException{
+        this.root = fm.readNode(this.root.location, this.ID);
+
         return getMostLeftLeafNode(this.root);
     }
 
