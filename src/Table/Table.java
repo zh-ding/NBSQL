@@ -128,6 +128,35 @@ public class Table {
         }
     }
 
+    public void createIndex(ArrayList<String> arr)throws IOException, BPlusTreeException{
+        BPlusTree tree = new BPlusTree(file, 0, true, this.index_num);
+        ArrayList<Integer> tmp = new ArrayList<>();
+        for(String key: arr){
+            tmp.add(this.column_name.indexOf(key));
+        }
+        this.index_key.add(tmp);
+        BPlusTreeLeafNode node = this.index_forest.get(0).getMostLeftLeafNode();
+        while(true){
+            for(Integer offset: node.pointers){
+                ArrayList data = file.readData(offset);
+                ArrayList key = new ArrayList();
+                for(Integer index: tmp){
+                    key.add(data.get(index));
+                }
+                tree.insert(key, offset);
+            }
+
+
+            if(node.rightSibling == -1)
+                break;
+            node = (BPlusTreeLeafNode) file.readNode(node.rightSibling, 0);
+        }
+
+        this.index_forest.add(tree);
+
+        ++this.index_num;
+    }
+
     public ArrayList<String> getColumnName(){
         return this.column_name;
     }
