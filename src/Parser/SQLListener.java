@@ -38,6 +38,16 @@ public interface SQLListener extends ParseTreeListener {
 	 */
 	void exitCreate_table_stmt(SQLParser.Create_table_stmtContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link SQLParser#create_index_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void enterCreate_index_stmt(SQLParser.Create_index_stmtContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link SQLParser#create_index_stmt}.
+	 * @param ctx the parse tree
+	 */
+	void exitCreate_index_stmt(SQLParser.Create_index_stmtContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link SQLParser#delete_stmt}.
 	 * @param ctx the parse tree
 	 */

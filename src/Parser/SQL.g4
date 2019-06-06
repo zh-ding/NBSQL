@@ -34,6 +34,7 @@ grammar SQL;
 sql_stmt
  : ( show_table_stmt
     | create_table_stmt
+    | create_index_stmt
     | delete_stmt
     | drop_table_stmt
     | insert_stmt
@@ -56,6 +57,10 @@ show_table_stmt
 create_table_stmt
  : K_CREATE K_TABLE table_name
    ( '(' column_def ( ',' column_def )* ( ',' table_constraint )* ')' )
+ ;
+
+create_index_stmt
+ : K_CREATE K_INDEX index_name K_ON table_name '('column_name ')'
  ;
 
 delete_stmt
