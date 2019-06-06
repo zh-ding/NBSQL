@@ -25,6 +25,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     {
         try {
             output.writeUTF(s);
+//            output.writeBytes(s);
         }
         catch (IOException e)
         {
@@ -640,9 +641,8 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         tableColumnTypes = new ArrayList<Integer>(tableColumnTypes.subList(1,tableColumnTypes.size()));
 
         ArrayList<ArrayList<ArrayList>> conditions = new ArrayList<ArrayList<ArrayList>>();
-        conditions.add(new ArrayList<ArrayList>());
         if(ctx.K_WHERE() != null)
-            ctx.expr().accept(new SQLVisitorWhereClause(tableColumnNames, tableColumnTypes));
+            conditions = ctx.expr().accept(new SQLVisitorWhereClause(tableColumnNames, tableColumnTypes));
         else
             conditions = null;
         //Generator<ArrayList> result;
@@ -678,8 +678,6 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         ArrayList<String> column_names = new ArrayList<>();
         ArrayList data = new ArrayList();
         ArrayList<ArrayList<ArrayList>> conditions = new ArrayList<ArrayList<ArrayList>>();
-        conditions.add(new ArrayList<ArrayList>());
-
         if(ctx.K_WHERE() != null) {
             conditions = ctx.expr().get(ctx.expr().size() - 1).accept(new SQLVisitorWhereClause(tableColumnNames, tableColumnTypes));
         }
@@ -759,7 +757,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         catch (Exception e)
         {
-            throw new ParseCancellationException("!Create index error\n");
+            throw new ParseCancellationException("!Create index error: " + e.getMessage() + "\n");
         }
         return null;
     }

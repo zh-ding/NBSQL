@@ -29,8 +29,12 @@ public class SQLVisitorWhereClause extends SQLBaseVisitor<ArrayList<ArrayList<Ar
 
     @Override
     public ArrayList<ArrayList<ArrayList>> visitExpr(SQLParser.ExprContext ctx) {
-        if(ctx.OPEN_PAR() != null && ctx.CLOSE_PAR() != null)
-            return ctx.expr(0).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
+        if(ctx.OPEN_PAR() != null && ctx.CLOSE_PAR() != null) {
+            if (isMulti)
+                return ctx.expr(0).accept(new SQLVisitorWhereClause(tableNames, columnNamesMulti, columnTypesMulti));
+            else
+                return ctx.expr(0).accept(new SQLVisitorWhereClause(columnNames, columnTypes));
+        }
         if(ctx.K_OR() != null)
         {
             ArrayList<ArrayList<ArrayList>> l, r;
