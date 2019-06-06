@@ -3,8 +3,6 @@ import threading
 import struct
 import time
 
-
-
 class MyThread(threading.Thread):
     def __init__(self, arg):
         super(MyThread, self).__init__()
@@ -23,12 +21,20 @@ class MyThread(threading.Thread):
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect(('127.0.0.1', 59898))
 
-sql = "insert into tb values(6);"
+sql = "use database test;"
 size = len(sql)
-
 client.send(struct.pack("!H", size))
 client.send(sql.encode())
 print(client.recv(400).decode())
+print(client.recv(400).decode())
+
+for i in range(100):
+    sql = "insert into tb values(%d, '%s', %d.%d);"%(i, str(i), i,i)
+    size = len(sql)
+    client.send(struct.pack("!H", size))
+    client.send(sql.encode())
+    print(client.recv(400).decode())
+    print(client.recv(400).decode())
 
 # for i in range(1000):
 #     sql = "insert into tb values(%d, 'test');"%i

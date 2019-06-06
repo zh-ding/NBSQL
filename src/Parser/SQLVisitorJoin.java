@@ -25,7 +25,7 @@ public class SQLVisitorJoin extends SQLBaseVisitor<SQLVisitorJoinConditions>{
 
             if(db.getTable(tableNames.get(0)) == null)
             {
-                throw new ParseCancellationException("!Table " + tableNames.get(0) + " doesn't exist\n");
+                throw new ParseCancellationException("Table " + tableNames.get(0) + " doesn't exist\n");
             }
             columnNames.add(db.getTable(tableNames.get(0)).getColumnName());
             columnTypes.add(db.getTable(tableNames.get(0)).getColumnType());
@@ -37,7 +37,7 @@ public class SQLVisitorJoin extends SQLBaseVisitor<SQLVisitorJoinConditions>{
                 tableNames.add(name);
                 if(db.getTable(name) == null)
                 {
-                    throw new ParseCancellationException("!Table " + name + " doesn't exist\n");
+                    throw new ParseCancellationException("Table " + name + " doesn't exist\n");
                 }
                 columnNames.add(db.getTable(name).getColumnName());
                 columnTypes.add(db.getTable(name).getColumnType());
@@ -55,7 +55,7 @@ public class SQLVisitorJoin extends SQLBaseVisitor<SQLVisitorJoinConditions>{
                     joinTypes.add(0);
                 if((c.K_NATURAL() != null && c.K_ON() != null) || (c.K_NATURAL() == null && c.K_ON() == null))
                 {
-                    throw new ParseCancellationException("!Join clause invalid\n");
+                    throw new ParseCancellationException("Join clause invalid\n");
                 }
                 if(c.K_NATURAL() != null)
                 {

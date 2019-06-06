@@ -109,7 +109,7 @@ public class SQLVisitorEvalValue extends SQLBaseVisitor<DataTypes>{
 
         }catch (Exception e)
         {
-            throw new ParseCancellationException("!" + e.getMessage() + "\n");
+            throw new ParseCancellationException(e.getMessage() + "\n");
         }
         return null;
     }

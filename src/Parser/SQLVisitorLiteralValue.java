@@ -34,7 +34,7 @@ public class SQLVisitorLiteralValue extends SQLBaseVisitor<DataTypes> {
                         double dataDouble = Double.parseDouble(number);
                         return new DataTypes(dataDouble);
                     default:
-                        throw new ParseCancellationException("!type mismatch\n");
+                        throw new ParseCancellationException("type mismatch\n");
                 }
             }
             else
@@ -54,7 +54,7 @@ public class SQLVisitorLiteralValue extends SQLBaseVisitor<DataTypes> {
                         double dataDouble = Double.parseDouble(number);
                         return new DataTypes(dataDouble);
                     default:
-                        throw new ParseCancellationException("!type mismatch\n");
+                        throw new ParseCancellationException("type mismatch\n");
                 }
             }
         }
