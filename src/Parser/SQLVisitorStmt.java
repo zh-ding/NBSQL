@@ -142,7 +142,8 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                     writeStr("!Table does not exist\n");
                 }
             }catch (IOException e){
-                System.out.println(e);
+                writeStr("!Get table fail\n");
+                return null;
             }
 
         }
@@ -236,7 +237,8 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         try {
             t = this.db.getTable(tableName);
         }catch (IOException e){
-            System.out.println(e);
+            writeStr("!Get table " + tableName + "fail\n");
+            return null;
         }
 
         if(t == null)
@@ -348,7 +350,8 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             try {
                 t = this.db.getTable(n);
             }catch (IOException e){
-                System.out.println(e);
+                writeStr("!Get table " + n + " fail\n");
+                return null;
             }
 
             tables.add(t);
@@ -497,7 +500,8 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         try {
             t = this.db.getTable(tableName);
         }catch (IOException e){
-            System.out.println(e);
+            writeStr("!Get table " + tableName + " fail\n");
+            return null;
         }
 
         if(t == null)
@@ -624,7 +628,8 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         try {
             t = this.db.getTable(tableName);
         }catch (IOException e){
-            System.out.println(e);
+            writeStr("!Get table " + tableName + " fail\n");
+            return null;
         }
 
         if(t == null)
@@ -659,7 +664,8 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         try {
             t = this.db.getTable(tableName);
         }catch (IOException e){
-            System.out.println(e);
+            writeStr("!Get table " + tableName + " fail\n");
+            return null;
         }
 
         if(t == null)
@@ -727,5 +733,34 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         return null;
 
+    }
+
+    @Override
+    public Void visitCreate_index_stmt(SQLParser.Create_index_stmtContext ctx)
+    {
+        String tableName = ctx.table_name().getText().toUpperCase();
+        Table t = null;
+        try {
+            t = this.db.getTable(tableName);
+        }catch (IOException e){
+            writeStr("!Get table " + tableName + " fail\n");
+            return null;
+        }
+        if(t == null)
+            throw new ParseCancellationException("!Table " + tableName + " doesn't exist\n");
+        String columnName = ctx.column_name().getText().toUpperCase();
+        if(t.getColumnName().indexOf(columnName) < 0)
+            throw new ParseCancellationException("!Column " + columnName + " doesn't exist\n");
+        ArrayList<String> columnList = new ArrayList<>();
+        columnList.add(columnName);
+        try {
+            t.createIndex(columnList);
+            writeStr("@Create index success\n");
+        }
+        catch (Exception e)
+        {
+            throw new ParseCancellationException("!Create index error\n");
+        }
+        return null;
     }
 }
