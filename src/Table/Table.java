@@ -135,6 +135,7 @@ public class Table {
             tmp.add(this.column_name.indexOf(key));
         }
         this.index_key.add(tmp);
+        this.file.addIndex(tree.root.location, tmp);
         BPlusTreeLeafNode node = this.index_forest.get(0).getMostLeftLeafNode();
         while(true){
             for(Integer offset: node.pointers){
@@ -145,8 +146,6 @@ public class Table {
                 }
                 tree.insert(key, offset);
             }
-
-
             if(node.rightSibling == -1)
                 break;
             node = (BPlusTreeLeafNode) file.readNode(node.rightSibling, 0);

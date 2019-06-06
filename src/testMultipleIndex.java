@@ -21,10 +21,11 @@ public class testMultipleIndex {
         String[] s = new String[2];
         s[0] = "id";
         s[1] = "name";
-        String[] p = new String[0];
+        String[] p = new String[1];
+        p[0] = "id";
         boolean[] isNotNull = new boolean[2];
         isNotNull[0] = true;
-        isNotNull[1] = false;
+        isNotNull[1] = true;
 
         db.createTable(s, a, p, "test", isNotNull);
 
@@ -78,6 +79,12 @@ public class testMultipleIndex {
         end = System.nanoTime();
 
         System.out.println("select with index: " + (end - start) / 1000000000.0);
+
+        //create index on string
+
+        ArrayList<String> index2 = new ArrayList<>();
+        index2.add("name");
+        t.createIndex(index2);
 
 
     }
