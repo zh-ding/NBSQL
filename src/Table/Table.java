@@ -258,7 +258,7 @@ public class Table {
       ],
     ]
     */
-
+    /*
     public Generator<ArrayList> SelectRows(ArrayList<ArrayList<ArrayList>> conditions, ArrayList<String> column_names)
             throws BPlusTreeException, IOException{
         Table table = this;
@@ -448,10 +448,10 @@ public class Table {
         };
 
         return simpleGenerator;
-    }
+    }*/
 
 
-    /*
+
     public ArrayList<ArrayList> SelectRows(ArrayList<ArrayList<ArrayList>> conditions, ArrayList<String> column_names)
             throws BPlusTreeException, IOException{
         Table table = this;
@@ -534,7 +534,7 @@ public class Table {
                             if(isPrimitive && relation != 5){
                                 int col = column_name.indexOf(attr1);
                                 for(index = 0; index < table.index_key.size(); ++index)
-                                    if(attr1 == table.column_name.get(table.index_key.get(index).get(0)))
+                                    if(attr1.compareTo(table.column_name.get(table.index_key.get(index).get(0))) == 0)
                                         break;
 
                                 if(index < table.index_key.size()){
@@ -616,7 +616,7 @@ public class Table {
                 }
 
         return re;
-    }*/
+    }
 
 
     void addResult(BPlusTreeNode node, ArrayList<ArrayList> arr, Set<Integer> result, int index)
