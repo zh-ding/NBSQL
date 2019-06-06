@@ -43,9 +43,9 @@ public class testMultipleIndex {
         // select without index
 
         ArrayList test = new ArrayList();
-        test.add("id");
+        test.add("name");
         test.add(0);
-        test.add(num/2);
+        test.add(Integer.toString(num/2));
         test.add(true);
         ArrayList<ArrayList> test_test = new ArrayList();
         test_test.add(test);
@@ -78,13 +78,27 @@ public class testMultipleIndex {
 
         end = System.nanoTime();
 
-        System.out.println("select with index: " + (end - start) / 1000000000.0);
+        System.out.println("select with int index: " + (end - start) / 1000000000.0);
 
         //create index on string
 
         ArrayList<String> index2 = new ArrayList<>();
         index2.add("name");
         t.createIndex(index2);
+
+        // select with string index
+
+
+
+        start = System.nanoTime();
+
+        for(ArrayList re: t.SelectRows(test_test_test, null)){
+            System.out.println(re);
+        }
+
+        end = System.nanoTime();
+
+        System.out.println("select with string index: " + (end - start) / 1000000000.0);
 
 
     }

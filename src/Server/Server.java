@@ -7,6 +7,7 @@ import Parser.SQLLexer;
 import Parser.SQLParser;
 import Parser.SQLVisitorStmt;
 import Parser.ThrowingErrorListener;
+import Utils.CacheTimer;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 
@@ -21,8 +22,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
-
-import Utils.CacheTimer;
 
 public class Server {
     public static ConcurrentHashMap<String, Lock> G_lock = new ConcurrentHashMap<>();
@@ -107,7 +106,6 @@ public class Server {
             } catch (DatabaseException e){
                 System.out.println("4: " + e);
             }finally {
-
                 db.quitDB();
             }
         }
