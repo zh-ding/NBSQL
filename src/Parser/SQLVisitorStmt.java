@@ -452,10 +452,16 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                 ArrayList result_output = new ArrayList();
                 for (int i = 0; i < ctx.result_column().size(); i++) {
                     if (ctx.result_column(i).STAR() != null) {
-                        String t = ctx.result_column(i).table_name().accept(new SQLVisitorNames());
-                        ArrayList<String> name_temp = tableColumnNames.get(joinCondition.tableNames.indexOf(t));
-                        for (String c : name_temp) {
-                            result_output.add(r.get(column_queries.indexOf(t + "." + c)));
+                        ArrayList<String> table_temp = new ArrayList<>();
+                        if(ctx.result_column(i).table_name() != null)
+                            table_temp.add(ctx.result_column(i).table_name().accept(new SQLVisitorNames()));
+                        else
+                            table_temp = joinCondition.tableNames;
+                        for(String t:table_temp) {
+                            ArrayList<String> name_temp = tableColumnNames.get(joinCondition.tableNames.indexOf(t));
+                            for (String c : name_temp) {
+                                result_output.add(r.get(column_queries.indexOf(t + "." + c)));
+                            }
                         }
                     } else {
                         DataTypes data = ctx.result_column(i).expr().accept(new SQLVisitorEvalValue(column_queries, column_types_queries, r));
