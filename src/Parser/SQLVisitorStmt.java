@@ -570,7 +570,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             conditions = ctx.expr().accept(new SQLVisitorWhereClause(tableColumnNames, tableColumnTypes));
         else
             conditions = null;
-        ArrayList<ArrayList> result;
+        Generator<ArrayList> result;
         try {
             result = this.db.getTable(tableName).SelectRows(conditions, column_queries);
             for(String c:column_names)

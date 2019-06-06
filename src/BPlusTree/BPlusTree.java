@@ -70,6 +70,15 @@ public class BPlusTree {
         return leaf.location;
     }
 
+    public int searchOne(ArrayList key)
+        throws BPlusTreeException, IOException{
+
+        this.root = fm.readNode(this.root.location, this.ID);
+        BPlusTreeLeafNode leaf = this.findLeafNodeOne(key);
+
+        return leaf.location;
+    }
+
     public BPlusTreeLeafNode getMostLeftLeafNode()
             throws IOException{
         this.root = fm.readNode(this.root.location, this.ID);
@@ -109,6 +118,15 @@ public class BPlusTree {
         BPlusTreeNode node = this.root;
         while (!node.isLeafNode) {
             node = node.search(this.fm, key);
+        }
+        return (BPlusTreeLeafNode)node;
+    }
+
+    private BPlusTreeLeafNode findLeafNodeOne(ArrayList key)throws IOException, BPlusTreeException {
+
+        BPlusTreeNode node = this.root;
+        while (!node.isLeafNode) {
+            node = ((BPlusTreeInnerNode)node).searchOne(this.fm, key);
         }
         return (BPlusTreeLeafNode)node;
     }

@@ -258,7 +258,7 @@ public class Table {
       ],
     ]
     */
-    /*
+
     public Generator<ArrayList> SelectRows(ArrayList<ArrayList<ArrayList>> conditions, ArrayList<String> column_names)
             throws BPlusTreeException, IOException{
         Table table = this;
@@ -329,10 +329,8 @@ public class Table {
                             addResult(node, key, result, index);
                         }catch (BPlusTreeException e){
                             System.out.println(e);
-                            throw new InterruptedException();
                         }catch (IOException e){
                             System.out.println(e);
-                            throw new InterruptedException();
                         }
                     }else{
                         Set<Integer> arr1 = new HashSet<>();
@@ -347,7 +345,7 @@ public class Table {
                             if(isPrimitive && relation != 5){
                                 int col = column_name.indexOf(attr1);
                                 for(index = 0; index < table.index_key.size(); ++index)
-                                    if(attr1.equals(table.column_name.get(table.index_key.get(index).get(0))))
+                                    if(attr1.compareTo(table.column_name.get(table.index_key.get(index).get(0))) == 0)
                                         break;
 
                                 if(index < table.index_key.size()){
@@ -358,10 +356,51 @@ public class Table {
 
                                     try {
 
-                                        offset = table.index_forest.get(index).search(key);
+                                        offset = table.index_forest.get(index).searchOne(key);
                                         BPlusTreeNode node = table.file.readNode(offset, index);
 
-                                        addResult(node, arr_and, arr1, arr2, isFirst, relation, index);
+                                        int kk = addResult(node, arr_and, arr1, arr2, isFirst, relation, index);
+                                        if(kk == 1) {
+
+
+                                            while(true) {
+                                                node = table.file.readNode(node.leftSibling, node.id);
+                                                kk = addResult(node, arr_and, arr1, arr2, isFirst, relation, index);
+                                                if (kk == 0 || kk == 10)
+                                                    break;
+                                            }
+                                        }else if(kk == 10){
+
+
+                                            while (true) {
+                                                node = table.file.readNode(node.rightSibling, node.id);
+                                                kk = addResult(node, arr_and, arr1, arr2, isFirst, relation, index);
+                                                if (kk == 0 || kk == 1)
+                                                    break;
+                                            }
+                                        }else{
+                                            BPlusTreeNode tmp = node;
+
+
+
+                                            while(true) {
+                                                node = table.file.readNode(node.leftSibling, node.id);
+                                                kk = addResult(node, arr_and, arr1, arr2, isFirst, relation, index);
+                                                if (kk == 0 || kk == 10)
+                                                    break;
+                                            }
+
+                                            node = tmp;
+
+                                            while (true) {
+                                                node = table.file.readNode(node.rightSibling, node.id);
+                                                kk = addResult(node, arr_and, arr1, arr2, isFirst, relation, index);
+                                                if (kk == 0 || kk == 1)
+                                                    break;
+                                            }
+                                        }
+
+
                                     }catch (BPlusTreeException e){
                                         System.out.println(e);
                                         throw new InterruptedException();
@@ -375,7 +414,6 @@ public class Table {
                                         while(next != -1){
                                             next = addResultWoIndex((BPlusTreeLeafNode) table.file.readNode(next, 0), arr_and, arr1, arr2, isFirst, relation);
                                         }
-
                                     }catch (BPlusTreeException e){
                                         System.out.println(e);
                                         throw new InterruptedException();
@@ -448,10 +486,10 @@ public class Table {
         };
 
         return simpleGenerator;
-    }*/
+    }
 
 
-
+    /*
     public ArrayList<ArrayList> SelectRows(ArrayList<ArrayList<ArrayList>> conditions, ArrayList<String> column_names)
             throws BPlusTreeException, IOException{
         Table table = this;
@@ -545,10 +583,51 @@ public class Table {
 
                                     try {
 
-                                        offset = table.index_forest.get(index).search(key);
+                                        offset = table.index_forest.get(index).searchOne(key);
                                         BPlusTreeNode node = table.file.readNode(offset, index);
 
-                                        addResult(node, arr_and, arr1, arr2, isFirst, relation, index);
+                                        int kk = addResult(node, arr_and, arr1, arr2, isFirst, relation, index);
+                                        if(kk == 1) {
+
+
+                                            while(true) {
+                                                node = file.readNode(node.leftSibling, node.id);
+                                                kk = addResult(node, arr_and, arr1, arr2, isFirst, relation, index);
+                                                if (kk == 0 || kk == 10)
+                                                    break;
+                                            }
+                                        }else if(kk == 10){
+
+
+                                            while (true) {
+                                                node = file.readNode(node.rightSibling, node.id);
+                                                kk = addResult(node, arr_and, arr1, arr2, isFirst, relation, index);
+                                                if (kk == 0 || kk == 1)
+                                                    break;
+                                            }
+                                        }else{
+                                            BPlusTreeNode tmp = node;
+
+
+
+                                            while(true) {
+                                                node = file.readNode(node.leftSibling, node.id);
+                                                kk = addResult(node, arr_and, arr1, arr2, isFirst, relation, index);
+                                                if (kk == 0 || kk == 10)
+                                                    break;
+                                            }
+
+                                            node = tmp;
+
+                                            while (true) {
+                                                node = file.readNode(node.rightSibling, node.id);
+                                                kk = addResult(node, arr_and, arr1, arr2, isFirst, relation, index);
+                                                if (kk == 0 || kk == 1)
+                                                    break;
+                                            }
+                                        }
+
+
                                     }catch (BPlusTreeException e){
                                         System.out.println(e);
                                     }catch (IOException e){
@@ -556,8 +635,10 @@ public class Table {
                                     }
                                 }else {
                                     try {
-                                        addResultWoIndex(table.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
-
+                                        int next = addResultWoIndex(table.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
+                                        while(next != -1){
+                                            next = addResultWoIndex((BPlusTreeLeafNode) table.file.readNode(next, 0), arr_and, arr1, arr2, isFirst, relation);
+                                        }
                                     }catch (BPlusTreeException e){
                                         System.out.println(e);
                                     }catch (IOException e){
@@ -566,8 +647,10 @@ public class Table {
                                 }
                             }else if(isPrimitive && relation == 5){
                                 try{
-                                    addResultWoIndex(table.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
-                                }catch (BPlusTreeException e){
+                                    int next = addResultWoIndex(table.index_forest.get(0).getMostLeftLeafNode(), arr_and, arr1, arr2, isFirst, relation);
+                                    while(next != -1){
+                                        next = addResultWoIndex((BPlusTreeLeafNode) table.file.readNode(next, 0), arr_and, arr1, arr2, isFirst, relation);
+                                    }                                }catch (BPlusTreeException e){
                                     System.out.println(e);
                                 }catch (IOException e){
                                     System.out.println(e);
@@ -616,7 +699,7 @@ public class Table {
                 }
 
         return re;
-    }
+    }*/
 
 
     void addResult(BPlusTreeNode node, ArrayList<ArrayList> arr, Set<Integer> result, int index)
@@ -640,17 +723,19 @@ public class Table {
 
     }
 
-    void addResult(BPlusTreeNode node, ArrayList arr, Set<Integer> arr1, Set<Integer> arr2,
+    int addResult(BPlusTreeNode node, ArrayList arr, Set<Integer> arr1, Set<Integer> arr2,
                    boolean isFirst, int relation, int index)
             throws BPlusTreeException, IOException{
+
+        boolean left = false, right = false;
 
         for(int i = 0; i < node.keys.size(); ++i) {
             ArrayList key1 = new ArrayList();
             this.addKey(arr, key1);
-            for(int j = 1; j < node.keys.get(i).size(); ++i)
+            for(int j = 1; j < node.keys.get(i).size(); ++j)
                 key1.add(node.keys.get(i).get(j));
 
-            int cmp = node.compare(key1, node.keys.get(i));
+            int cmp = node.compareOne(key1, node.keys.get(i));
             if(cmp == 2)
                 continue;
 
@@ -659,44 +744,53 @@ public class Table {
                     if(isFirst || arr1.contains(node.pointers.get(i)))
                         arr2.add(node.pointers.get(i));
                     if(i == 0 && node.leftSibling != -1)
-                        addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                        left = true;
                     else if(i == node.keys.size() - 1 && node.rightSibling != -1)
-                        addResult(this.file.readNode(node.rightSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                        right = true;
                 }else if(relation == 1 && i == 0 && node.leftSibling != -1){
-                    addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                    left = true;
                 }else if(relation == 2 && i == node.keys.size() - 1 && node.rightSibling != -1){
-                    addResult(this.file.readNode(node.rightSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                    right = true;
                 }
             }else if(cmp < 0){
                 if(relation == 0 && i == 0 && node.leftSibling != -1)
-                    addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                    left = true;
                 else if(relation == 1 || relation == 3){
                     if(i == 0 && node.leftSibling != -1)
-                        addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                        left = true;
                 }else if(relation == 2 || relation == 4){
                     if(isFirst || arr1.contains(node.pointers.get(i)))
                         arr2.add(node.pointers.get(i));
                     if(i == 0 && node.leftSibling != -1)
-                        addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                        left = true;
                     else if(i == node.keys.size() - 1 && node.rightSibling != -1)
-                        addResult(this.file.readNode(node.rightSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                        right = true;
                 }
             }else if(cmp > 0){
                 if(relation == 0 && i == node.keys.size() - 1 && node.rightSibling != -1)
-                    addResult(this.file.readNode(node.rightSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                    right = true;
                 else if(relation == 2 || relation == 4){
                     if(i == 0 && node.leftSibling != -1)
-                        addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                        left = true;
                 }else if(relation == 1 || relation == 3){
                     if(isFirst || arr1.contains(node.pointers.get(i)))
                         arr2.add(node.pointers.get(i));
                     if(i == 0 && node.leftSibling != -1)
-                        addResult(this.file.readNode(node.leftSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                        left = true;
                     else if(i == node.keys.size() - 1 && node.rightSibling != -1)
-                        addResult(this.file.readNode(node.rightSibling, index), arr, arr1, arr2, isFirst, relation, index);
+                        right = true;
                 }
             }
-       }
+        }
+
+
+        int re = 0;
+        if(left == true)
+            re = 1;
+        if(right == true)
+            re = re + 10;
+
+        return  re;
     }
 
     private int addResultWoIndex(BPlusTreeLeafNode node, ArrayList arr, Set<Integer> arr1, Set<Integer> arr2,
