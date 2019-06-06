@@ -828,42 +828,54 @@ public class Table {
     private void addAllResult(BPlusTreeLeafNode node, Set<Integer> arr)
         throws IOException{
 
-        for(int i =0; i < node.keyNum; ++i){
-            arr.add(node.pointers.get(i));
-        }
+        while(true){
 
-        if(node.rightSibling != -1)
-            addAllResult((BPlusTreeLeafNode) this.file.readNode(node.rightSibling, 0), arr);
+            for(int i =0; i < node.keyNum; ++i){
+                arr.add(node.pointers.get(i));
+            }
+
+            if(node.rightSibling != -1)
+                node = (BPlusTreeLeafNode) this.file.readNode(node.rightSibling, 0);
+            else
+                break;
+        }
     }
 
     private void addResultNotPrimitive(BPlusTreeLeafNode node, ArrayList arr, Set<Integer> arr1, Set<Integer> arr2,
                                        boolean isFirst, int relation)
             throws BPlusTreeException, IOException{
 
-        String attr1 = (String)arr.get(0);
-        String attr2 = (String)arr.get(2);
-        int index1 = this.column_name.indexOf((String)arr.get(0));
-        int index2 = this.column_name.indexOf((String)arr.get(2));
+        String attr1 = (String) arr.get(0);
+        String attr2 = (String) arr.get(2);
+        int index1 = this.column_name.indexOf(attr1);
+        int index2 = this.column_name.indexOf(attr2);
 
+        while(true) {
 
-        for(int i = 0; i < node.keyNum; ++i){
-            ArrayList key1 = new ArrayList();
-            ArrayList key2 = new ArrayList();
-            key1.add(this.file.readData(node.pointers.get(i)).get(index1));
-            key2.add(this.file.readData(node.pointers.get(i)).get(index2));
+            for (int i = 0; i < node.keyNum; ++i) {
+                ArrayList key1 = new ArrayList();
+                ArrayList key2 = new ArrayList();
+                key1.add(this.file.readData(node.pointers.get(i)).get(index1));
+                key2.add(this.file.readData(node.pointers.get(i)).get(index2));
 
-            int cmp = node.compare(key1, key2);
-            if(cmp == 2)
-                continue;
+                int cmp = node.compare(key1, key2);
+                if (cmp == 2)
+                    continue;
 
-            if(cmp == 0 && (relation == 0 || relation == 3 || relation == 4) && (isFirst || arr1.contains(node.pointers.get(i)))){
-                arr2.add(node.pointers.get(i));
-            }else if(cmp > 0 && (relation == 2 || relation == 4 || relation == 5) && (isFirst || arr1.contains(node.pointers.get(i)))){
-                arr2.add(node.pointers.get(i));
-            }else if(cmp < 0 && (relation == 1 || relation == 3 || relation == 5) && (isFirst || arr1.contains(node.pointers.get(i)))){
-                arr2.add(node.pointers.get(i));
+                if (cmp == 0 && (relation == 0 || relation == 3 || relation == 4) && (isFirst || arr1.contains(node.pointers.get(i)))) {
+                    arr2.add(node.pointers.get(i));
+                } else if (cmp > 0 && (relation == 2 || relation == 4 || relation == 5) && (isFirst || arr1.contains(node.pointers.get(i)))) {
+                    arr2.add(node.pointers.get(i));
+                } else if (cmp < 0 && (relation == 1 || relation == 3 || relation == 5) && (isFirst || arr1.contains(node.pointers.get(i)))) {
+                    arr2.add(node.pointers.get(i));
+                }
+
             }
 
+            if(node.rightSibling != -1)
+                node = (BPlusTreeLeafNode) this.file.readNode(node.rightSibling, node.id);
+            else
+                break;
         }
     }
 
