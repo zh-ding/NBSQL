@@ -20,7 +20,8 @@ public class GUIClient {
     enum textType  {
         REGULAR,
         ERROR,
-        INFO
+        INFO,
+        TIME
     }
 
     public GUIClient() {
@@ -78,6 +79,9 @@ public class GUIClient {
                 try {
                     FileInputStream fis = new FileInputStream(f);
                     char current;
+
+                    long start = System.nanoTime();
+
                     while(fis.available() > 0) {
                         String sql = "";
                         while (fis.available() > 0) {
@@ -90,6 +94,9 @@ public class GUIClient {
                         }
                         c.sendSql(sql);
                         textType tt = textType.REGULAR;
+
+
+
                         while(true){
                             try {
                                 String text = c.receiveText();
@@ -110,8 +117,15 @@ public class GUIClient {
                             }
                         }
 
+
+
                         appendSql(sql, tt);
                     }
+
+                    long end = System.nanoTime();
+
+                    appendText((end - start) / 1000000000.0 + "s", textType.TIME);
+
                 } catch (IOException e3) {
                     e3.printStackTrace();
                 }
@@ -132,6 +146,9 @@ public class GUIClient {
                 try{
                     sql = tf.getText();
                     c.sendSql(sql);
+
+                    long start = System.nanoTime();
+
                     while(true){
                         String text = c.receiveText();
                         System.out.println(text);
@@ -146,6 +163,12 @@ public class GUIClient {
                             appendText(text, textType.REGULAR);
                         }
                     }
+
+
+                    long end = System.nanoTime();
+
+                    appendText(((end - start) / 1000000000.0) + "s", textType.TIME);
+
                 }catch (IOException e1){
                     System.out.println(e1);
                     appendText("Connection Error\n", textType.ERROR);
@@ -225,6 +248,17 @@ public class GUIClient {
 
                 try {
                     doc.insertString(doc.getLength(), s, keyWord);
+                } catch (Exception e1) {
+                    System.out.println(e1);
+                }
+                break;
+            }
+            case TIME: {
+                SimpleAttributeSet keyWord = new SimpleAttributeSet();
+                StyleConstants.setForeground(keyWord, Color.BLUE);
+
+                try {
+                    doc.insertString(doc.getLength(), s + "\n", keyWord);
                 } catch (Exception e1) {
                     System.out.println(e1);
                 }
