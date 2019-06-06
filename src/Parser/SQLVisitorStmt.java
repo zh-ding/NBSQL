@@ -759,7 +759,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         catch (Exception e)
         {
-            throw new ParseCancellationException("!Create index error\n");
+            throw new ParseCancellationException("!Create index error: " + e.getMessage() + "\n");
         }
         return null;
     }
