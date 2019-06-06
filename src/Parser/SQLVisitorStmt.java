@@ -3,7 +3,6 @@ package Parser;
 import Database.Database;
 import Table.Table;
 import generator.Generator;
-import org.antlr.v4.runtime.misc.ParseCancellationException;
 
 import java.io.DataOutputStream;
 import java.io.IOException;
@@ -24,8 +23,8 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
     private Void writeStr(String s)
     {
         try {
-            output.writeUTF(s);
-//            output.writeBytes(s);
+//            output.writeUTF(s);
+            output.writeBytes(s);
         }
         catch (IOException e)
         {
@@ -269,7 +268,8 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                 int index = column_names.indexOf(columns.get(j));
                 if(index < 0)
                 {
-                    throw new ParseCancellationException("!column " + columns.get(j) + "doesn't exist\n");
+                    writeStr("!column " + columns.get(j) + "doesn't exist\n");
+                    return null;
                 }
                 int type = column_types.get(index);
                 DataTypes dataTmp = ctx.insert_values(i).expr(j).literal_value().accept(new SQLVisitorLiteralValue(type));
@@ -298,7 +298,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                 }
             }
             if(columns.size() != data.size())
-                throw new ParseCancellationException("!Insert Column count mismatch\n");
+            {
+                writeStr("!Insert Column count mismatch\n");
+                return null;
+            }
             dataAll.add(data);
         }
         for(ArrayList data:dataAll) {
@@ -373,7 +376,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                     table_temp = joinCondition.tableNames;
                 for(String t:table_temp) {
                     if(joinCondition.tableNames.indexOf(t) < 0)
-                        throw new ParseCancellationException("!Table " + t + " doesn't exist\n");
+                    {
+                        writeStr("!Table " + t + " doesn't exist\n");
+                        return null;
+                    }
                     ArrayList<String> name_temp = tableColumnNames.get(joinCondition.tableNames.indexOf(t));
                     for (String c : name_temp) {
                         c = t + "." + c;
@@ -399,7 +405,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
                     table_temp = joinCondition.tableNames;
                 for(String t:table_temp) {
                     if(joinCondition.tableNames.indexOf(t) < 0)
-                        throw new ParseCancellationException("!Table " + t + " doesn't exist\n");
+                    {
+                        writeStr("!Table " + t + " doesn't exist\n");
+                        return null;
+                    }
                     ArrayList<String> name_temp = tableColumnNames.get(joinCondition.tableNames.indexOf(t));
                     for (String c : name_temp) {
                         c = t + "." + c;
@@ -506,7 +515,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
 
         if(t == null)
-            throw new ParseCancellationException("!Table " + tableName + " doesn't exist\n");
+        {
+            writeStr("!Table " + tableName + " doesn't exist\n");
+            return null;
+        }
         ArrayList<String> tableColumnNames = t.getColumnName();
         tableColumnNames = new ArrayList<String>(tableColumnNames.subList(1,tableColumnNames.size()));
         ArrayList<Integer> tableColumnTypes = t.getColumnType();
@@ -617,7 +629,6 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             }
         } catch (Exception e)
         {
-
             writeStr("!select fail: " + e.getMessage() + '\n');
         }
         return null;
@@ -634,7 +645,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
 
         if(t == null)
-            throw new ParseCancellationException("!Table " + tableName + " doesn't exist\n");
+        {
+            writeStr("!Table " + tableName + " doesn't exist\n");
+            return null;
+        }
         ArrayList<String> tableColumnNames = t.getColumnName();
         tableColumnNames = new ArrayList<String>(tableColumnNames.subList(1,tableColumnNames.size()));
         ArrayList<Integer> tableColumnTypes = t.getColumnType();
@@ -653,6 +667,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         } catch (Exception e)
         {
             this.writeStr("!delete rows fail " + e.getMessage() + '\n');
+            return null;
         }
         return null;
     }
@@ -669,7 +684,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
 
         if(t == null)
-            throw new ParseCancellationException("!Table " + tableName + " doesn't exist\n");
+        {
+            writeStr("!Table " + tableName + " doesn't exist\n");
+            return null;
+        }
         ArrayList<String> tableColumnNames = t.getColumnName();
         tableColumnNames = new ArrayList<String>(tableColumnNames.subList(1,tableColumnNames.size()));
         ArrayList<Integer> tableColumnTypes = t.getColumnType();
@@ -691,7 +709,10 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             String columnName = ctx.column_name(i).getText().toUpperCase();
             int index = tableColumnNames.indexOf(columnName);
             if(index < 0)
-                throw new ParseCancellationException("!Column " + columnName + " doesn't exist\n");
+            {
+                writeStr("!Column " + columnName + " doesn't exist\n");
+                return null;
+            }
             int columnType = tableColumnTypes.get(index);
             column_names.add(columnName);
             DataTypes dataTmp = ctx.expr(i).accept(new SQLVisitorLiteralValue(columnType));
@@ -728,6 +749,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         } catch (Exception e)
         {
             this.writeStr("!update rows fail: " + e.getMessage() + '\n');
+            return null;
         }
         return null;
 
@@ -745,10 +767,16 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
             return null;
         }
         if(t == null)
-            throw new ParseCancellationException("!Table " + tableName + " doesn't exist\n");
+        {
+            writeStr("Table " + tableName + " doesn't exist\n");
+            return null;
+        }
         String columnName = ctx.column_name().getText().toUpperCase();
         if(t.getColumnName().indexOf(columnName) < 0)
-            throw new ParseCancellationException("!Column " + columnName + " doesn't exist\n");
+        {
+            writeStr("Column " + columnName + " doesn't exist\n");
+            return null;
+        }
         ArrayList<String> columnList = new ArrayList<>();
         columnList.add(columnName);
         try {
@@ -757,7 +785,7 @@ public class SQLVisitorStmt extends SQLBaseVisitor<Void>{
         }
         catch (Exception e)
         {
-            throw new ParseCancellationException("!Create index error: " + e.getMessage() + "\n");
+            writeStr("!Create index error: " + e.getMessage() + "\n");
         }
         return null;
     }
