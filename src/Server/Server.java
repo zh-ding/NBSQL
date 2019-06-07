@@ -39,7 +39,12 @@ public class Server {
         CacheTimer task = new CacheTimer();
         Timer timer = new Timer();
         timer.schedule(task, new Date(), interval);
-        try (ServerSocket listener = new ServerSocket(59898)) {
+        int port;
+        if(args.length == 0)
+            port = 59898;
+        else
+            port = Integer.parseInt(args[0]);
+        try (ServerSocket listener = new ServerSocket(port)) {
             System.out.println("The capitalization server is running...");
             ExecutorService pool = Executors.newFixedThreadPool(20);
             while (true) {
