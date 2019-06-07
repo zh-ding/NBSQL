@@ -6,6 +6,7 @@ import BPlusTree.BPlusTreeLeafNode;
 import BPlusTree.BPlusTreeNode;
 import Server.Server;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -750,13 +751,18 @@ public class FileManager {
 
     public void deleteFile(){
         try {
-            this.file.seek(0);
-            this.file.writeInt(Server.auto_id.get(this.inputFile));
-            this.resetNodeCache();
-            Server.data_cache.get(inputFile).clear();
-            Server.data_cache.remove(inputFile);
-            Server.node_cache.remove(inputFile);
-            file.close();
+            File newfile = new File(this.inputFile);
+            if(newfile.renameTo(newfile)){
+            }
+            else {
+                this.file.seek(0);
+                this.file.writeInt(Server.auto_id.get(this.inputFile));
+                this.resetNodeCache();
+                Server.data_cache.get(inputFile).clear();
+                Server.data_cache.remove(inputFile);
+                Server.node_cache.remove(inputFile);
+                file.close();
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
