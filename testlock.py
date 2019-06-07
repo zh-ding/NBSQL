@@ -3,8 +3,8 @@ import threading
 import struct
 import time
 
-ip = '183.172.185.185'
-port = 59898
+ip = '127.0.0.1'
+port = 22222
 
 class MyThread(threading.Thread):
     def __init__(self, arg):
