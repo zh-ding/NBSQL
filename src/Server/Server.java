@@ -26,10 +26,10 @@ import java.util.concurrent.locks.Lock;
 public class Server {
     public static ConcurrentHashMap<String, Lock> G_lock = new ConcurrentHashMap<>();
 
-    public static final int maxNodeLength = 10000;
+    public static final int maxNodeLength = 1000000;
     public static ConcurrentHashMap<String, Map<Integer, ArrayList>> node_cache = new ConcurrentHashMap<>();
 
-    public static final int maxDataCache = 10000;
+    public static final int maxDataCache = 1000000;
     public static ConcurrentHashMap<String, Map<Integer, ArrayList>> data_cache = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, Integer> auto_id = new ConcurrentHashMap<>();
 
@@ -39,7 +39,12 @@ public class Server {
         CacheTimer task = new CacheTimer();
         Timer timer = new Timer();
         timer.schedule(task, new Date(), interval);
-        try (ServerSocket listener = new ServerSocket(59898)) {
+        int port;
+        if(args.length == 0)
+            port = 59898;
+        else
+            port = Integer.parseInt(args[0]);
+        try (ServerSocket listener = new ServerSocket(port)) {
             System.out.println("The capitalization server is running...");
             ExecutorService pool = Executors.newFixedThreadPool(20);
             while (true) {
