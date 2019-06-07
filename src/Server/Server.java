@@ -26,10 +26,10 @@ import java.util.concurrent.locks.Lock;
 public class Server {
     public static ConcurrentHashMap<String, Lock> G_lock = new ConcurrentHashMap<>();
 
-    public static final int maxNodeLength = 10000;
+    public static final int maxNodeLength = 1000000;
     public static ConcurrentHashMap<String, Map<Integer, ArrayList>> node_cache = new ConcurrentHashMap<>();
 
-    public static final int maxDataCache = 10000;
+    public static final int maxDataCache = 1000000;
     public static ConcurrentHashMap<String, Map<Integer, ArrayList>> data_cache = new ConcurrentHashMap<>();
     public static ConcurrentHashMap<String, Integer> auto_id = new ConcurrentHashMap<>();
 

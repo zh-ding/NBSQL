@@ -25,9 +25,9 @@ insert into scores values (2,101,100),(2,102,100),(2,104,100),(2,105,100);
 insert into scores values (3,101,100),(3,102,100),(3,104,100),(3,105,100);
 insert into scores values (4,102,59),(4,103,9),(4,104,89);
 insert into scores values (5,101,60),(5,103,70),(5,106,80);
---insert fail: primary key
+--insert fail: primary key;
 insert into scores values (1,101,100);
---insert fail: not null
+--insert fail: not null;
 insert into student(student_id,dept_name) values(10,'thss');
 select * from teacher natural join course;
 select student.name, course.course_id, teacher.name, scores.score from student left outer join scores on student.student_id=scores.student_id join course on scores.course_id=course.course_id right outer join teacher on course.teacher_id=teacher.teacher_id where (teacher.teacher_id=16 OR scores.score>=95) AND (teacher.name='tuixiu' OR scores.score <= 100);
@@ -40,25 +40,3 @@ drop table course;
 drop table teacher;
 drop table student;
 drop table scores;
---create table avengers(id			int not null, name			string(32) not null, power	int not null,weight     float,primary key (ID));
---drop table avengers;
---create table avengers(id			int not null, name			string(32) not null, power	int not null,weight     float,height     double,primary key (ID));
---INSERT INTO avengers VALUES (10, 'Captain', 50, 78.1, 1.85);
---INSERT INTO avengers VALUES (3, 'Thor', 90, 92.1, 1.89);
---INSERT INTO avengers VALUES (7, 'IronMan', 85, 82.1, 1.76);
---INSERT INTO avengers VALUES (4, 'rocket', 40, 42.1, 0.76);
---INSERT INTO avengers VALUES (5, 'Groot', 10, 182.1, 2.76);
---DELETE FROM avengers WHERE name = 'Groot';
---UPDATE avengers SET power = 100 WHERE name = 'Captain';
---create table villain(id			int not null, name			string(32) not null, power	int not null,primary key (ID));
---INSERT INTO villain VALUES (1, 'Thanos', 100);
---INSERT INTO villain VALUES (2, 'Red Skull', 40);
---INSERT INTO villain VALUES (3, 'Hella', 90);
---INSERT INTO villain VALUES (4, 'monster', 10);
---show table avengers;
---select avengers.name, villain.name, villain.power from avengers outer join villain on avengers.power = villain.power;
---select * from avengers;
---select id, name from avengers where id = 4;
---drop table avengers;
---drop table villain;
-quit
