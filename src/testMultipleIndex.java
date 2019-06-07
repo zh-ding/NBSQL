@@ -13,21 +13,21 @@ public class testMultipleIndex {
 
         int num = 1000;
 
-        Database db = new Database("test");
-        db.useDB("test");
+        Database db = new Database("TEST");
+        db.useDB("TEST");
         int[] a = new int[2];
         a[0] = -1;
         a[1] = 20;
         String[] s = new String[2];
-        s[0] = "id";
-        s[1] = "name";
+        s[0] = "ID";
+        s[1] = "NAME";
         String[] p = new String[1];
-        p[0] = "id";
+        p[0] = "ID";
         boolean[] isNotNull = new boolean[2];
         isNotNull[0] = true;
         isNotNull[1] = true;
 
-        db.createTable(s, a, p, "test", isNotNull);
+        db.createTable(s, a, p, "TEST", isNotNull);
 
 
         // insert data
@@ -43,7 +43,7 @@ public class testMultipleIndex {
         // select without index
 
         ArrayList test = new ArrayList();
-        test.add("name");
+        test.add("NAME");
         test.add(0);
         test.add(Integer.toString(num/2));
         test.add(true);
@@ -65,7 +65,7 @@ public class testMultipleIndex {
         // create index
 
         ArrayList<String> index= new ArrayList<>();
-        index.add("id");
+        index.add("ID");
         t.createIndex(index);
 
         // select with index
@@ -83,7 +83,7 @@ public class testMultipleIndex {
         //create index on string
 
         ArrayList<String> index2 = new ArrayList<>();
-        index2.add("name");
+        index2.add("NAME");
         t.createIndex(index2);
 
         // select with string index
