@@ -48,8 +48,10 @@ public class Database {
         {
             for(File f:tmplist){
                 String tmp = f.getName();
-                Table tmpTable = new Table(tmp.substring(0, tmp.lastIndexOf(".")), this.db_name);
-                this.tables.add(tmpTable);
+                if(!f.isHidden()) {
+                    Table tmpTable = new Table(tmp.substring(0, tmp.lastIndexOf(".")), this.db_name);
+                    this.tables.add(tmpTable);
+                }
             }
         }
     }
@@ -79,8 +81,10 @@ public class Database {
         if(tmplist != null)
         {
             for(File f:tmplist){
-                String tmp = f.getName();
-                res.add(tmp.substring(0, tmp.lastIndexOf(".")));
+                if(!f.isHidden()) {
+                    String tmp = f.getName();
+                    res.add(tmp.substring(0, tmp.lastIndexOf(".")));
+                }
             }
             return res;
         }
@@ -140,19 +144,21 @@ public class Database {
         if(tmplist != null)
         {
             for(File f:tmplist){
-                String tmp = f.getName();
-                String tmpname = "";
-                tmpname = tmp.substring(0, tmp.lastIndexOf("."));
-                boolean flag = true;
-                for(Table tmptb : tables){
-                    if(tmptb.table_name.compareTo(tmpname) == 0){
-                        flag = false;
-                        break;
+                if(!f.isHidden()) {
+                    String tmp = f.getName();
+                    String tmpname = "";
+                    tmpname = tmp.substring(0, tmp.lastIndexOf("."));
+                    boolean flag = true;
+                    for (Table tmptb : tables) {
+                        if (tmptb.table_name.compareTo(tmpname) == 0) {
+                            flag = false;
+                            break;
+                        }
                     }
-                }
-                if(flag){
-                    Table tmpTable = new Table(tmpname, this.db_name);
-                    this.tables.add(tmpTable);
+                    if (flag) {
+                        Table tmpTable = new Table(tmpname, this.db_name);
+                        this.tables.add(tmpTable);
+                    }
                 }
             }
         }
