@@ -479,6 +479,7 @@ public class FileManager {
     }
 
     public BPlusTreeNode readNode(int offset, int id) throws IOException{
+
         if(!Server.node_cache.get(inputFile).containsKey(offset)){
             if(offset == -1){
                 return null;
@@ -753,6 +754,14 @@ public class FileManager {
         try {
             File newfile = new File(this.inputFile);
             if(newfile.renameTo(newfile)){
+                this.file = new RandomAccessFile(inputFile, "rw");
+                this.file.seek(0);
+                this.file.writeInt(Server.auto_id.get(this.inputFile));
+                this.resetNodeCache();
+                Server.data_cache.get(inputFile).clear();
+                Server.data_cache.remove(inputFile);
+                Server.node_cache.remove(inputFile);
+                file.close();
             }
             else {
                 this.file.seek(0);
