@@ -4,7 +4,7 @@ import struct
 import time
 
 ip = '127.0.0.1'
-port = 22222
+port = 12307
 
 class MyThread(threading.Thread):
     def __init__(self, arg):
